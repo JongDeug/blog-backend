@@ -31,37 +31,54 @@ datasource db {
 // - @unique 는 해당 테이블 행에서 오직 유일하다는 뜻
 
 // 이미지 처리만 어떻게 하면 될듯 ?
-/// Both description and ERD on Actors chatper.
-///
-/// Also, only ERD on Articles and Orders chapters.
+/// 회원 테이블
 ///
 /// @namespace Board
 model User {
+  /// Pirmary Key
   id String @id @default(uuid())
 
+  /// 이름
   name        String  @db.VarChar(100)
+  /// 이메일 
   email       String  @unique @db.VarChar(200)
+  /// 비밀번호
   password    String
+  /// 간단한 소개
   description String? @db.VarChar(300)
 
+  /// ---
+  /// RELATIONS
+  /// ---
   posts     Post[]
   comments  Comment[]
   postLikes PostLike[]
 }
 
-/// Only description on Actors chapter.
+/// 게시글 테이블
 ///
 /// @namespace Board
 model Post {
+  /// Pirmary Key
   id String @id @default(uuid())
 
+  /// 제목
   title     String   @db.VarChar(200)
+  /// 내용
   content   String   @db.LongText
+  /// 생성일
   createdAt DateTime @default(now())
+  /// 수정일
   updatedAt DateTime @updatedAt
 
+  /// ---
+  /// RELATIONS
+  /// ---
   author   User   @relation(fields: [authorId], references: [id])
-  authorId String // 외래키(User)
+  /// Foreign Key
+  ///
+  /// 작성자 ID {@link User.id}
+  authorId String
 
   comments  Comment[]
   tags      Tag[]
@@ -69,52 +86,90 @@ model Post {
   images    Image[]
 }
 
+/// 댓글 테이블
+///
 /// @namespace Board
 model Comment {
+  /// Pirmary Key
   id String @id @default(uuid())
 
+  /// 내용
   content String @db.VarChar(200)
 
+  /// ---
+  /// RELATIONS
+  /// ---
   // [자식, "다"] parentCommentId 는 "다" 인 ChildComment 가 가지고 있음, 그래서 자식 쪽에 @relation
   parentComment   Comment?  @relation("ParentComment", fields: [parentCommentId], references: [id])
+  /// Foreign Key
+  ///
+  /// 부모 댓글 ID {@link Comment.id}
   parentCommentId String? // 외래키(ParentComment)
   // [부모, "일"]
   childComments   Comment[] @relation("ParentComment")
 
   posts  Post   @relation(fields: [postId], references: [id])
-  postId String // 외래키(Post)
+  /// Foreign Key
+  ///
+  /// 게시글 ID {@link Post.id}
+  postId String
 
   author   User   @relation(fields: [authorId], references: [id])
-  authorId String // 외래키(User)
+  /// Foreign Key
+  ///
+  /// 작성자 ID {@link User.id}
+  authorId String
 }
 
+/// 게시글 좋아요 테이블
+///
 /// @namespace Board
 model PostLike {
   author   User   @relation(fields: [authorId], references: [id])
+  /// Foreign Key
+  ///
+  /// 작성자 ID
   authorId String
   post     Post   @relation(fields: [postId], references: [id])
+  /// Foreign Key
+  ///
+  /// 게시글 ID {@link Post.id}
   postId   String
 
   @@id([authorId, postId])
 }
 
+/// 게시글 태그 테이블
+///
 /// @namespace Board
 model Tag {
+  /// Primary Key
   id String @id @default(uuid())
 
+  /// 태그 이름
   name String @db.VarChar(100)
 
   // Post <=> Tag, 일대다 로 설계
   post   Post   @relation(fields: [postId], references: [id])
+  /// Foreign Key
+  ///
+  /// 게시글 ID {@link Post.id}
   postId String
 }
 
+/// 게시글 이미지 테이블
+///
 /// @namespace Board
 model Image {
+  /// Pirmary Key
   id String @id @default(uuid())
 
+  /// 이미지 url
   url String
 
   post   Post   @relation(fields: [postId], references: [id])
-  postId String // 외래키(Post)
+  /// Foreign Key
+  ///
+  /// 게시글 ID {@link Post.id}
+  postId String
 }
