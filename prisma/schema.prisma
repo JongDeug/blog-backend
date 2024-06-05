@@ -24,3 +24,97 @@ datasource db {
 // yarn prisma migrate dev : 현재 파일 기반으로 DB 업데이트, git 처럼 관리 가능
 // yarn prisma migarte dev --create-only : 실제 반영하지 않고 migration 파일만 변경
 // yarn pnpify prisma generate : 현재 파일 기반으로 @prisma/client 생성
+
+// [알고 가지]
+// - @relation 붙으면 객체임
+// - 일 대 일 관계 설정 시 나중에 생성 되는 곳에 @relation 을 붙여 주면 됨
+// - @unique 는 해당 테이블 행에서 오직 유일하다는 뜻
+
+// 이미지 처리만 어떻게 하면 될듯 ?
+/// Both description and ERD on Actors chatper.
+///
+/// Also, only ERD on Articles and Orders chapters.
+///
+/// @namespace Board
+model User {
+  id String @id @default(uuid())
+
+  name        String  @db.VarChar(100)
+  email       String  @unique @db.VarChar(200)
+  password    String
+  description String? @db.VarChar(300)
+
+  posts     Post[]
+  comments  Comment[]
+  postLikes PostLike[]
+}
+
+/// Only description on Actors chapter.
+///
+/// @namespace Board
+model Post {
+  id String @id @default(uuid())
+
+  title     String   @db.VarChar(200)
+  content   String   @db.LongText
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  author   User   @relation(fields: [authorId], references: [id])
+  authorId String // 외래키(User)
+
+  comments  Comment[]
+  tags      Tag[]
+  postLikes PostLike[]
+  images    Image[]
+}
+
+/// @namespace Board
+model Comment {
+  id String @id @default(uuid())
+
+  content String @db.VarChar(200)
+
+  // [자식, "다"] parentCommentId 는 "다" 인 ChildComment 가 가지고 있음, 그래서 자식 쪽에 @relation
+  parentComment   Comment?  @relation("ParentComment", fields: [parentCommentId], references: [id])
+  parentCommentId String? // 외래키(ParentComment)
+  // [부모, "일"]
+  childComments   Comment[] @relation("ParentComment")
+
+  posts  Post   @relation(fields: [postId], references: [id])
+  postId String // 외래키(Post)
+
+  author   User   @relation(fields: [authorId], references: [id])
+  authorId String // 외래키(User)
+}
+
+/// @namespace Board
+model PostLike {
+  author   User   @relation(fields: [authorId], references: [id])
+  authorId String
+  post     Post   @relation(fields: [postId], references: [id])
+  postId   String
+
+  @@id([authorId, postId])
+}
+
+/// @namespace Board
+model Tag {
+  id String @id @default(uuid())
+
+  name String @db.VarChar(100)
+
+  // Post <=> Tag, 일대다 로 설계
+  post   Post   @relation(fields: [postId], references: [id])
+  postId String
+}
+
+/// @namespace Board
+model Image {
+  id String @id @default(uuid())
+
+  url String
+
+  post   Post   @relation(fields: [postId], references: [id])
+  postId String // 외래키(Post)
+}
