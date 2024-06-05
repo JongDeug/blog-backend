@@ -20,5 +20,6 @@
 mysql-data
 prisma/*
 !prisma/schema.prisma
+!prisma/ERD.md
 
 
