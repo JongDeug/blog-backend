@@ -12,5 +12,13 @@
 #!.yarn/cache
 .pnp.*
 
-#idea
+#idea, env
 .idea
+.env
+
+#DB
+mysql-data
+prisma/*
+!prisma/schema.prisma
+
+

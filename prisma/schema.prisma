@@ -1,0 +1,26 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "prisma-client" // yarn PnP 전략 때문에 사용
+}
+
+generator markdown {
+  provider = "prisma-markdown"
+  output   = "./ERD.md"
+  title    = "게시판 프로젝트 ERD"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// [주로 사용하는 명령어]
+// yarn prisma migrate dev : 현재 파일 기반으로 DB 업데이트, git 처럼 관리 가능
+// yarn prisma migarte dev --create-only : 실제 반영하지 않고 migration 파일만 변경
+// yarn pnpify prisma generate : 현재 파일 기반으로 @prisma/client 생성
