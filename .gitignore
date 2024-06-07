@@ -10,6 +10,7 @@
 # Documentation here: https://yarnpkg.com/features/caching#zero-installs
 
 #!.yarn/cache
+# Zero-install
 .pnp.*
 
 #idea, env
