@@ -1693,6 +1693,7 @@ __metadata:
     dotenv: "npm:^16.4.5"
     express: "npm:^4.19.2"
     jest: "npm:^29.7.0"
+    jest-mock-extended: "npm:^3.0.7"
     jsonwebtoken: "npm:^9.0.2"
     node-mocks-http: "npm:^1.14.1"
     nodemon: "npm:^3.1.3"
@@ -3511,6 +3512,18 @@ __metadata:
     slash: "npm:^3.0.0"
     stack-utils: "npm:^2.0.3"
   checksum: 10c0/850ae35477f59f3e6f27efac5215f706296e2104af39232bb14e5403e067992afb5c015e87a9243ec4d9df38525ef1ca663af9f2f4766aa116f127247008bd22
+  languageName: node
+  linkType: hard
+
+"jest-mock-extended@npm:^3.0.7":
+  version: 3.0.7
+  resolution: "jest-mock-extended@npm:3.0.7"
+  dependencies:
+    ts-essentials: "npm:^10.0.0"
+  peerDependencies:
+    jest: ^24.0.0 || ^25.0.0 || ^26.0.0 || ^27.0.0 || ^28.0.0 || ^29.0.0
+    typescript: ^3.0.0 || ^4.0.0 || ^5.0.0
+  checksum: 10c0/17d2e816eae8e95933817102987ba9f700890c4b1223495012bca2ec76644cd203336843a4c381a662e03bde0b637767ad8e2c13b490e9a5eaeb87d211994647
   languageName: node
   linkType: hard
 
@@ -5363,6 +5376,18 @@ __metadata:
   version: 1.1.0
   resolution: "treeify@npm:1.1.0"
   checksum: 10c0/2f0dea9e89328b8a42296a3963d341ab19897a05b723d6b0bced6b28701a340d2a7b03241aef807844198e46009aaf3755139274eb082cfce6fdc1935cbd69dd
+  languageName: node
+  linkType: hard
+
+"ts-essentials@npm:^10.0.0":
+  version: 10.0.0
+  resolution: "ts-essentials@npm:10.0.0"
+  peerDependencies:
+    typescript: ">=4.5.0"
+  peerDependenciesMeta:
+    typescript:
+      optional: true
+  checksum: 10c0/8c9c0bbf582c7f78550b0862dda25452fb810e589a72fd97b0df55fe3c02d4211ad99a2dc11d686a7f6541188cfc3cb7f9078719fc43042471b3c17ea7ee74e8
   languageName: node
   linkType: hard
 

@@ -2,6 +2,7 @@ import express, { ErrorRequestHandler } from 'express';
 import cors from 'cors';
 import './loadEnv';
 import database from './database'; // dotenv 로드
+import { Router } from './domain/domain.index';
 
 
 // --- 즉시 실행 함수
@@ -15,9 +16,11 @@ import database from './database'; // dotenv 로드
     app.use(express.urlencoded({ extended: true })); // HTML 폼
     // ---
 
-    // app.get('/', (req: express.Request, res: express.Response) => {
-    //     res.status(200).json({});
-    // });
+    // --- 라우터 등록
+    Router.forEach(el => {
+        app.use(el.path, el.router);
+    });
+    //
 
     // --- 에러 핸들러
     const errorHandler: ErrorRequestHandler = (err, req, res, next) => {

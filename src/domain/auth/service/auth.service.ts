@@ -1,7 +1,7 @@
-import { PrismaClient, User } from '../../../../prisma/prisma-client';
+import database from '../../../database';
 
 export class AuthService {
-    constructor(private readonly authRepository: PrismaClient) {
+    async register() {
 
     }
 }
