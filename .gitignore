@@ -12,9 +12,10 @@
 #!.yarn/cache
 .pnp.*
 
-#idea, env
+#idea, env, dist
 .idea
 .env
+dist
 
 #DB
 mysql-data
