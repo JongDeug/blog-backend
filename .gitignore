@@ -16,6 +16,7 @@
 #idea, env
 .idea
 .env
+dist
 
 #DB
 mysql-data
