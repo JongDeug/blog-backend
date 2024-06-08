@@ -1,0 +1,4 @@
+# Ignore artifacts:
+dist
+test
+#mysql-data/#innodb_redo
