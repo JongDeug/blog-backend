@@ -2,7 +2,7 @@ import { PrismaClient } from '../prisma/prisma-client';
 import { mockReset, mockDeep, DeepMockProxy } from 'jest-mock-extended';
 import prisma from './database';
 
-// [싱글톤 패턴 적용]
+// [싱글톤 패턴 적용] => Prisma 에만
 // 복잡성이 낮은 간단한 게시판 프로젝트이므로
 // DI(Dependency Injection) 패턴 보다
 // Singleton 패턴이 적합하다고 생각함.
@@ -17,8 +17,9 @@ jest.mock('./database', () => ({
 }));
 
 beforeEach(() => {
-    mockReset(prismaMock)
-})
+    mockReset(prismaMock);
+    jest.clearAllMocks();
+});
 
 export const prismaMock = prisma as unknown as DeepMockProxy<PrismaClient>;
 
