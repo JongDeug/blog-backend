@@ -998,7 +998,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/bcrypt@npm:^5":
+"@types/bcrypt@npm:^5.0.2":
   version: 5.0.2
   resolution: "@types/bcrypt@npm:5.0.2"
   dependencies:
@@ -1681,7 +1681,7 @@ __metadata:
   resolution: "board-backend@workspace:."
   dependencies:
     "@prisma/client": "npm:5.15.0"
-    "@types/bcrypt": "npm:^5"
+    "@types/bcrypt": "npm:^5.0.2"
     "@types/cors": "npm:^2"
     "@types/express": "npm:^4.17.21"
     "@types/jest": "npm:^29.5.12"

@@ -2,7 +2,7 @@
   "name": "board-backend",
   "packageManager": "yarn@4.2.2",
   "devDependencies": {
-    "@types/bcrypt": "^5",
+    "@types/bcrypt": "^5.0.2",
     "@types/cors": "^2",
     "@types/express": "^4.17.21",
     "@types/jest": "^29.5.12",

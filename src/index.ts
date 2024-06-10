@@ -1,7 +1,7 @@
 import express, { ErrorRequestHandler } from 'express';
 import cors from 'cors';
-import './loadEnv';
-import database from './database'; // dotenv 로드
+import './loadEnv'; // dotenv 로드
+import database from './database';
 import { Router } from './domain/domain.index';
 
 
