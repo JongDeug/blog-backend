@@ -1,8 +1,8 @@
-import database from '../../../database';
+import database from '../../database';
 import bcrypt from 'bcrypt';
-import '../../../loadEnv';
+import '../../loadEnv';
 import jwt, { Secret } from 'jsonwebtoken';
-import { RegisterDto } from '../dto/register.dto';
+import { RegisterDto } from './dto/register.dto';
 import * as process from 'node:process';
 
 export class AuthService {

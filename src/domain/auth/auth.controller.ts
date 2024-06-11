@@ -1,6 +1,6 @@
 import { Router, RequestHandler, Request, Response, NextFunction } from 'express';
-import { AuthService } from '../service/auth.service';
-import { RegisterDto } from '../dto/dto.index';
+import { AuthService } from './auth.service';
+import { RegisterDto } from './dto/dto.index';
 
 export class AuthController {
     public path: string;
