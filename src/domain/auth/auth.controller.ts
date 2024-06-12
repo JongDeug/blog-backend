@@ -1,6 +1,6 @@
 import { Router, RequestHandler, Request, Response, NextFunction } from 'express';
 import { AuthService } from './auth.service';
-import { RegisterDto } from './dto/dto.index';
+import { LoginDto, RegisterDto } from './dto/dto.index';
 
 export class AuthController {
     public path: string;
@@ -14,7 +14,8 @@ export class AuthController {
     }
 
     init() {
-        this.router.use('/register', this.register.bind(this));
+        this.router.post('/register', this.register.bind(this));
+        this.router.post('/login', this.login.bind(this));
     }
 
     async register(req: Request, res: Response, next: NextFunction) {
@@ -25,6 +26,17 @@ export class AuthController {
             );
             // I. accessToken, requestToken response 로 넘기기, 201: Created
             res.status(201).json({ accessToken, refreshToken });
+        } catch (err) {
+            next(err);
+        }
+    };
+
+    async login(req: Request, res: Response, next: NextFunction) {
+        try {
+            // I. authService.login 에 req.body 넣기
+            const { accessToken, refreshToken } = await this.authService.login(new LoginDto(req.body));
+            // I. 반환된 토큰 넘겨주기
+            res.status(200).json({ accessToken, refreshToken });
         } catch (err) {
             next(err);
         }
