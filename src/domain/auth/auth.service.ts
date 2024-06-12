@@ -27,7 +27,7 @@ export class AuthService {
             expiresIn: '2h',
         });
         const refreshToken = jwt.sign({ id: user.id }, process.env.JWT_SECRET as Secret, {
-            expiresIn: '2h',
+            expiresIn: '1d',
         });
 
         return { accessToken, refreshToken };
@@ -55,7 +55,7 @@ export class AuthService {
             expiresIn: '2h',
         });
         const refreshToken = jwt.sign({ id: user.id }, process.env.JWT_SECRET as Secret, {
-            expiresIn: '2h',
+            expiresIn: '1d',
         });
 
         return { accessToken, refreshToken };
