@@ -44,7 +44,7 @@ export class AuthService {
         if (!user) throw { status: 404, message: '가입되지 않은 이메일 입니다.' };
 
         // I. 유저가 있다면 password 를 가져와서 bcrypt.compare 함수로 비교
-        const isCorrect = await bcrypt.compare(dto.password, user.password);
+        const isCorrect = await bcrypt.compare(dto.password!, user.password);
 
         // I. 만약 틀리면 throw error
         // I. 400 Client Error
@@ -59,5 +59,9 @@ export class AuthService {
         });
 
         return { accessToken, refreshToken };
+    }
+
+    async refresh() {
+
     }
 }

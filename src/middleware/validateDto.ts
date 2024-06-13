@@ -11,7 +11,6 @@ export function validateDto(dtoClass: any) {
         const errors = await validate(dto);
 
         if (errors.length > 0) {
-            console.log(errors);
             const errorMessages = errors.map(error =>
                 // I. 앞글자 대문자 : 에러 메시지
                 `${error.property}: ${Object.values(error.constraints!).join(', ')}`,
