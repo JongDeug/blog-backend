@@ -1,11 +1,11 @@
-import { User } from '../../../../prisma/prisma-client';
+import { IsString, IsNotEmpty, IsEmail } from 'class-validator';
 
 export class LoginDto {
+    @IsEmail()
+    @IsNotEmpty({ message: '이메일을 입력해주세요' })
     email: string;
-    password: string;
 
-    constructor(props: Pick<User, 'email' | 'password'>) {
-        this.email = props.email;
-        this.password = props.password;
-    }
+    @IsString()
+    @IsNotEmpty({ message: '비밀번호를 입력해주세요' })
+    password: string | undefined;
 }

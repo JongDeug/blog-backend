@@ -3,6 +3,7 @@ import cors from 'cors';
 import './loadEnv'; // dotenv 로드
 import database from './database';
 import { Router } from './domain/domain.index';
+import 'reflect-metadata';
 
 
 // --- 즉시 실행 함수

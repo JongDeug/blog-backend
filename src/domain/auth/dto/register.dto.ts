@@ -1,16 +1,20 @@
-import { User } from '../../../../prisma/prisma-client';
+import { IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
-export class RegisterDto{
+export class RegisterDto {
+    @IsString()
+    @IsNotEmpty()
     name: string;
-    email: string;
-    password: string;
-    description: string | null;
 
-    constructor(user: Partial<Pick<User, 'name' | 'email' | 'password' | 'description'>>) {
-        this.name = user.name!;
-        this.email = user.email!;
-        this.password = user.password!;
-        this.description = user.description ?? null;
-    }
+    @IsEmail()
+    @IsNotEmpty()
+    email: string;
+
+    @IsString()
+    @IsNotEmpty()
+    password: string;
+
+    @IsString()
+    @IsOptional() // 옵셔널 데코레이터
+    description?: string;
 }
 
