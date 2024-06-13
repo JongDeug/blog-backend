@@ -17,6 +17,7 @@ export class AuthController {
     init() {
         this.router.post('/register', validateDto(RegisterDto), this.register.bind(this));
         this.router.post('/login', validateDto(LoginDto), this.login.bind(this));
+        this.router.post('/refresh', this.refresh.bind(this));
     }
 
     async register(req: Request, res: Response, next: NextFunction) {
@@ -40,6 +41,24 @@ export class AuthController {
             next(err);
         }
     };
+
+    refresh(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { wantRefreshToken } = req.body;
+
+            // I. Header 에서 토큰 추출
+            const header = req.headers.authorization || (req.headers.Authorization as string);
+            const token = this.authService.extractTokenFromHeader(header);
+
+            // I. 추출된 토큰으로 refresh
+            const newToken = this.authService.refresh(token, wantRefreshToken);
+
+            // I. 새로운 토큰 반환
+            res.status(200).json({ newToken });
+        } catch (err) {
+            next(err);
+        }
+    }
 }
 
 export default new AuthController(new AuthService());
