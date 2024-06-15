@@ -41,7 +41,7 @@ model User {
 
   /// 이름
   name         String  @db.VarChar(100)
-  /// 이메일 
+  /// 이메일
   email        String  @unique @db.VarChar(200)
   /// 비밀번호
   password     String
@@ -176,5 +176,3 @@ model Image {
   /// 게시글 ID {@link Post.id}
   postId String
 }
-
-Done in 0.08s.

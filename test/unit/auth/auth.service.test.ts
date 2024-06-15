@@ -36,23 +36,24 @@ describe('AuthService', () => {
 
     // --- Register
     describe('register', () => {
-        let dto: RegisterDto = { name: 'jonghwan', email: 'jong@gmail.com', password: '1234' };
-        let mockUser: User = {
+        let mockDto: RegisterDto = { name: 'jonghwan', email: 'jong@gmail.com', password: '1234' };
+        let mockReturnedUser: User = {
             id: '1',
             name: 'jonghwan',
             email: 'jong@gmail.com',
             password: 'hashedPassword',
             description: 'hello',
+            refreshToken: null,
         };
 
         test('should throw error if email already exists', async () => {
             // given
-            prismaMock.user.findUnique.mockResolvedValue(mockUser);
+            prismaMock.user.findUnique.mockResolvedValue(mockReturnedUser);
 
             // when : 방법 1
             let error;
             try {
-                await authService.register(dto);
+                await authService.register(mockDto);
             } catch (err) {
                 error = err;
             }
@@ -60,7 +61,7 @@ describe('AuthService', () => {
             // await expect(authService.register(dto)).rejects.toEqual({ status: 400, message: '이미 존재하는 이메일 입니다.' });
 
             // then : 검증
-            expect(prismaMock.user.findUnique).toHaveBeenCalledWith({ where: { email: dto.email } });
+            expect(prismaMock.user.findUnique).toHaveBeenCalledWith({ where: { email: mockReturnedUser.email } });
             expect(error).toEqual({ status: 409, message: '이미 존재하는 이메일 입니다.' });
         });
 
@@ -68,20 +69,21 @@ describe('AuthService', () => {
             // given
             prismaMock.user.findUnique.mockResolvedValue(null);
             (bcrypt.hash as jest.Mock).mockResolvedValue('hashedPassword');
-            prismaMock.user.create.mockResolvedValue(mockUser);
+            prismaMock.user.create.mockResolvedValue(mockReturnedUser);
             // authService.signToken() : mock 함수로 변형
             (authService.signToken as jest.Mock).mockReturnValueOnce('fakeAccessToken').mockReturnValueOnce('fakeRefreshToken');
 
             // when
-            const result = await authService.register(dto);
+            const result = await authService.register(mockDto);
 
             // then : 에러 메시지 없이 잘 호출 됐다면 유저 생성
-            expect(prismaMock.user.findUnique).toHaveBeenCalledWith({ where: { email: dto.email } });
-            expect(bcrypt.hash).toHaveBeenCalledWith(dto.password, Number(process.env.PASSWORD_SALT));
-            expect(prismaMock.user.create).toHaveBeenCalledWith({ data: { ...dto, password: 'hashedPassword' } });
+            expect(prismaMock.user.findUnique).toHaveBeenCalledWith({ where: { email: mockDto.email } });
+            expect(bcrypt.hash).toHaveBeenCalledWith(mockDto.password, Number(process.env.PASSWORD_SALT));
+            expect(prismaMock.user.create).toHaveBeenCalledWith({ data: { ...mockDto, password: 'hashedPassword' } });
             expect(authService.signToken).toHaveBeenCalledTimes(2);
-            expect(authService.signToken).toHaveBeenCalledWith(mockUser, false);
-            expect(authService.signToken).toHaveBeenCalledWith(mockUser, true);
+            expect(authService.signToken).toHaveBeenCalledWith(mockReturnedUser, false);
+            expect(authService.signToken).toHaveBeenCalledWith(mockReturnedUser, true);
+            expect(prismaMock.user.update).toHaveBeenCalledWith({where: {id: mockReturnedUser.id}, data: {refreshToken: 'fakeRefreshToken'}});
             expect(result).toEqual({ accessToken: 'fakeAccessToken', refreshToken: 'fakeRefreshToken' });
         });
     });
@@ -89,13 +91,14 @@ describe('AuthService', () => {
 
     // --- Login
     describe('login', () => {
-        let dto: LoginDto = { email: 'test@gmail.com', password: '12345' };
-        let mockUser: User = {
+        let mockDto: LoginDto = { email: 'test@gmail.com', password: '12345' };
+        let mockReturnedUser: User = {
             id: '1',
             name: 'jonghwan',
             email: 'jong@gmail.com',
             password: 'hashedPassword',
             description: 'hello',
+            refreshToken: null,
         };
 
         test('should throw error if email does not exist', async () => {
@@ -105,49 +108,49 @@ describe('AuthService', () => {
             // when
             let error;
             try {
-                await authService.login(dto);
+                await authService.login(mockDto);
             } catch (err) {
                 error = err;
             }
             // expect(authService.login(dto)).rejects.toEqual({ status: 400, message: '가입되지 않은 이메일 입니다.' });
 
             // then
-            expect(prismaMock.user.findUnique).toHaveBeenCalledWith({ where: { email: dto.email } });
+            expect(prismaMock.user.findUnique).toHaveBeenCalledWith({ where: { email: mockDto.email } });
             expect(error).toEqual({ status: 404, message: '가입되지 않은 이메일 입니다.' });
         });
 
         test('should throw error if the password is incorrect', async () => {
             // given
-            prismaMock.user.findUnique.mockResolvedValue(mockUser);
+            prismaMock.user.findUnique.mockResolvedValue(mockReturnedUser);
             (bcrypt.compare as jest.Mock).mockResolvedValue(false);
             // when
             let error;
             try {
-                await authService.login(dto);
+                await authService.login(mockDto);
             } catch (err) {
                 error = err;
             }
             // then
-            expect(prismaMock.user.findUnique).toHaveBeenCalledWith({ where: { email: dto.email } });
-            expect(bcrypt.compare).toHaveBeenCalledWith(dto.password, mockUser.password);
+            expect(prismaMock.user.findUnique).toHaveBeenCalledWith({ where: { email: mockDto.email } });
+            expect(bcrypt.compare).toHaveBeenCalledWith(mockDto.password, mockReturnedUser.password);
             expect(error).toEqual({ status: 400, message: '비밀번호를 잘못 입력하셨습니다.' });
         });
 
         test('should return access and refresh tokens if the password is correct', async () => {
             // given
-            prismaMock.user.findUnique.mockResolvedValue(mockUser);
+            prismaMock.user.findUnique.mockResolvedValue(mockReturnedUser);
             (bcrypt.compare as jest.Mock).mockResolvedValue(true);
             (authService.signToken as jest.Mock).mockReturnValueOnce('fakeAccessToken').mockReturnValueOnce('fakeRefreshToken');
 
             // when
-            const result = await authService.login(dto);
+            const result = await authService.login(mockDto);
 
             // then
-            expect(prismaMock.user.findUnique).toHaveBeenCalledWith({ where: { email: dto.email } });
-            expect(bcrypt.compare).toHaveBeenCalledWith(dto.password, mockUser.password);
+            expect(prismaMock.user.findUnique).toHaveBeenCalledWith({ where: { email: mockDto.email } });
+            expect(bcrypt.compare).toHaveBeenCalledWith(mockDto.password, mockReturnedUser.password);
             expect(authService.signToken).toHaveBeenCalledTimes(2);
-            expect(authService.signToken).toHaveBeenCalledWith(mockUser, false);
-            expect(authService.signToken).toHaveBeenCalledWith(mockUser, true);
+            expect(authService.signToken).toHaveBeenCalledWith(mockReturnedUser, false);
+            expect(authService.signToken).toHaveBeenCalledWith(mockReturnedUser, true);
             expect(result).toEqual({ accessToken: 'fakeAccessToken', refreshToken: 'fakeRefreshToken' });
         });
     });

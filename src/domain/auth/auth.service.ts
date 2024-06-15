@@ -17,10 +17,10 @@ declare module 'jsonwebtoken' {
 
 export class AuthService {
     async register(dto: RegisterDto) {
-        // I. Email 중복 체킹 => 만약 중복이라면 에러 체킹
+        // I. Email 중복 체킹
         const isExist = await database.user.findUnique({ where: { email: dto.email } });
 
-        // I. 409 Conflict
+        // I. 409 Conflict, => 만약 중복이라면 에러 체킹
         if (isExist) throw { status: 409, message: '이미 존재하는 이메일 입니다.' };
 
         // I. 유저 생성, bcrypt 로 비밀번호 복호화
@@ -35,6 +35,12 @@ export class AuthService {
         // I. accessToken, refreshToken 발급
         const accessToken = this.signToken(user, false);
         const refreshToken = this.signToken(user, true);
+
+        // I. refreshToken DB에 저장
+        await database.user.update({
+            where: { id: user.id },
+            data: { refreshToken },
+        });
 
         return { accessToken, refreshToken };
     }
