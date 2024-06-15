@@ -12,6 +12,7 @@ erDiagram
   String email UK
   String password
   String description "nullable"
+  String refreshToken
 }
 "Post" {
   String id PK
@@ -61,6 +62,7 @@ erDiagram
   - `email`: 이메일 
   - `password`: 비밀번호
   - `description`: 간단한 소개
+  - `refreshToken`: refresh token
 
 ### `Post`
 게시글 테이블

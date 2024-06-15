@@ -75,6 +75,10 @@ export class AuthService {
         return this.signToken({ ...decoded }, wantYouRefreshToken);
     }
 
+    logout() {
+
+    }
+
     /**
      * Utils
      * signToken : 토큰 서명(생성)
