@@ -46,25 +46,30 @@ export class AuthService {
     }
 
     async login(dto: LoginDto) {
-        // I. user 검색
+        // I. user 검색, Record not found => null
         const user = await database.user.findUnique({
             where: { email: dto.email },
         });
 
-        // I. 만약 존재하지 않으면 throw 가입되지 않은 이메일, Record not found => null
+        // I. 만약 존재하지 않으면 throw 가입되지 않은 이메일,
         // I. 404 Not found
         if (!user) throw { status: 404, message: '가입되지 않은 이메일 입니다.' };
 
         // I. 유저가 있다면 password 를 가져와서 bcrypt.compare 함수로 비교
         const isCorrect = await bcrypt.compare(dto.password!, user.password);
 
-        // I. 만약 틀리면 throw error
-        // I. 400 Client Error
+        // I. 400 Client Error, 만약 비밀번호가 틀리면 에러 발생
         if (!isCorrect) throw { status: 400, message: '비밀번호를 잘못 입력하셨습니다.' };
 
         // I. 인증이 완료되면 accessToken, refreshToken 발급
         const accessToken = this.signToken(user, false);
         const refreshToken = this.signToken(user, true);
+
+        // I. refreshToken DB에 저장
+        await database.user.update({
+            where: { id: user.id },
+            data: { refreshToken },
+        });
 
         return { accessToken, refreshToken };
     }

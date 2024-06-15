@@ -83,7 +83,10 @@ describe('AuthService', () => {
             expect(authService.signToken).toHaveBeenCalledTimes(2);
             expect(authService.signToken).toHaveBeenCalledWith(mockReturnedUser, false);
             expect(authService.signToken).toHaveBeenCalledWith(mockReturnedUser, true);
-            expect(prismaMock.user.update).toHaveBeenCalledWith({where: {id: mockReturnedUser.id}, data: {refreshToken: 'fakeRefreshToken'}});
+            expect(prismaMock.user.update).toHaveBeenCalledWith({
+                where: { id: mockReturnedUser.id },
+                data: { refreshToken: 'fakeRefreshToken' },
+            });
             expect(result).toEqual({ accessToken: 'fakeAccessToken', refreshToken: 'fakeRefreshToken' });
         });
     });
@@ -151,6 +154,10 @@ describe('AuthService', () => {
             expect(authService.signToken).toHaveBeenCalledTimes(2);
             expect(authService.signToken).toHaveBeenCalledWith(mockReturnedUser, false);
             expect(authService.signToken).toHaveBeenCalledWith(mockReturnedUser, true);
+            expect(prismaMock.user.update).toHaveBeenCalledWith({
+                where: { id: mockReturnedUser.id },
+                data: { refreshToken: 'fakeRefreshToken' },
+            });
             expect(result).toEqual({ accessToken: 'fakeAccessToken', refreshToken: 'fakeRefreshToken' });
         });
     });

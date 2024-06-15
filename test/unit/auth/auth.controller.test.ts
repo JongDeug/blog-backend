@@ -29,7 +29,9 @@ describe('AuthController', () => {
         });
 
         test('should call authService.register', async () => {
+            // when
             await authController.register(req, res, next);
+            // then
             expect(authService.register).toHaveBeenCalledWith(req.body);
         });
 
@@ -42,11 +44,11 @@ describe('AuthController', () => {
             // when
             await authController.register(req, res, next);
             // then
-            expect(res.statusCode).toBe(201);
             expect(res.cookies).toHaveProperty('accessToken');
             expect(res.cookies).toHaveProperty('refreshToken');
             expect(res.cookies.accessToken.value).toEqual('fakeAccessToken');
             expect(res.cookies.refreshToken.value).toEqual('fakeRefreshToken');
+            expect(res.statusCode).toBe(201);
             expect(res._getJSONData()).toStrictEqual({ message: '회원가입 성공' });
             expect(res._isEndCalled()).toBeTruthy();
         });
@@ -65,10 +67,10 @@ describe('AuthController', () => {
 
     // --- Login
     describe('login', () => {
-        const body = { email: 'test@gmail.com', password: '12345' };
+        const mockBody = { email: 'test@gmail.com', password: '12345' };
 
         beforeEach(() => {
-            req.body = body;
+            req.body = mockBody;
         });
 
         test('should call authService.login', async () => {
@@ -81,23 +83,24 @@ describe('AuthController', () => {
         test('should return access and refresh tokens', async () => {
             // given
             authService.login.mockResolvedValue({
-                accessToken: 'mockAccessToken',
-                refreshToken: 'mockRefreshToken',
+                accessToken: 'fakeAccessToken',
+                refreshToken: 'fakeRefreshToken',
             });
             // when
             await authController.login(req, res, next);
             // then
+            expect(res.cookies).toHaveProperty('accessToken');
+            expect(res.cookies).toHaveProperty('refreshToken');
+            expect(res.cookies.accessToken.value).toEqual('fakeAccessToken');
+            expect(res.cookies.refreshToken.value).toEqual('fakeRefreshToken');
             expect(res.statusCode).toBe(200);
-            expect(res._getJSONData()).toStrictEqual({
-                accessToken: 'mockAccessToken',
-                refreshToken: 'mockRefreshToken',
-            });
+            expect(res._getJSONData()).toStrictEqual({ message: '로그인 성공' });
             expect(res._isEndCalled()).toBeTruthy();
         });
 
         test('should handle errors properly', async () => {
             // given
-            const error = { status: 400, message: '비밀번호를 잘못 입력하셨습니다.' };
+            const error = { status: 400, message: '에러 테스트' };
             authService.login.mockRejectedValue(error);
             // when
             await authController.login(req, res, next);

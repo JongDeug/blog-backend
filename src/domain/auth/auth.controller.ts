@@ -40,7 +40,7 @@ export class AuthController {
             });
 
             // I. 201: Created
-            res.status(201).json({ message: '회원가입 성공'});
+            res.status(201).json({ message: '회원가입 성공' });
         } catch (err) {
             next(err);
         }
@@ -50,8 +50,23 @@ export class AuthController {
         try {
             // I. authService.login 에 req.body 넣기
             const { accessToken, refreshToken } = await this.authService.login(req.body);
-            // I. 반환된 토큰 넘겨주기
-            res.status(200).json({ accessToken, refreshToken });
+
+            // I. Http Only Cookie 를 사용해 토큰 전송
+            res.cookie('accessToken', accessToken, {
+                httpOnly: true,
+                maxAge: 2 * 60 * 60 * 1000,
+                // sameSite: 'strict', // sameSite 속성 설정
+                // secure: true // HTTPS 연결에서만 쿠키가 전송되도록 설정
+            });
+            res.cookie('refreshToken', refreshToken, {
+                httpOnly: true,
+                maxAge: 24 * 60 * 60 * 1000,
+                // sameSite: 'strict', // sameSite 속성 설정
+                // secure: true // HTTPS 연결에서만 쿠키가 전송되도록 설정
+            });
+
+            // I. 로그인 성공
+            res.status(200).json({ message: '로그인 성공' });
         } catch (err) {
             next(err);
         }
