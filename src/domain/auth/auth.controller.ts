@@ -18,6 +18,7 @@ export class AuthController {
         this.router.post('/register', validateDto(RegisterDto), this.register.bind(this));
         this.router.post('/login', validateDto(LoginDto), this.login.bind(this));
         this.router.get('/refresh', this.refresh.bind(this));
+        this.router.get('/logout', this.logout.bind(this));
     }
 
     async register(req: Request, res: Response, next: NextFunction) {
@@ -98,8 +99,16 @@ export class AuthController {
         }
     }
 
-    logout(req: Request, res: Response, next: NextFunction) {
+    async logout(req: Request, res: Response, next: NextFunction) {
         try {
+            // I. authService logout 호출 => DB refresh 를 null 로 만듦
+            await this.authService.logout(req.cookies?.accessToken);
+
+            // I. cookie 데이터 삭제
+            res.cookie('accessToken', null);
+            res.cookie('refreshToken', null);
+
+            // I. 응답
             res.status(200).json({ message: '로그아웃 완료' });
         } catch (err) {
             next(err);

@@ -113,7 +113,6 @@ describe('AuthController', () => {
     // --- Refresh
     describe('refresh', () => {
         beforeEach(() => {
-            req.body = { wantRefreshToken: false };
             req.cookies.refreshToken = 'fakeRefreshToken';
         });
 
@@ -154,6 +153,35 @@ describe('AuthController', () => {
             authController.refresh(req, res, next);
             // then
             expect(next).toHaveBeenCalledWith(error);
+        });
+    });
+    // ---
+
+    // --- Logout
+    describe('logout', () => {
+        beforeEach(() => {
+            req.cookies.accessToken = 'fakeRefreshToken';
+        });
+
+        test('should call authService.logout', async () => {
+            // when
+            await authController.logout(req, res, next);
+            // then
+            expect(authService.logout).toHaveBeenCalledWith(req.cookies?.accessToken);
+        });
+
+        test('should clear cookie and return 200 status code', async () => {
+            // when
+            await authController.logout(req, res, next);
+
+            // then
+            expect(res.cookies).toHaveProperty('accessToken');
+            expect(res.cookies).toHaveProperty('refreshToken');
+            expect(res.cookies.accessToken.value).toBe(null);
+            expect(res.cookies.refreshToken.value).toBe(null);
+            expect(res.statusCode).toBe(200);
+            expect(res._getJSONData()).toEqual({ message: '로그아웃 완료' });
+            expect(res._isEndCalled()).toBeTruthy();
         });
     });
     // ---

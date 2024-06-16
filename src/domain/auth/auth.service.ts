@@ -103,11 +103,27 @@ export class AuthService {
         return { accessToken, refreshToken };
     }
 
-    logout() {
+    async logout(token: string | undefined) {
         // I. cookie 에서 refresh 토큰 받아옴
-        // I. verify => decode
-        // I. decoded user 정보를 가지고 DB 에도 refresh 삭제
-        // I. cookie 에서도 삭제
+        if (!token) throw { status: 401, message: '토큰을 보내고 있지 않습니다' };
+
+        // I. verify(만료일 무시함) => decode
+        let decoded;
+        try {
+            decoded = <Decoded>jwt.verify(token, process.env.JWT_SECRET as Secret, { ignoreExpiration: true });
+        } catch (err) {
+            throw { status: 401, message: '잘못된 토큰입니다' };
+        }
+
+        // I. decoded 정보를 가지고 user refresh 데이터 삭제 => 유저가 없어도 에러 발생시키지 않아야
+        // R. 데이터베이스에 직접 접근하므로 효율적이지 못함 => 나중에 redis 로 변경해볼 수 있음
+        const user = await database.user.findUnique({ where: { id: decoded.id } });
+        if (user) {
+            await database.user.update({
+                where: { id: decoded.id },
+                data: { refreshToken: null },
+            });
+        }
     }
 
     /**

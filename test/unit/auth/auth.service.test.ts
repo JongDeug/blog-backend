@@ -7,6 +7,8 @@ import '../../../src/loadEnv';
 import { User } from '../../../prisma/prisma-client';
 import * as process from 'node:process';
 import database from '../../../src/database';
+import authController from '../../../src/domain/auth/auth.controller';
+import prisma from '../../../src/database';
 
 jest.mock('bcrypt');
 jest.mock('jsonwebtoken');
@@ -252,6 +254,62 @@ describe('AuthService', () => {
         });
     });
     // ---
+
+    // --- Login
+    describe('login', () => {
+        const mockAccessToken = 'fakeAccessToken';
+        const mockDecodedAccess = {
+            id: '1234',
+            email: 'test@gmail.com',
+            type: 'access',
+        };
+        const mockReturnedUser: User = {
+            id: '1',
+            name: 'jonghwan',
+            email: 'jong@gmail.com',
+            password: 'hashedPassword',
+            description: 'hello',
+            refreshToken: null,
+        };
+
+        test('should throw error if token does not exist', async () => {
+            // when, then
+            expect(authService.logout(undefined)).rejects.toEqual({ status: 401, message: '토큰을 보내고 있지 않습니다' });
+        });
+
+        test('should throw error if token is invalid', async () => {
+            // given
+            (jwt.verify as jest.Mock).mockImplementation(() => {
+                throw { status: 401, message: '잘못된 토큰입니다' };
+            });
+
+            // when
+            let error;
+            try {
+                await authService.logout(mockAccessToken);
+            } catch (err) {
+                error = err;
+            }
+
+            // then
+            expect(jwt.verify).toHaveBeenCalledWith(mockAccessToken, process.env.JWT_SECRET as Secret, { ignoreExpiration: true });
+            expect(error).toEqual({ status: 401, message: '잘못된 토큰입니다' });
+        });
+
+        test('should update the stored refresh token to null if the user exists', async () => {
+            // given
+            (jwt.verify as jest.Mock).mockReturnValue(mockDecodedAccess);
+            prismaMock.user.findUnique.mockResolvedValue(mockReturnedUser);
+            // when
+            await authService.logout(mockAccessToken);
+            // then
+            expect(prismaMock.user.findUnique).toHaveBeenCalledWith({ where: { id: mockDecodedAccess.id } });
+            expect(prismaMock.user.update).toHaveBeenCalledWith({
+                where: { id: mockDecodedAccess.id },
+                data: { refreshToken: null },
+            });
+        });
+    });
 
     // --- Utils
     describe('Utils', () => {
