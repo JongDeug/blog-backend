@@ -1,3 +1,4 @@
+
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
@@ -39,13 +40,15 @@ model User {
   id String @id @default(uuid())
 
   /// 이름
-  name        String  @db.VarChar(100)
-  /// 이메일 
-  email       String  @unique @db.VarChar(200)
+  name         String  @db.VarChar(100)
+  /// 이메일
+  email        String  @unique @db.VarChar(200)
   /// 비밀번호
-  password    String
+  password     String
   /// 간단한 소개
-  description String? @db.VarChar(300)
+  description  String? @db.VarChar(300)
+  /// refresh token
+  refreshToken String? @db.VarChar(1024)
 
   /// ---
   /// RELATIONS
@@ -173,3 +176,5 @@ model Image {
   /// 게시글 ID {@link Post.id}
   postId String
 }
+
+Done in 0.08s.

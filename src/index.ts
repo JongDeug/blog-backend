@@ -1,5 +1,6 @@
 import express, { ErrorRequestHandler } from 'express';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import './loadEnv'; // dotenv 로드
 import database from './database';
 import { Router } from './domain/domain.index';
@@ -15,6 +16,7 @@ import 'reflect-metadata';
     app.use(cors({ origin: '*' }));
     app.use(express.json()); // JSON 형식
     app.use(express.urlencoded({ extended: true })); // HTML 폼
+    app.use(cookieParser());
     // ---
 
     // --- 라우터 등록
