@@ -104,7 +104,8 @@ export class AuthService {
     }
 
     logout() {
-
+        // I. cookie에서 refresh 토큰 받아옴
+        // I.
     }
 
     /**

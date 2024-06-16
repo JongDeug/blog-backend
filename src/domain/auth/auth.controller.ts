@@ -17,7 +17,7 @@ export class AuthController {
     init() {
         this.router.post('/register', validateDto(RegisterDto), this.register.bind(this));
         this.router.post('/login', validateDto(LoginDto), this.login.bind(this));
-        this.router.post('/refresh', this.refresh.bind(this));
+        this.router.get('/refresh', this.refresh.bind(this));
     }
 
     async register(req: Request, res: Response, next: NextFunction) {
