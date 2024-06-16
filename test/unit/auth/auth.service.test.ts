@@ -6,6 +6,7 @@ import jwt, { Decoded, Secret } from 'jsonwebtoken';
 import '../../../src/loadEnv';
 import { User } from '../../../prisma/prisma-client';
 import * as process from 'node:process';
+import database from '../../../src/database';
 
 jest.mock('bcrypt');
 jest.mock('jsonwebtoken');
@@ -176,6 +177,19 @@ describe('AuthService', () => {
             email: 'test@gmail.com',
             type: 'refresh',
         };
+        const mockReturnedUser: User = {
+            id: '1234',
+            name: 'jonghwan',
+            email: 'jong@gmail.com',
+            password: 'hashedPassword',
+            description: 'hello',
+            refreshToken: 'mockToken',
+        };
+
+        test('should throw error if token does not exist', async () => {
+            // when, then
+            expect(authService.refresh(undefined)).rejects.toEqual({ status: 401, message: '토큰을 보내고 있지 않습니다' });
+        });
 
         test('should throw error if token type is access', async () => {
             // given
@@ -184,68 +198,63 @@ describe('AuthService', () => {
             // when
             let err;
             try {
-                authService.refresh(mockToken, false);
+                await authService.refresh(mockToken);
             } catch (error) {
                 err = error;
             }
 
             // then
+            expect(authService.verifyToken).toHaveBeenCalledWith(mockToken);
             expect(err).toEqual({ status: 401, message: '토큰 재발급은 refresh 토큰으로만 가능합니다' });
         });
 
-        test('should return a token after validation', () => {
+        test('should throw error if token is different with stored token in database', async () => {
             // given
             (authService.verifyToken as jest.Mock).mockReturnValue(mockDecodedRefresh);
-            (authService.signToken as jest.Mock).mockReturnValue('fakeAccessToken');
+            prismaMock.user.findUnique.mockResolvedValue(null);
+
             // when
-            const result = authService.refresh(mockToken, false);
+            let err;
+            try {
+                await authService.refresh(mockToken);
+            } catch (error) {
+                err = error;
+            }
+
             // then
-            expect(result).toEqual('fakeAccessToken');
+            expect(prismaMock.user.findUnique).toHaveBeenCalledWith({
+                where: {
+                    id: mockDecodedRefresh.id,
+                    refreshToken: mockToken,
+                },
+            });
+            expect(err).toEqual({ status: 401, message: '토큰 유효성 검증에서 실패했습니다' });
+        });
+
+        test('should return tokens after validation', async () => {
+            // given
+            (authService.verifyToken as jest.Mock).mockReturnValue(mockDecodedRefresh);
+            prismaMock.user.findUnique.mockResolvedValue(mockReturnedUser);
+            (authService.signToken as jest.Mock).mockReturnValueOnce('fakeAccessToken').mockReturnValueOnce('fakeRefreshToken');
+
+            // when
+            const result = await authService.refresh(mockToken);
+
+            // then
+            expect(authService.signToken).toHaveBeenCalledTimes(2);
+            expect(authService.signToken).toHaveBeenCalledWith({ ...mockDecodedRefresh }, false);
+            expect(authService.signToken).toHaveBeenCalledWith({ ...mockDecodedRefresh }, true);
+            expect(prismaMock.user.update).toHaveBeenCalledWith({
+                where: { id: mockDecodedRefresh.id },
+                data: { refreshToken: 'fakeRefreshToken' },
+            });
+            expect(result).toStrictEqual({ accessToken: 'fakeAccessToken', refreshToken: 'fakeRefreshToken' });
         });
     });
     // ---
 
     // --- Utils
-    // --- extractTokenFromHeader
     describe('Utils', () => {
-        describe('extractTokenFromHeader', () => {
-            const mockHeaderUndefined = undefined;
-            const mockInvalidHeader = 'Bearer invalid aslkdfjsdflksdjfsdlkfjdsf';
-            const mockHeader = 'Bearer sdlkfsjdflkdsfj';
-
-            test('should throw error if header is undefined', () => {
-                // when
-                let error;
-                try {
-                    authService.extractTokenFromHeader(mockHeaderUndefined);
-                } catch (err) {
-                    error = err;
-                }
-                // then
-                expect(error).toEqual({ status: 401, message: '토큰을 보내고 있지 않습니다' });
-            });
-
-            test('should throw error if header is weird', () => {
-                // when
-                let error;
-                try {
-                    authService.extractTokenFromHeader(mockInvalidHeader);
-                } catch (err) {
-                    error = err;
-                }
-                // then
-                expect(error).toEqual({ status: 401, message: '잘못된 토큰입니다' });
-            });
-
-            test('should return rawToken', () => {
-                // when
-                const result = authService.extractTokenFromHeader(mockHeader);
-                // then
-                expect(result).toBeDefined();
-                expect(result).toEqual('sdlkfsjdflkdsfj');
-            });
-        });
     });
-    // ---
     // ---
 });

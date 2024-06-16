@@ -112,39 +112,41 @@ describe('AuthController', () => {
 
     // --- Refresh
     describe('refresh', () => {
-
         beforeEach(() => {
             req.body = { wantRefreshToken: false };
-            req.headers.authorization = 'Bearer sdfksldfsjdf';
+            req.cookies.refreshToken = 'fakeRefreshToken';
         });
 
-        test('should call authService.extractTokenFromHeader and authService.refresh', () => {
-            // given
-            (authService.extractTokenFromHeader as jest.Mock).mockReturnValue('sdfksldfsjdf');
+        test('should call authService.refresh', async () => {
             // when
-            authController.refresh(req, res, next);
+            await authController.refresh(req, res, next);
             // then
-            expect(authService.extractTokenFromHeader).toHaveBeenCalledWith(req.headers.authorization);
-            expect(authService.refresh).toHaveBeenCalledWith('sdfksldfsjdf', req.body.wantRefreshToken);
+            expect(authService.refresh).toHaveBeenCalledWith(req.cookies?.refreshToken);
         });
 
-        test('should return newToken', () => {
+        test('should return access and refresh tokens', async () => {
             // given
-            (authService.extractTokenFromHeader as jest.Mock).mockReturnValue('sdfksldfsjdf');
-            (authService.refresh as jest.Mock).mockReturnValue('fakeNewToken');
+            authService.refresh.mockResolvedValue({
+                accessToken: 'fakeAccessToken',
+                refreshToken: 'fakeRefreshToken',
+            });
 
             // when
-            authController.refresh(req, res, next);
+            await authController.refresh(req, res, next);
 
             // then
+            expect(res.cookies).toHaveProperty('refreshToken');
+            expect(res.cookies).toHaveProperty('accessToken');
+            expect(res.cookies.accessToken.value).toEqual('fakeAccessToken');
+            expect(res.cookies.refreshToken.value).toEqual('fakeRefreshToken');
             expect(res.statusCode).toBe(200);
-            expect(res._getJSONData()).toStrictEqual({ newToken: 'fakeNewToken' });
+            expect(res._getJSONData()).toStrictEqual({ message: '인증 갱신 성공' });
             expect(res._isEndCalled()).toBeTruthy();
         });
 
         test('should handle errors properly', () => {
             // given, 이미 service 단에서 시나리오에 맞게 에러를 던지는 것을 확인했으니 여기서는 next 로 error 던지는 것만 확인하면됨
-            const error = { status: 401, message: '토큰 재발급은 refresh 토큰으로만 가능합니다' };
+            const error = { status: 401, message: '에러 테스트' };
             authService.refresh.mockImplementation(() => {
                 throw error;
             });

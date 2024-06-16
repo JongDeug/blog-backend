@@ -72,19 +72,27 @@ export class AuthController {
         }
     };
 
-    refresh(req: Request, res: Response, next: NextFunction) {
+    async refresh(req: Request, res: Response, next: NextFunction) {
         try {
-            const { wantRefreshToken } = req.body;
+            // I. cookie-parser 을 통해 refresh 토큰 추출
+            const { accessToken, refreshToken } = await this.authService.refresh(req.cookies?.refreshToken);
 
-            // I. Header 에서 토큰 추출
-            const header = req.headers.authorization || (req.headers.Authorization as string);
-            const token = this.authService.extractTokenFromHeader(header);
+            // I. Http Only Cookie 를 사용해 토큰 전송
+            res.cookie('accessToken', accessToken, {
+                httpOnly: true,
+                maxAge: 2 * 60 * 60 * 1000,
+                // sameSite: 'strict', // sameSite 속성 설정
+                // secure: true // HTTPS 연결에서만 쿠키가 전송되도록 설정
+            });
+            res.cookie('refreshToken', refreshToken, {
+                httpOnly: true,
+                maxAge: 24 * 60 * 60 * 1000,
+                // sameSite: 'strict', // sameSite 속성 설정
+                // secure: true // HTTPS 연결에서만 쿠키가 전송되도록 설정
+            });
 
-            // I. 추출된 토큰으로 refresh
-            const newToken = this.authService.refresh(token, wantRefreshToken);
-
-            // I. 새로운 토큰 반환
-            res.status(200).json({ newToken });
+            // I. 인증 갱신 성공
+            res.status(200).json({ message: '인증 갱신 성공' });
         } catch (err) {
             next(err);
         }

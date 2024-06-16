@@ -176,3 +176,5 @@ model Image {
   /// 게시글 ID {@link Post.id}
   postId String
 }
+
+Done in 0.08s.

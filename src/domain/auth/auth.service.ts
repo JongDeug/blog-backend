@@ -2,7 +2,7 @@ import database from '../../database';
 import bcrypt from 'bcrypt';
 import '../../loadEnv';
 import jwt, { Decoded, Secret } from 'jsonwebtoken';
-import { RegisterDto, LoginDto } from './dto/dto.index';
+import { LoginDto, RegisterDto } from './dto/dto.index';
 import * as process from 'node:process';
 import { User } from '../../../prisma/prisma-client';
 
@@ -74,16 +74,33 @@ export class AuthService {
         return { accessToken, refreshToken };
     }
 
-    // M. refresh 토큰으로 access 또는 refresh 토큰을 발급해주는 함수
-    refresh(token: string, wantYouRefreshToken: boolean = false) {
+    // M. refresh 토큰으로 access 및 refresh 토큰을 발급해주는 함수
+    async refresh(token: string | undefined) {
+        // I. token 이 없으면 에러 발생
+        if (!token) throw { status: 401, message: '토큰을 보내고 있지 않습니다' };
+
         // I. token verify, 만약 검증되지 않으면 에러 발생
         const decoded = this.verifyToken(token);
 
         // I. 디코드된 놈이 refresh token 인지 확인하고, 만약 아니면 에러 발생
         if (decoded.type !== 'refresh') throw { status: 401, message: '토큰 재발급은 refresh 토큰으로만 가능합니다' };
 
-        // I. 원하는 토큰 발급(access or refresh)
-        return this.signToken({ ...decoded }, wantYouRefreshToken);
+        // I. DB 에서 해당 user 를 가져옴
+        const validRefresh = await database.user.findUnique({ where: { id: decoded.id, refreshToken: token } });
+        // I. 만약 없거나 다르면 유효성 검증 에러
+        if (!validRefresh) throw { status: 401, message: '토큰 유효성 검증에서 실패했습니다' };
+
+        // I. refresh 토큰은 사용될 때마다 다시 rotation
+        const accessToken = this.signToken({ ...decoded }, false);
+        const refreshToken = this.signToken({ ...decoded }, true);
+
+        // I. refreshToken DB에 저장
+        await database.user.update({
+            where: { id: decoded.id },
+            data: { refreshToken },
+        });
+
+        return { accessToken, refreshToken };
     }
 
     logout() {
@@ -94,7 +111,6 @@ export class AuthService {
      * Utils
      * signToken : 토큰 서명(생성)
      * verifyToken : 토큰 검증
-     * extractTokenFromHeader : 토큰 추출
      */
     signToken(user: Pick<User, 'email' | 'id'>, isRefreshToken: boolean) {
         const payload = {
@@ -115,23 +131,5 @@ export class AuthService {
             // I. 401 Unauthorized
             throw { status: 401, message: '토큰이 만료됐거나 잘못된 토큰입니다' };
         }
-    }
-
-    extractTokenFromHeader(header: string | undefined) {
-        // I. 헤더가 undefined 이라면
-        if (!header) {
-            throw { status: 401, message: '토큰을 보내고 있지 않습니다' };
-        }
-
-        // I. 헤더 split
-        const splitToken = header.split(' ');
-
-        // I. 양식에 맞지 않으면 에러 반환
-        if (splitToken.length !== 2 || splitToken[0] !== 'Bearer') {
-            throw { status: 401, message: '잘못된 토큰입니다' };
-        }
-
-        // I. rawToken 반환
-        return splitToken[1];
     }
 }
