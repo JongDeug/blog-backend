@@ -104,8 +104,10 @@ export class AuthService {
     }
 
     logout() {
-        // I. cookie에서 refresh 토큰 받아옴
-        // I.
+        // I. cookie 에서 refresh 토큰 받아옴
+        // I. verify => decode
+        // I. decoded user 정보를 가지고 DB 에도 refresh 삭제
+        // I. cookie 에서도 삭제
     }
 
     /**
