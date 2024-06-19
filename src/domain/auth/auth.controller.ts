@@ -1,7 +1,7 @@
 import { Router, RequestHandler, Request, Response, NextFunction } from 'express';
 import { AuthService } from './auth.service';
-import { LoginDto, RegisterDto } from './dto/dto.index';
-import { validateDto } from '../../middleware/middleware.index';
+import { LoginDto, RegisterDto } from './dto';
+import { validateDto } from '../../middleware';
 
 export class AuthController {
     public path: string;
