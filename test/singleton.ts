@@ -11,7 +11,7 @@ import { database } from '@utils';
 // mockDeep: 객체의 모든 속성을 재귀적으로 모의
 // DeepMockProxy: mockDeep 함수로 생성된 모의 객체 타입
 
-jest.mock('./utils/database', () => ({
+jest.mock('../src/utils/database', () => ({
     __esModule: true,
     default: mockDeep<PrismaClient>(),
 }));

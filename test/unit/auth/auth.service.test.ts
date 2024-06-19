@@ -1,12 +1,10 @@
 import { AuthService } from '../../../src/domain/auth/auth.service';
-import { prismaMock } from '../../../src/singleton';
+import { prismaMock } from '../../singleton';
 import { LoginDto, RegisterDto } from '../../../src/domain/auth/dto';
 import bcrypt from 'bcrypt';
 import jwt, { Secret } from 'jsonwebtoken';
-import '../../../src/loadEnv';
-import { User } from '../../../prisma/prisma-client';
-import * as process from 'node:process';
-import { CustomJwtPayload } from '@types/customJwtPayload';
+import { User } from '@prisma';
+import { CustomJwtPayload } from '@custom-type/customJwtPayload';
 
 jest.mock('bcrypt');
 jest.mock('jsonwebtoken');

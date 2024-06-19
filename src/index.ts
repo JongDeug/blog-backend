@@ -2,7 +2,7 @@ import express, { ErrorRequestHandler } from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import 'reflect-metadata';
-import './loadEnv'; // dotenv 로드
+import '@utils/loadEnv'; // dotenv 로드
 import { Router } from './domain';
 import { jwtVerify } from '@middleware';
 import { database } from '@utils';
