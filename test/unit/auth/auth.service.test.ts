@@ -6,7 +6,7 @@ import jwt, { Secret } from 'jsonwebtoken';
 import '../../../src/loadEnv';
 import { User } from '../../../prisma/prisma-client';
 import * as process from 'node:process';
-import { CustomJwtPayload } from '../../../types/jsonwebtoken';
+import { CustomJwtPayload } from '@types/customJwtPayload';
 
 jest.mock('bcrypt');
 jest.mock('jsonwebtoken');

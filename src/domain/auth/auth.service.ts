@@ -1,11 +1,9 @@
-import database from '../../database';
+import { database } from '@utils';
 import bcrypt from 'bcrypt';
-import '../../loadEnv';
 import jwt, { Secret } from 'jsonwebtoken';
 import { LoginDto, RegisterDto } from './dto';
-import * as process from 'node:process';
-import { User } from '../../../prisma/prisma-client';
-import { CustomJwtPayload } from '../../../types/jsonwebtoken';
+import { User } from '@prisma';
+import { CustomJwtPayload } from '@custom-type/customJwtPayload';
 
 
 export class AuthService {

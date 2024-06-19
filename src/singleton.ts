@@ -1,8 +1,8 @@
-import { PrismaClient } from '../prisma/prisma-client';
+import { PrismaClient } from '@prisma';
 import { mockReset, mockDeep, DeepMockProxy } from 'jest-mock-extended';
-import prisma from './database';
+import { database } from '@utils';
 
-// [싱글톤 패턴 적용] => Prisma 에만
+// [싱글톤 패턴 적용] => Prisma 에만src
 // 복잡성이 낮은 간단한 게시판 프로젝트이므로
 // DI(Dependency Injection) 패턴 보다
 // Singleton 패턴이 적합하다고 생각함.
@@ -11,7 +11,7 @@ import prisma from './database';
 // mockDeep: 객체의 모든 속성을 재귀적으로 모의
 // DeepMockProxy: mockDeep 함수로 생성된 모의 객체 타입
 
-jest.mock('./database', () => ({
+jest.mock('./utils/database', () => ({
     __esModule: true,
     default: mockDeep<PrismaClient>(),
 }));
@@ -21,5 +21,5 @@ beforeEach(() => {
     jest.clearAllMocks();
 });
 
-export const prismaMock = prisma as unknown as DeepMockProxy<PrismaClient>;
+export const prismaMock = database as unknown as DeepMockProxy<PrismaClient>;
 

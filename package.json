@@ -20,6 +20,7 @@
     "supertest": "^7.0.0",
     "ts-jest": "^29.1.4",
     "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
     "typescript": "^5.4.5"
   },
   "dependencies": {
@@ -36,7 +37,7 @@
   },
   "scripts": {
     "build": "tsc",
-    "dev": "nodemon --exec ts-node src/index.ts",
+    "dev": "nodemon --exec ts-node -r tsconfig-paths/register src/index.ts",
     "test": "jest",
     "check": "tsc --noEmit && npx prettier 'src/**/*.ts' --check",
     "format": "npx prettier 'src/**/*.ts' --write"

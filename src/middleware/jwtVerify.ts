@@ -1,6 +1,5 @@
 import { RequestHandler } from 'express';
-import '../loadEnv';
-import database from '../database';
+import { database } from '@utils';
 import { AuthService } from '../domain/auth/auth.service';
 
 export const jwtVerify: RequestHandler = async (req, res, next) => {

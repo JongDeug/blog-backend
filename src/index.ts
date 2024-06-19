@@ -1,12 +1,11 @@
 import express, { ErrorRequestHandler } from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
-import './loadEnv'; // dotenv 로드
-import database from './database';
-import { Router } from './domain';
 import 'reflect-metadata';
-import { jwtVerify } from './middleware';
-
+import './loadEnv'; // dotenv 로드
+import { Router } from './domain';
+import { jwtVerify } from '@middleware';
+import { database } from '@utils';
 
 // --- 즉시 실행 함수
 (async () => {
@@ -18,7 +17,7 @@ import { jwtVerify } from './middleware';
     app.use(express.json()); // JSON 형식
     app.use(express.urlencoded({ extended: true })); // HTML 폼
     app.use(cookieParser());
-    app.use(jwtVerify)
+    app.use(jwtVerify);
     // ---
 
     // --- 라우터 등록
