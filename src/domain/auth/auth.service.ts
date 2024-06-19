@@ -1,18 +1,11 @@
 import database from '../../database';
 import bcrypt from 'bcrypt';
 import '../../loadEnv';
-import jwt, { Decoded, Secret } from 'jsonwebtoken';
-import { LoginDto, RegisterDto } from './dto/dto.index';
+import jwt, { Secret } from 'jsonwebtoken';
+import { LoginDto, RegisterDto } from './dto';
 import * as process from 'node:process';
 import { User } from '../../../prisma/prisma-client';
-
-declare module 'jsonwebtoken' {
-    export interface Decoded extends jwt.JwtPayload {
-        id: string;
-        email: string;
-        type: 'refresh' | 'access';
-    }
-}
+import { CustomJwtPayload } from '../../../types/jsonwebtoken';
 
 
 export class AuthService {
@@ -110,7 +103,7 @@ export class AuthService {
         // I. verify(만료일 무시함) => decode
         let decoded;
         try {
-            decoded = <Decoded>jwt.verify(token, process.env.JWT_SECRET as Secret, { ignoreExpiration: true });
+            decoded = <CustomJwtPayload>jwt.verify(token, process.env.JWT_SECRET as Secret, { ignoreExpiration: true });
         } catch (err) {
             throw { status: 401, message: '잘못된 토큰입니다' };
         }
@@ -145,7 +138,7 @@ export class AuthService {
 
     verifyToken(token: string) {
         try {
-            return <Decoded>jwt.verify(token, process.env.JWT_SECRET as Secret);
+            return <CustomJwtPayload>jwt.verify(token, process.env.JWT_SECRET as Secret);
         } catch (err) {
             // I. 401 Unauthorized
             throw { status: 401, message: '토큰이 만료됐거나 잘못된 토큰입니다' };

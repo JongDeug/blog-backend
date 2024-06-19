@@ -1,14 +1,12 @@
 import { AuthService } from '../../../src/domain/auth/auth.service';
 import { prismaMock } from '../../../src/singleton';
-import { LoginDto, RegisterDto } from '../../../src/domain/auth/dto/dto.index';
+import { LoginDto, RegisterDto } from '../../../src/domain/auth/dto';
 import bcrypt from 'bcrypt';
-import jwt, { Decoded, Secret } from 'jsonwebtoken';
+import jwt, { Secret } from 'jsonwebtoken';
 import '../../../src/loadEnv';
 import { User } from '../../../prisma/prisma-client';
 import * as process from 'node:process';
-import database from '../../../src/database';
-import authController from '../../../src/domain/auth/auth.controller';
-import prisma from '../../../src/database';
+import { CustomJwtPayload } from '../../../types/jsonwebtoken';
 
 jest.mock('bcrypt');
 jest.mock('jsonwebtoken');
@@ -30,7 +28,7 @@ describe('AuthService', () => {
         });
         authService.verifyToken = jest.fn().mockImplementation(token => {
             try {
-                return <Decoded>jwt.verify(token, process.env.JWT_SECRET as Secret);
+                return <CustomJwtPayload>jwt.verify(token, process.env.JWT_SECRET as Secret);
             } catch (err) {
                 throw { status: 401, message: '토큰이 만료됐거나 잘못된 토큰입니다' };
             }
