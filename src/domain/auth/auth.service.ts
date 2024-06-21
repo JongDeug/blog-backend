@@ -106,6 +106,9 @@ export class AuthService {
             throw { status: 401, message: '잘못된 토큰입니다' };
         }
 
+        // I. 만약 토큰 타입이 access 아니라면
+        if (decoded.type !== 'access') throw { status: 401, message: '로그아웃은 access 토큰으로만 가능합니다' };
+
         // I. decoded 정보를 가지고 user refresh 데이터 삭제 => 유저가 없어도 에러 발생시키지 않아야
         // R. 데이터베이스에 직접 접근하므로 효율적이지 못함 => 나중에 redis 로 변경해볼 수 있음
         const user = await database.user.findUnique({ where: { id: decoded.id } });

@@ -254,10 +254,16 @@ describe('AuthService', () => {
     // --- Logout
     describe('logout', () => {
         const mockAccessToken = 'fakeAccessToken';
+        const mockRefreshToken = 'fakeRefreshToken'
         const mockDecodedAccess = {
             id: '1234',
             email: 'test@gmail.com',
             type: 'access',
+        };
+        const mockDecodedRefresh = {
+            id: '1234',
+            email: 'test@gmail.com',
+            type: 'refresh',
         };
         const mockReturnedUser: User = {
             id: '1',
@@ -290,6 +296,22 @@ describe('AuthService', () => {
             // then
             expect(jwt.verify).toHaveBeenCalledWith(mockAccessToken, process.env.JWT_SECRET as Secret, { ignoreExpiration: true });
             expect(error).toEqual({ status: 401, message: '잘못된 토큰입니다' });
+        });
+
+        test('should throw error if token type is refresh', async () => {
+            // given
+            (jwt.verify as jest.Mock).mockReturnValue(mockDecodedRefresh);
+
+            // when
+            let err;
+            try {
+                await authService.logout(mockRefreshToken);
+            } catch (error) {
+                err = error;
+            }
+
+            // then
+            expect(err).toEqual({ status: 401, message: '로그아웃은 access 토큰으로만 가능합니다' });
         });
 
         test('should update the stored refresh token to null if the user exists', async () => {
