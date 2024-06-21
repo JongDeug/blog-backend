@@ -6,14 +6,15 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
-  output   = "prisma-client" // yarn PnP 전략 때문에 사용
+  provider        = "prisma-client-js"
+  output          = "./prisma-client" // yarn PnP 전략 때문에 prisma-client를 저장할 node_modules 폴더가 없어서 직접 담을 폴더 생성.
+  previewFeatures = ["prismaSchemaFolder"] // 파일 분리
 }
 
 generator markdown {
   provider = "prisma-markdown"
   output   = "./ERD.md"
-  title    = "게시판 프로젝트 ERD"
+  title    = "블로그 프로젝트 ERD"
 }
 
 datasource db {
@@ -31,10 +32,9 @@ datasource db {
 // - 일 대 일 관계 설정 시 나중에 생성 되는 곳에 @relation 을 붙여 주면 됨
 // - @unique 는 해당 테이블 행에서 오직 유일하다는 뜻
 
-// 이미지 처리만 어떻게 하면 될듯 ?
 /// 회원 테이블
 ///
-/// @namespace Board
+/// @namespace Blog
 model User {
   /// Pirmary Key
   id String @id @default(uuid())
@@ -60,7 +60,7 @@ model User {
 
 /// 게시글 테이블
 ///
-/// @namespace Board
+/// @namespace Blog
 model Post {
   /// Pirmary Key
   id String @id @default(uuid())
@@ -77,21 +77,100 @@ model Post {
   /// ---
   /// RELATIONS
   /// ---
-  author   User   @relation(fields: [authorId], references: [id])
+  comments  Comment[]
+  images    Image[]
+  postLikes PostLike[]
+  tags      Tag[]
+
   /// Foreign Key
   ///
   /// 작성자 ID {@link User.id}
   authorId String
+  author   User   @relation(fields: [authorId], references: [id])
 
-  comments  Comment[]
-  tags      Tag[]
-  postLikes PostLike[]
-  images    Image[]
+  /// Foreign Key
+  ///
+  /// 작성자 ID {@link Category.id}
+  categoryId String
+  category   Category? @relation(fields: [categoryId], references: [id])
+  PostTag    PostTag[]
+}
+
+/// 태그 테이블
+///
+/// @namespace Blog
+model Tag {
+  /// Primary Key
+  id String @id @default(uuid())
+
+  /// 태그 이름
+  name String @unique
+
+  /// ---
+  /// RELATIONS
+  /// ---
+  posts   Post[]
+  PostTag PostTag[]
+}
+
+/// 포스트, 태그 다대다 테이블
+///
+/// @namespace Blog
+model PostTag {
+  /// Foreign Key
+  ///
+  /// 게시글 ID {@link Post.id}
+  postId String
+  post   Post   @relation(fields: [postId], references: [id])
+
+  /// Foreign Key
+  ///
+  /// 태그 ID {@link Tag.id}
+  tagId String
+  tag   Tag    @relation(fields: [tagId], references: [id])
+
+  @@id([postId, tagId])
+}
+
+/// 회원, 게시글 좋아요 다대다 테이블
+///
+/// @namespace Blog
+model PostLike {
+  /// Foreign Key
+  ///
+  /// 작성자 ID {@link User.id}
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id])
+
+  /// Foreign Key
+  ///
+  /// 게시글 ID {@link Post.id}
+  postId String
+  post   Post   @relation(fields: [postId], references: [id])
+
+  @@id([authorId, postId])
+}
+
+/// 이미지 테이블
+///
+/// @namespace Blog
+model Image {
+  /// Pirmary Key
+  id String @id @default(uuid())
+
+  /// 이미지 url
+  url String
+
+  /// Foreign Key
+  ///
+  /// 게시글 ID {@link Post.id}
+  postId String
+  post   Post   @relation(fields: [postId], references: [id])
 }
 
 /// 댓글 테이블
 ///
-/// @namespace Board
+/// @namespace Blog
 model Comment {
   /// Pirmary Key
   id String @id @default(uuid())
@@ -102,79 +181,42 @@ model Comment {
   /// ---
   /// RELATIONS
   /// ---
-  // [자식, "다"] parentCommentId 는 "다" 인 ChildComment 가 가지고 있음, 그래서 자식 쪽에 @relation
-  parentComment   Comment?  @relation("ParentComment", fields: [parentCommentId], references: [id])
+  // [자식, "다"] parentCommentId 는 "다" 인 ChildComment 가 가지고 있음 => 그래서 자식 쪽에(parentComment가 있는 곳) @relation
+  childComments Comment[] @relation("ParentComment")
+
   /// Foreign Key
   ///
   /// 부모 댓글 ID {@link Comment.id}
-  parentCommentId String? // 외래키(ParentComment)
   // [부모, "일"]
-  childComments   Comment[] @relation("ParentComment")
+  parentCommentId String? // 외래키(ParentComment)
+  parentComment   Comment? @relation("ParentComment", fields: [parentCommentId], references: [id])
 
-  posts  Post   @relation(fields: [postId], references: [id])
   /// Foreign Key
   ///
   /// 게시글 ID {@link Post.id}
   postId String
+  posts  Post   @relation(fields: [postId], references: [id])
 
-  author   User   @relation(fields: [authorId], references: [id])
   /// Foreign Key
   ///
   /// 작성자 ID {@link User.id}
   authorId String
-}
-
-/// 게시글 좋아요 테이블
-///
-/// @namespace Board
-model PostLike {
   author   User   @relation(fields: [authorId], references: [id])
-  /// Foreign Key
-  ///
-  /// 작성자 ID
-  authorId String
-  post     Post   @relation(fields: [postId], references: [id])
-  /// Foreign Key
-  ///
-  /// 게시글 ID {@link Post.id}
-  postId   String
-
-  @@id([authorId, postId])
 }
 
-/// 게시글 태그 테이블
+/// 카테고리 테이블
 ///
-/// @namespace Board
-model Tag {
+/// @namespace Blog
+model Category {
   /// Primary Key
   id String @id @default(uuid())
 
-  /// 태그 이름
-  name String @db.VarChar(100)
+  /// 카테고리 이름
+  name String @unique
 
-  // Post <=> Tag, 일대다 로 설계
-  post   Post   @relation(fields: [postId], references: [id])
-  /// Foreign Key
-  ///
-  /// 게시글 ID {@link Post.id}
-  postId String
+  /// ---
+  /// RELATIONS
+  /// ---
+  posts Post[]
 }
 
-/// 게시글 이미지 테이블
-///
-/// @namespace Board
-model Image {
-  /// Pirmary Key
-  id String @id @default(uuid())
-
-  /// 이미지 url
-  url String
-
-  post   Post   @relation(fields: [postId], references: [id])
-  /// Foreign Key
-  ///
-  /// 게시글 ID {@link Post.id}
-  postId String
-}
-
-Done in 0.08s.

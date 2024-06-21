@@ -143,14 +143,12 @@ describe('AuthController', () => {
             expect(res._isEndCalled()).toBeTruthy();
         });
 
-        test('should handle errors properly', () => {
+        test('should handle errors properly', async () => {
             // given, 이미 service 단에서 시나리오에 맞게 에러를 던지는 것을 확인했으니 여기서는 next 로 error 던지는 것만 확인하면됨
             const error = { status: 401, message: '에러 테스트' };
-            authService.refresh.mockImplementation(() => {
-                throw error;
-            });
+            authService.refresh.mockRejectedValue(error);
             // when
-            authController.refresh(req, res, next);
+            await authController.refresh(req, res, next);
             // then
             expect(next).toHaveBeenCalledWith(error);
         });
@@ -182,6 +180,16 @@ describe('AuthController', () => {
             expect(res.statusCode).toBe(200);
             expect(res._getJSONData()).toEqual({ message: '로그아웃 완료' });
             expect(res._isEndCalled()).toBeTruthy();
+        });
+
+        test('should handle errors properly', async () => {
+            // given
+            const error = { status: 401, message: '에러 테스트' };
+            authService.logout.mockRejectedValue(error);
+            // when
+            await authController.logout(req, res, next);
+            // then
+            expect(next).toHaveBeenCalledWith(error);
         });
     });
     // ---

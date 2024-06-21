@@ -91,8 +91,8 @@ describe('AuthService', () => {
     });
     // ---
 
-    // --- Login
-    describe('login', () => {
+    // --- Logout
+    describe('logout dhi', () => {
         let mockDto: LoginDto = { email: 'test@gmail.com', password: '12345' };
         let mockReturnedUser: User = {
             id: '1',
@@ -251,8 +251,8 @@ describe('AuthService', () => {
     });
     // ---
 
-    // --- Login
-    describe('login', () => {
+    // --- Logout
+    describe('logout', () => {
         const mockAccessToken = 'fakeAccessToken';
         const mockDecodedAccess = {
             id: '1234',
@@ -307,8 +307,9 @@ describe('AuthService', () => {
         });
     });
 
+
     // --- Utils
-    describe('Utils', () => {
+    describe('utils', () => {
     });
     // ---
 });
