@@ -53,9 +53,62 @@ model User {
   /// ---
   /// RELATIONS
   /// ---
-  posts     Post[]
-  comments  Comment[]
-  postLikes PostLike[]
+  posts    Post[]
+  comments Comment[]
+}
+
+/// IP(식별자) 테이블
+/// 누구나 게시글 좋아요를 누를 수 있도록 하는 IP(식별자) 테이블이다.
+/// @namespace Blog
+model IP {
+  /// Pirmary Key
+  id String @id @default(uuid())
+
+  /// IP 또는 식별자
+  ip String @unique
+
+  /// ---
+  /// RELATIONS
+  /// ---
+  posts PostLike[]
+}
+
+/// 비회원 테이블
+/// 댓글 기능을 사용할 수 있도록 하는 비회원 테이블이다.
+/// @namespace Blog
+model NonMember {
+  /// Pirmary Key
+  id String @id @default(uuid())
+
+  /// 닉네임
+  nickname String @db.VarChar(100)
+
+  /// 비밀번호
+  password String
+
+  /// ---
+  /// RELATIONS
+  /// ---
+  comments Comment[]
+}
+
+/// 게시글 좋아요 비회원, 게시글 다대다 테이블
+///
+/// @namespace Blog
+model PostLike {
+  /// Foreign Key
+  ///
+  /// 게시글 ID {@link Post.id}
+  postId String
+  post   Post   @relation(fields: [postId], references: [id])
+
+  /// Foreign Key
+  ///
+  /// ip ID {@link IP.id}
+  ipId String
+  ip   IP     @relation(fields: [ipId], references: [id])
+
+  @@id([postId, ipId])
 }
 
 /// 게시글 테이블
@@ -77,10 +130,10 @@ model Post {
   /// ---
   /// RELATIONS
   /// ---
-  comments  Comment[]
-  images    Image[]
-  postLikes PostLike[]
-  tags      PostTag[]
+  comments Comment[]
+  images   Image[]
+  tags     PostTag[]
+  ips      PostLike[]
 
   /// Foreign Key
   ///
@@ -128,25 +181,6 @@ model PostTag {
   tag   Tag    @relation(fields: [tagId], references: [id])
 
   @@id([postId, tagId])
-}
-
-/// 회원, 게시글 좋아요 다대다 테이블
-///
-/// @namespace Blog
-model PostLike {
-  /// Foreign Key
-  ///
-  /// 작성자 ID {@link User.id}
-  authorId String
-  author   User   @relation(fields: [authorId], references: [id])
-
-  /// Foreign Key
-  ///
-  /// 게시글 ID {@link Post.id}
-  postId String
-  post   Post   @relation(fields: [postId], references: [id])
-
-  @@id([authorId, postId])
 }
 
 /// 이미지 테이블
@@ -213,8 +247,14 @@ model Comment {
 
   /// Foreign Key
   ///
-  /// 작성자 ID {@link User.id}
+  /// 작성자(회원) ID {@link User.id}
   authorId String
   author   User   @relation(fields: [authorId], references: [id])
+
+  /// Foreign Key
+  ///
+  /// 작성자(비회원) ID {@link NonMember.id}
+  nonMemeberId String
+  nonMember    NonMember @relation(fields: [nonMemeberId], references: [id])
 }
 
