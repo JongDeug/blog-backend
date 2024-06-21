@@ -39,6 +39,7 @@
     "dev": "tsx watch --clear-screen=false ./src/index.ts",
     "test": "jest",
     "check": "tsc --noEmit && npx prettier 'src/**/*.ts' --check",
-    "format": "npx prettier 'src/**/*.ts' --write"
+    "format": "npx prettier 'src/**/*.ts' --write",
+    "coverage": "jest --coverage"
   }
 }

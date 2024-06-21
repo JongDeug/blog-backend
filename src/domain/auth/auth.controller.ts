@@ -76,7 +76,7 @@ export class AuthController {
     async refresh(req: Request, res: Response, next: NextFunction) {
         try {
             // I. cookie-parser 을 통해 refresh 토큰 추출
-            const { accessToken, refreshToken } = await this.authService.refresh(req.cookies?.refreshToken);
+            const { accessToken, refreshToken } = await this.authService.refresh(req.cookies.refreshToken);
 
             // I. Http Only Cookie 를 사용해 토큰 전송
             res.cookie('accessToken', accessToken, {
@@ -102,7 +102,7 @@ export class AuthController {
     async logout(req: Request, res: Response, next: NextFunction) {
         try {
             // I. authService logout 호출 => DB refresh 를 null 로 만듦
-            await this.authService.logout(req.cookies?.accessToken);
+            await this.authService.logout(req.cookies.accessToken); // req.cookies?. 이것도 분기문에 속함
 
             // I. cookie 데이터 삭제
             res.cookie('accessToken', null);
