@@ -80,7 +80,7 @@ model Post {
   comments  Comment[]
   images    Image[]
   postLikes PostLike[]
-  tags      Tag[]
+  tags      PostTag[]
 
   /// Foreign Key
   ///
@@ -93,7 +93,6 @@ model Post {
   /// 작성자 ID {@link Category.id}
   categoryId String
   category   Category? @relation(fields: [categoryId], references: [id])
-  PostTag    PostTag[]
 }
 
 /// 태그 테이블
@@ -109,8 +108,7 @@ model Tag {
   /// ---
   /// RELATIONS
   /// ---
-  posts   Post[]
-  PostTag PostTag[]
+  posts PostTag[]
 }
 
 /// 포스트, 태그 다대다 테이블
@@ -168,6 +166,22 @@ model Image {
   post   Post   @relation(fields: [postId], references: [id])
 }
 
+/// 카테고리 테이블
+///
+/// @namespace Blog
+model Category {
+  /// Primary Key
+  id String @id @default(uuid())
+
+  /// 카테고리 이름
+  name String @unique
+
+  /// ---
+  /// RELATIONS
+  /// ---
+  posts Post[]
+}
+
 /// 댓글 테이블
 ///
 /// @namespace Blog
@@ -202,21 +216,5 @@ model Comment {
   /// 작성자 ID {@link User.id}
   authorId String
   author   User   @relation(fields: [authorId], references: [id])
-}
-
-/// 카테고리 테이블
-///
-/// @namespace Blog
-model Category {
-  /// Primary Key
-  id String @id @default(uuid())
-
-  /// 카테고리 이름
-  name String @unique
-
-  /// ---
-  /// RELATIONS
-  /// ---
-  posts Post[]
 }
 

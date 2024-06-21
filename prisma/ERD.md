@@ -40,20 +40,16 @@ erDiagram
   String url
   String postId FK
 }
+"Category" {
+  String id PK
+  String name UK
+}
 "Comment" {
   String id PK
   String content
   String parentCommentId FK "nullable"
   String postId FK
   String authorId FK
-}
-"Category" {
-  String id PK
-  String name UK
-}
-"_PostToTag" {
-  String A FK
-  String B FK
 }
 "Post" }o--|| "User" : author
 "Post" }o--|| "Category" : category
@@ -65,8 +61,6 @@ erDiagram
 "Comment" }o--o| "Comment" : parentComment
 "Comment" }o--|| "Post" : posts
 "Comment" }o--|| "User" : author
-"_PostToTag" }o--|| "Post" : Post
-"_PostToTag" }o--|| "Tag" : Tag
 ```
 
 ### `User`
@@ -142,6 +136,13 @@ erDiagram
     > 
     > 게시글 ID [Post.id](#Post)
 
+### `Category`
+카테고리 테이블
+
+**Properties**
+  - `id`: Primary Key
+  - `name`: 카테고리 이름
+
 ### `Comment`
 댓글 테이블
 
@@ -160,17 +161,3 @@ erDiagram
     > Foreign Key
     > 
     > 작성자 ID [User.id](#User)
-
-### `Category`
-카테고리 테이블
-
-**Properties**
-  - `id`: Primary Key
-  - `name`: 카테고리 이름
-
-### `_PostToTag`
-Pair relationship table between [Post](#Post) and [Tag](#Tag)
-
-**Properties**
-  - `A`: 
-  - `B`: 
