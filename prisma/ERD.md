@@ -31,7 +31,7 @@ erDiagram
   DateTime createdAt
   DateTime updatedAt
   String authorId FK
-  String categoryId FK
+  String categoryId FK "nullable"
 }
 "Tag" {
   String id PK
@@ -61,7 +61,7 @@ erDiagram
 "PostLike" }o--|| "Post" : post
 "PostLike" }o--|| "GuestUser" : guestUser
 "Post" }o--|| "User" : author
-"Post" }o--|| "Category" : category
+"Post" }o--o| "Category" : category
 "PostTag" }o--|| "Post" : post
 "PostTag" }o--|| "Tag" : tag
 "Image" }o--|| "Post" : post
