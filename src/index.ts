@@ -4,8 +4,9 @@ import cookieParser from 'cookie-parser';
 import 'reflect-metadata';
 import '@utils/loadEnv'; // dotenv 로드
 import { Router } from './domain';
-import { jwtVerify } from '@middleware';
+import { jwtVerify } from '@middleware/jwtVerify';
 import { database } from '@utils';
+import * as path from 'node:path';
 
 // --- 즉시 실행 함수
 (async () => {
@@ -13,11 +14,13 @@ import { database } from '@utils';
     await database.$connect(); // connect db
 
     // --- 미들웨어
+    app.use('/uploads', express.static(path.join(__dirname, '../uploads'))); // src 폴더가 포함돼서 ../로 뺌
     app.use(cors({ origin: '*' }));
     app.use(express.json()); // JSON 형식
     app.use(express.urlencoded({ extended: true })); // HTML 폼
     app.use(cookieParser());
     app.use(jwtVerify);
+    // 정적 파일 제공 설정
     // ---
 
     // --- 라우터 등록

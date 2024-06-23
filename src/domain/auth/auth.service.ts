@@ -122,9 +122,18 @@ export class AuthService {
 
     /**
      * Utils
+     * findUserById : userId 로 user 검색
      * signToken : 토큰 서명(생성)
      * verifyToken : 토큰 검증
      */
+    async findUserById(userId: string) {
+        const user = await database.user.findUnique({ where: { id: userId } });
+
+        if(!user) throw {status: 404, message: '유저를 찾을 수 없습니다'}
+
+        return user;
+    }
+
     signToken(user: Pick<User, 'email' | 'id'>, isRefreshToken: boolean) {
         const payload = {
             id: user.id,
