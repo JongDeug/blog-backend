@@ -14,18 +14,15 @@ erDiagram
   String description "nullable"
   String refreshToken "nullable"
 }
-"IP" {
+"GuestUser" {
   String id PK
-  String ip UK
-}
-"NonMember" {
-  String id PK
-  String nickname
-  String password
+  String nickName "nullable"
+  String email "nullable"
+  String password "nullable"
 }
 "PostLike" {
   String postId FK
-  String ipId FK
+  String guestUserId FK
 }
 "Post" {
   String id PK
@@ -58,11 +55,11 @@ erDiagram
   String content
   String parentCommentId FK "nullable"
   String postId FK
-  String authorId FK
-  String nonMemeberId FK
+  String authorId FK "nullable"
+  String guestUserId FK "nullable"
 }
 "PostLike" }o--|| "Post" : post
-"PostLike" }o--|| "IP" : ip
+"PostLike" }o--|| "GuestUser" : guestUser
 "Post" }o--|| "User" : author
 "Post" }o--|| "Category" : category
 "PostTag" }o--|| "Post" : post
@@ -70,8 +67,8 @@ erDiagram
 "Image" }o--|| "Post" : post
 "Comment" }o--o| "Comment" : parentComment
 "Comment" }o--|| "Post" : posts
-"Comment" }o--|| "User" : author
-"Comment" }o--|| "NonMember" : nonMember
+"Comment" }o--o| "User" : author
+"Comment" }o--o| "GuestUser" : guestUser
 ```
 
 ### `User`
@@ -85,35 +82,29 @@ erDiagram
   - `description`: 간단한 소개
   - `refreshToken`: refresh token
 
-### `IP`
-IP(식별자) 테이블
-누구나 게시글 좋아요를 누를 수 있도록 하는 IP(식별자) 테이블이다.
-
-**Properties**
-  - `id`: Pirmary Key
-  - `ip`: IP 또는 식별자
-
-### `NonMember`
+### `GuestUser`
 비회원 테이블
-댓글 기능을 사용할 수 있도록 하는 비회원 테이블이다.
+
+비회원도 게시글 좋아요, 댓글 기능을 사용할 수 있도록 하는 테이블이다.
 
 **Properties**
   - `id`: Pirmary Key
-  - `nickname`: 닉네임
+  - `nickName`: 닉네임
+  - `email`: 이메일
   - `password`: 비밀번호
 
 ### `PostLike`
-게시글 좋아요 비회원, 게시글 다대다 테이블
+비회원 <=> 게시글 다대다, 게시글 좋아요 테이블
 
 **Properties**
   - `postId`
     > Foreign Key
     > 
     > 게시글 ID [Post.id](#Post)
-  - `ipId`
+  - `guestUserId`
     > Foreign Key
     > 
-    > ip ID [IP.id](#IP)
+    > 비회원 ID [GuestUser.id](#GuestUser)
 
 ### `Post`
 게시글 테이블
@@ -189,7 +180,7 @@ IP(식별자) 테이블
     > Foreign Key
     > 
     > 작성자(회원) ID [User.id](#User)
-  - `nonMemeberId`
+  - `guestUserId`
     > Foreign Key
     > 
-    > 작성자(비회원) ID [NonMember.id](#NonMember)
+    > 작성자(비회원) ID [GuestUser.id](#GuestUser)

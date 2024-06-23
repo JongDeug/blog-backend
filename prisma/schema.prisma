@@ -37,8 +37,7 @@ datasource db {
 /// @namespace Blog
 model User {
   /// Pirmary Key
-  id String @id @default(uuid())
-
+  id           String  @id @default(uuid())
   /// 이름
   name         String  @db.VarChar(100)
   /// 이메일
@@ -57,42 +56,29 @@ model User {
   comments Comment[]
 }
 
-/// IP(식별자) 테이블
-/// 누구나 게시글 좋아요를 누를 수 있도록 하는 IP(식별자) 테이블이다.
-/// @namespace Blog
-model IP {
-  /// Pirmary Key
-  id String @id @default(uuid())
-
-  /// IP 또는 식별자
-  ip String @unique
-
-  /// ---
-  /// RELATIONS
-  /// ---
-  posts PostLike[]
-}
-
 /// 비회원 테이블
-/// 댓글 기능을 사용할 수 있도록 하는 비회원 테이블이다.
+///
+/// 비회원도 게시글 좋아요, 댓글 기능을 사용할 수 있도록 하는 테이블이다.
+///
 /// @namespace Blog
-model NonMember {
+model GuestUser {
   /// Pirmary Key
-  id String @id @default(uuid())
-
+  id       String  @id @default(uuid())
   /// 닉네임
-  nickname String @db.VarChar(100)
-
+  nickName String? @db.VarChar(100)
+  /// 이메일
+  email    String? @db.VarChar(200)
   /// 비밀번호
-  password String
+  password String?
 
   /// ---
   /// RELATIONS
   /// ---
+  posts    PostLike[]
   comments Comment[]
 }
 
-/// 게시글 좋아요 비회원, 게시글 다대다 테이블
+/// 비회원 <=> 게시글 다대다, 게시글 좋아요 테이블
 ///
 /// @namespace Blog
 model PostLike {
@@ -104,11 +90,11 @@ model PostLike {
 
   /// Foreign Key
   ///
-  /// ip ID {@link IP.id}
-  ipId String
-  ip   IP     @relation(fields: [ipId], references: [id])
+  /// 비회원 ID {@link GuestUser.id}
+  guestUserId String
+  guestUser   GuestUser @relation(fields: [guestUserId], references: [id])
 
-  @@id([postId, ipId])
+  @@id([postId, guestUserId])
 }
 
 /// 게시글 테이블
@@ -116,8 +102,7 @@ model PostLike {
 /// @namespace Blog
 model Post {
   /// Pirmary Key
-  id String @id @default(uuid())
-
+  id        String   @id @default(uuid())
   /// 제목
   title     String   @db.VarChar(200)
   /// 내용
@@ -133,7 +118,7 @@ model Post {
   comments Comment[]
   images   Image[]
   tags     PostTag[]
-  ips      PostLike[]
+  guestUsers  PostLike[]
 
   /// Foreign Key
   ///
@@ -153,8 +138,7 @@ model Post {
 /// @namespace Blog
 model Tag {
   /// Primary Key
-  id String @id @default(uuid())
-
+  id   String @id @default(uuid())
   /// 태그 이름
   name String @unique
 
@@ -188,8 +172,7 @@ model PostTag {
 /// @namespace Blog
 model Image {
   /// Pirmary Key
-  id String @id @default(uuid())
-
+  id  String @id @default(uuid())
   /// 이미지 url
   url String
 
@@ -205,8 +188,7 @@ model Image {
 /// @namespace Blog
 model Category {
   /// Primary Key
-  id String @id @default(uuid())
-
+  id   String @id @default(uuid())
   /// 카테고리 이름
   name String @unique
 
@@ -221,8 +203,7 @@ model Category {
 /// @namespace Blog
 model Comment {
   /// Pirmary Key
-  id String @id @default(uuid())
-
+  id      String @id @default(uuid())
   /// 내용
   content String @db.VarChar(200)
 
@@ -248,13 +229,13 @@ model Comment {
   /// Foreign Key
   ///
   /// 작성자(회원) ID {@link User.id}
-  authorId String
-  author   User   @relation(fields: [authorId], references: [id])
+  authorId String?
+  author   User?   @relation(fields: [authorId], references: [id])
 
   /// Foreign Key
   ///
-  /// 작성자(비회원) ID {@link NonMember.id}
-  nonMemeberId String
-  nonMember    NonMember @relation(fields: [nonMemeberId], references: [id])
+  /// 작성자(비회원) ID {@link GuestUser.id}
+  guestUserId String?
+  guestUser   GuestUser? @relation(fields: [guestUserId], references: [id])
 }
 
