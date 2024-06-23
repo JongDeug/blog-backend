@@ -31,11 +31,10 @@ erDiagram
   DateTime createdAt
   DateTime updatedAt
   String authorId FK
-  String categoryId FK "nullable"
+  String categoryName FK
 }
 "Tag" {
-  String id PK
-  String name UK
+  String name PK
 }
 "PostTag" {
   String postId FK
@@ -47,8 +46,7 @@ erDiagram
   String postId FK
 }
 "Category" {
-  String id PK
-  String name UK
+  String name PK
 }
 "Comment" {
   String id PK
@@ -61,7 +59,7 @@ erDiagram
 "PostLike" }o--|| "Post" : post
 "PostLike" }o--|| "GuestUser" : guestUser
 "Post" }o--|| "User" : author
-"Post" }o--o| "Category" : category
+"Post" }o--|| "Category" : category
 "PostTag" }o--|| "Post" : post
 "PostTag" }o--|| "Tag" : tag
 "Image" }o--|| "Post" : post
@@ -119,7 +117,7 @@ erDiagram
     > Foreign Key
     > 
     > 작성자 ID [User.id](#User)
-  - `categoryId`
+  - `categoryName`
     > Foreign Key
     > 
     > 작성자 ID [Category.id](#Category)
@@ -128,8 +126,7 @@ erDiagram
 태그 테이블
 
 **Properties**
-  - `id`: Primary Key
-  - `name`: 태그 이름
+  - `name`: Primary Key, 태그 이름
 
 ### `PostTag`
 포스트, 태그 다대다 테이블
@@ -159,8 +156,7 @@ erDiagram
 카테고리 테이블
 
 **Properties**
-  - `id`: Primary Key
-  - `name`: 카테고리 이름
+  - `name`: Primary Key, 카테고리 이름
 
 ### `Comment`
 댓글 테이블

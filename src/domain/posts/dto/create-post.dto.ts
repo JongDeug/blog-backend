@@ -1,17 +1,23 @@
-import { IsNotEmpty, IsOptional, IsString, IsArray } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString, IsArray, ValidateNested } from 'class-validator';
 
 export class CreatePostDto {
     @IsString()
+    @IsNotEmpty({ message: '제목을 입력해주세요' })
     title: string;
 
     @IsString()
+    @IsNotEmpty({ message: '내용을 입력해주세요' })
     content: string;
 
-    @IsArray()
-    tags: string[];
+    @IsString()
+    @IsNotEmpty({ message: '카테고리(폴더명)을 입력해주세요' })
+    category: string;
 
     @IsArray()
-    images: string[];
+    @IsString({ each: true })
+    @IsOptional()
+    tags?: string[];
 
-    categoryId: string;
+    @IsArray()
+    images: Express.Multer.File[];
 }
