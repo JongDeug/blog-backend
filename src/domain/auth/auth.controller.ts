@@ -77,7 +77,7 @@ export class AuthController {
     async refresh(req: Request, res: Response, next: NextFunction) {
         try {
             // I. refresh token 이 없으면 에러 발생
-            const token= req.cookies.refreshToken;
+            const token = req.cookies.refreshToken;
             if (!token) return next(new CustomError(401, 'Unauthorized', '토큰을 보내고 있지 않습니다'));
 
             // I. cookie-parser 을 통해 refresh 토큰 추출

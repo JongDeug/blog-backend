@@ -82,7 +82,7 @@ describe('PostsController', () => {
             expect(next).toHaveBeenCalledWith(new CustomError(400, 'Bad Request', 'title: title must be a string'));
         });
 
-        test('should handle error if createPost throws error', async () => {
+        test('should handle error if postsService.createPost throws error', async () => {
             // given
             postsServiceMock.createPost.mockRejectedValue(new Error('데이터베이스: 게시글 생성 오류'));
             // when

@@ -2,6 +2,8 @@ import httpMocks from 'node-mocks-http';
 import { NextFunction, Request, Response } from 'express';
 import { AuthService } from '../../../src/domain/auth/auth.service';
 import { AuthController } from '../../../src/domain/auth/auth.controller';
+import { RegisterDto } from '../../../src/domain/auth/dto';
+import { CustomError } from '@utils';
 
 jest.mock('../../../src/domain/auth/auth.service'); // AuthService mocking
 
@@ -10,34 +12,25 @@ describe('AuthController', () => {
     let res: httpMocks.MockResponse<Response>;
     let next: NextFunction;
     let authController: AuthController;
-    let authService: jest.Mocked<AuthService>;
+    let authServiceMock: jest.Mocked<AuthService>;
 
     beforeEach(() => {
         req = httpMocks.createRequest();
         res = httpMocks.createResponse();
         next = jest.fn();
-        authService = jest.mocked(new AuthService()) as jest.Mocked<AuthService>;
-        authController = new AuthController(authService); // authService DI 를 통해 쉽게 테스트 가능해짐
+        authServiceMock = jest.mocked(new AuthService()) as jest.Mocked<AuthService>;
+        authController = new AuthController(authServiceMock); // authService DI 를 통해 쉽게 테스트 가능해짐
     });
 
     // --- Register
     describe('register', () => {
-        const mockBody = { name: 'jonghwan', email: 'jong@gmail.com', password: '1234' };
-
         beforeEach(() => {
-            req.body = mockBody;
+            req.body = { name: 'jonghwan', email: 'jong@gmail.com', password: '1234' };
         });
 
-        test('should call authService.register', async () => {
-            // when
-            await authController.register(req, res, next);
-            // then
-            expect(authService.register).toHaveBeenCalledWith(req.body);
-        });
-
-        test('should register a user and return access and refresh tokens by http only cookies', async () => {
+        test('should create a new user successfully', async () => {
             // given
-            authService.register.mockResolvedValue({
+            authServiceMock.register.mockResolvedValue({
                 accessToken: 'fakeAccessToken',
                 refreshToken: 'fakeRefreshToken',
             });
@@ -51,38 +44,29 @@ describe('AuthController', () => {
             expect(res.statusCode).toBe(201);
             expect(res._getJSONData()).toStrictEqual({ message: '회원가입 성공' });
             expect(res._isEndCalled()).toBeTruthy();
+            expect(authServiceMock.register).toHaveBeenCalledWith(req.body);
         });
 
-        test('should handle errors properly', async () => {
+        test('should handle errors if authService.register throws error', async () => {
             // given
-            const error = { status: 400, message: '에러 테스트' };
-            authService.register.mockRejectedValue(error);
+            authServiceMock.register.mockRejectedValue(new Error('register 함수에서 던지는 오류'));
             // when
             await authController.register(req, res, next);
             // then
-            expect(next).toHaveBeenCalledWith(error);
+            expect(next).toHaveBeenCalledWith(new Error('register 함수에서 던지는 오류'));
         });
     });
     // ---
 
     // --- Login
     describe('login', () => {
-        const mockBody = { email: 'test@gmail.com', password: '12345' };
-
         beforeEach(() => {
-            req.body = mockBody;
+            req.body = { email: 'test@gmail.com', password: '12345' };
         });
 
-        test('should call authService.login', async () => {
-            // when
-            await authController.login(req, res, next);
-            // then
-            expect(authService.login).toHaveBeenCalledWith(req.body);
-        });
-
-        test('should return access and refresh tokens', async () => {
+        test('should login successfully if password is correct', async () => {
             // given
-            authService.login.mockResolvedValue({
+            authServiceMock.login.mockResolvedValue({
                 accessToken: 'fakeAccessToken',
                 refreshToken: 'fakeRefreshToken',
             });
@@ -96,16 +80,16 @@ describe('AuthController', () => {
             expect(res.statusCode).toBe(200);
             expect(res._getJSONData()).toStrictEqual({ message: '로그인 성공' });
             expect(res._isEndCalled()).toBeTruthy();
+            expect(authServiceMock.login).toHaveBeenCalledWith(req.body);
         });
 
-        test('should handle errors properly', async () => {
+        test('should handle errors if authService.login throws error', async () => {
             // given
-            const error = { status: 400, message: '에러 테스트' };
-            authService.login.mockRejectedValue(error);
+            authServiceMock.login.mockRejectedValue(new Error('login 함수에서 던지는 오류'));
             // when
             await authController.login(req, res, next);
             // then
-            expect(next).toHaveBeenCalledWith(error); // next(err)가 던저져야 한다.
+            expect(next).toHaveBeenCalledWith(new Error('login 함수에서 던지는 오류'));
         });
     });
     // ---
@@ -116,23 +100,14 @@ describe('AuthController', () => {
             req.cookies.refreshToken = 'fakeRefreshToken';
         });
 
-        test('should call authService.refresh', async () => {
-            // when
-            await authController.refresh(req, res, next);
-            // then
-            expect(authService.refresh).toHaveBeenCalledWith(req.cookies?.refreshToken);
-        });
-
-        test('should return access and refresh tokens', async () => {
+        test('should refresh JWT tokens successfully', async () => {
             // given
-            authService.refresh.mockResolvedValue({
+            authServiceMock.refresh.mockResolvedValue({
                 accessToken: 'fakeAccessToken',
                 refreshToken: 'fakeRefreshToken',
             });
-
             // when
             await authController.refresh(req, res, next);
-
             // then
             expect(res.cookies).toHaveProperty('refreshToken');
             expect(res.cookies).toHaveProperty('accessToken');
@@ -141,16 +116,25 @@ describe('AuthController', () => {
             expect(res.statusCode).toBe(200);
             expect(res._getJSONData()).toStrictEqual({ message: '인증 갱신 성공' });
             expect(res._isEndCalled()).toBeTruthy();
+            expect(authServiceMock.refresh).toHaveBeenCalledWith(req.cookies.refreshToken);
         });
 
-        test('should handle errors properly', async () => {
-            // given, 이미 service 단에서 시나리오에 맞게 에러를 던지는 것을 확인했으니 여기서는 next 로 error 던지는 것만 확인하면됨
-            const error = { status: 401, message: '에러 테스트' };
-            authService.refresh.mockRejectedValue(error);
+        test('should handle error if refreshToken is missing', async () => {
+            // given
+            req.cookies.refreshToken = undefined;
             // when
             await authController.refresh(req, res, next);
             // then
-            expect(next).toHaveBeenCalledWith(error);
+            expect(next).toHaveBeenCalledWith(new CustomError(401, 'Unauthorized', '토큰을 보내고 있지 않습니다'));
+        });
+
+        test('should handle error if authService.refresh throws error', async () => {
+            // given
+            authServiceMock.refresh.mockRejectedValue(new Error('refresh 함수에서 던지는 오류'));
+            // when
+            await authController.refresh(req, res, next);
+            // then: error 던지는지만 확인하면 됨
+            expect(next).toHaveBeenCalledWith(new Error('refresh 함수에서 던지는 오류'));
         });
     });
     // ---
@@ -158,20 +142,12 @@ describe('AuthController', () => {
     // --- Logout
     describe('logout', () => {
         beforeEach(() => {
-            req.cookies.accessToken = 'fakeRefreshToken';
+            req.cookies.accessToken = 'fakeAccessToken';
         });
 
-        test('should call authService.logout', async () => {
+        test('should logout successfully', async () => {
             // when
             await authController.logout(req, res, next);
-            // then
-            expect(authService.logout).toHaveBeenCalledWith(req.cookies?.accessToken);
-        });
-
-        test('should clear cookie and return 200 status code', async () => {
-            // when
-            await authController.logout(req, res, next);
-
             // then
             expect(res.cookies).toHaveProperty('accessToken');
             expect(res.cookies).toHaveProperty('refreshToken');
@@ -180,16 +156,25 @@ describe('AuthController', () => {
             expect(res.statusCode).toBe(200);
             expect(res._getJSONData()).toEqual({ message: '로그아웃 완료' });
             expect(res._isEndCalled()).toBeTruthy();
-        });
+            expect(authServiceMock.logout).toHaveBeenCalledWith(req.cookies.accessToken);
+        })
 
-        test('should handle errors properly', async () => {
+        test('should handle error if accessToken is missing', async () => {
             // given
-            const error = { status: 401, message: '에러 테스트' };
-            authService.logout.mockRejectedValue(error);
+            req.cookies.accessToken = undefined;
             // when
             await authController.logout(req, res, next);
             // then
-            expect(next).toHaveBeenCalledWith(error);
+            expect(next).toHaveBeenCalledWith(new CustomError(401, 'Unauthorized', '토큰을 보내고 있지 않습니다'));
+        });
+
+        test('should handle error if authService.logout throws error', async () => {
+            // given
+            authServiceMock.logout.mockRejectedValue(new Error('logout 함수에서 던지는 오류'));
+            // when
+            await authController.logout(req, res, next);
+            // then: error 던지는지만 확인하면 됨
+            expect(next).toHaveBeenCalledWith(new Error('logout 함수에서 던지는 오류'));
         });
     });
     // ---
