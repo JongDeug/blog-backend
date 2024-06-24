@@ -4,7 +4,7 @@ import jwt, { Secret } from 'jsonwebtoken';
 import { User } from '@prisma';
 import * as process from 'node:process';
 import { prismaMock } from '../../singleton';
-import { jwtVerify } from '@middleware';
+import { jwtVerify } from '@middleware/jwtVerify';
 
 jest.mock('jsonwebtoken');
 
