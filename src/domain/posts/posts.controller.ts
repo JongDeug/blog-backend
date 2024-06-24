@@ -4,7 +4,7 @@ import { AuthService } from '../auth/auth.service';
 import { CreatePostDto } from './dto';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
-import { upload } from '@middleware';
+import { upload } from '@middleware/multer';
 import { CustomError } from '@utils';
 
 export class PostsController {
