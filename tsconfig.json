@@ -39,7 +39,7 @@
     "paths": {
       "@utils": ["./src/utils/index"],
       "@utils/loadEnv": ["./src/utils/loadEnv"],
-      "@middleware": ["./src/middleware/index"],
+      "@middleware/*": ["./src/middleware/*"],
       "@prisma": ["./prisma/prisma-client/index"],
       "@custom-type/*": ["./types/*"]
     },
