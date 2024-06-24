@@ -1,10 +1,10 @@
 import httpMocks from 'node-mocks-http';
 import { NextFunction, Request, Response } from 'express';
-import { jwtVerify } from '@middleware';
 import jwt, { Secret } from 'jsonwebtoken';
 import { User } from '@prisma';
 import * as process from 'node:process';
 import { prismaMock } from '../../singleton';
+import { jwtVerify } from '@middleware';
 
 jest.mock('jsonwebtoken');
 

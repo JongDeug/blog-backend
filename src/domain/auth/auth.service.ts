@@ -1,4 +1,4 @@
-import { database } from '@utils';
+import { CustomError, database } from '@utils';
 import bcrypt from 'bcrypt';
 import jwt, { Secret } from 'jsonwebtoken';
 import { LoginDto, RegisterDto } from './dto';
@@ -129,7 +129,11 @@ export class AuthService {
     async findUserById(userId: string) {
         const user = await database.user.findUnique({ where: { id: userId } });
 
-        if(!user) throw {status: 404, message: '유저를 찾을 수 없습니다'}
+        if (!user) throw new CustomError(
+            404,
+            'Not Found',
+            '유저를 찾을 수 없습니다',
+        );
 
         return user;
     }
