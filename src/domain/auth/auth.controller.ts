@@ -2,6 +2,7 @@ import { Router, Request, Response, NextFunction } from 'express';
 import { AuthService } from './auth.service';
 import { LoginDto, RegisterDto } from './dto';
 import { validateDto } from '@middleware/validateDto';
+import { CustomError } from '@utils';
 
 export class AuthController {
     public path: string;
@@ -75,8 +76,12 @@ export class AuthController {
 
     async refresh(req: Request, res: Response, next: NextFunction) {
         try {
+            // I. refresh token 이 없으면 에러 발생
+            const token= req.cookies.refreshToken;
+            if (!token) return next(new CustomError(401, 'Unauthorized', '토큰을 보내고 있지 않습니다'));
+
             // I. cookie-parser 을 통해 refresh 토큰 추출
-            const { accessToken, refreshToken } = await this.authService.refresh(req.cookies.refreshToken);
+            const { accessToken, refreshToken } = await this.authService.refresh(token);
 
             // I. Http Only Cookie 를 사용해 토큰 전송
             res.cookie('accessToken', accessToken, {
@@ -101,8 +106,12 @@ export class AuthController {
 
     async logout(req: Request, res: Response, next: NextFunction) {
         try {
+            // I. access token 이 없으면 에러 발생
+            const token = req.cookies.accessToken;
+            if (!token) return next(new CustomError(401, 'Unauthorized', '토큰을 보내고 있지 않습니다'));
+
             // I. authService logout 호출 => DB refresh 를 null 로 만듦
-            await this.authService.logout(req.cookies.accessToken); // req.cookies?. 이것도 분기문에 속함
+            await this.authService.logout(token); // req.cookies?. 이것도 분기문에 속함
 
             // I. cookie 데이터 삭제
             res.cookie('accessToken', null);
