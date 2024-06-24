@@ -1,5 +1,5 @@
 import { CreatePostDto } from './dto';
-import { database } from '@utils';
+import { CustomError, database } from '@utils';
 import { AuthService } from '../auth/auth.service';
 
 export class PostsService {
@@ -67,8 +67,6 @@ export class PostsService {
             return post;
         });
 
-        // I. 새롭게 생성한 post id 반환
-        if (!newPost) throw { status: 500, message: '게시글 생성 트랜젝션 오류' };
         return newPost.id;
     }
 

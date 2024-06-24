@@ -1,5 +1,7 @@
 import { IsNotEmpty, IsOptional, IsString, IsArray, ValidateNested } from 'class-validator';
 
+type ImagePath = { path: string };
+
 export class CreatePostDto {
     @IsString()
     @IsNotEmpty({ message: '제목을 입력해주세요' })
@@ -19,5 +21,5 @@ export class CreatePostDto {
     tags?: string[];
 
     @IsArray()
-    images: Express.Multer.File[];
+    images: ImagePath[];
 }
