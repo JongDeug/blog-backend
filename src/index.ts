@@ -7,6 +7,7 @@ import { Router } from './domain';
 import { jwtVerify } from '@middleware/jwtVerify';
 import { database } from '@utils';
 import * as path from 'node:path';
+import { AuthService } from './domain/auth/auth.service';
 
 // --- 즉시 실행 함수
 (async () => {
@@ -19,7 +20,7 @@ import * as path from 'node:path';
     app.use(express.json()); // JSON 형식
     app.use(express.urlencoded({ extended: true })); // HTML 폼
     app.use(cookieParser());
-    app.use(jwtVerify);
+    app.use(jwtVerify(new AuthService()));
     // 정적 파일 제공 설정
     // ---
 
