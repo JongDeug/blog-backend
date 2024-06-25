@@ -4,7 +4,7 @@ import cookieParser from 'cookie-parser';
 import 'reflect-metadata';
 import '@utils/loadEnv'; // dotenv 로드
 import { Router } from './domain';
-import { jwtVerify } from '@middleware/jwtVerify';
+import { jwtVerify } from '@middleware';
 import { database } from '@utils';
 import * as path from 'node:path';
 import { AuthService } from './domain/auth/auth.service';

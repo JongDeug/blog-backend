@@ -1,12 +1,16 @@
 import { validate } from 'class-validator';
 import { plainToInstance } from 'class-transformer';
 import { Request, Response, NextFunction } from 'express';
+import { CustomError } from '@utils';
 
-export function validateDto(dtoClass: any) {
+export function validateDtoWithFiles(dtoClass: any) {
     // I. Express 미들웨어 반환
     return async (req: Request, res: Response, next: NextFunction) => {
         // I. plain -> dtoClass
-        const dto = plainToInstance(dtoClass, req.body);
+        const dto: any = plainToInstance(dtoClass, req.body);
+        // I. 파일 탐기
+        const files = req.files as Express.Multer.File[];
+        dto.images = files.map(file => ({ path: file.path }));
         // I. dto 검증
         const errors = await validate(dto);
 
@@ -15,9 +19,8 @@ export function validateDto(dtoClass: any) {
                 // I. 앞글자 대문자 : 에러 메시지
                 `${error.property}: ${Object.values(error.constraints!).join(', ')}`,
             ).join('\n ');
-
             // I. validation 실패 시 에러 넘기기
-            next({ status: 400, message: errorMessages });
+            next(new CustomError(400, 'Bad Request', errorMessages));
         }
 
         // I. validation 성공

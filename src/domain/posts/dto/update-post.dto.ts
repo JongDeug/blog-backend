@@ -1,8 +1,7 @@
 import { IsNotEmpty, IsOptional, IsString, IsArray } from 'class-validator';
 import { ImagePath } from '@custom-type/customImagePath';
 
-
-export class CreatePostDto {
+export class UpdatePostDto {
     @IsString()
     @IsNotEmpty({ message: '제목을 입력해주세요' })
     title: string;
