@@ -67,20 +67,20 @@ describe('PostsController', () => {
             expect(next).toHaveBeenCalledWith(new CustomError(401, 'Unauthorized', '로그인을 진행해주세요'));
         });
 
-        test('should handle error if validation dto fails', async () => {
-            // given
-            req.body = {
-                title: 12,
-                content: 'Test Content',
-                category: 'TestCategory',
-                tags: ['Tag1', 'Tag2'],
-            };
-            // when
-            await postsController.createPost(req, res, next);
-            // then
-            expect(next).toHaveBeenCalledWith(expect.any(CustomError));
-            expect(next).toHaveBeenCalledWith(new CustomError(400, 'Bad Request', 'title: title must be a string'));
-        });
+        // I. validationDtoWithFiles 적용해서 이제 필요없어짐!
+        // test('should handle error if validation dto fails', async () => {
+        //     // given
+        //     req.body = {
+        //         title: 12,
+        //         content: 'Test Content',
+        //         category: 'TestCategory',
+        //         tags: ['Tag1', 'Tag2'],
+        //     };
+        //     // when
+        //     await postsController.createPost(req, res, next);
+        //     // then
+        //     expect(next).toHaveBeenCalledWith(new CustomError(400, 'Bad Request', 'title: title must be a string'));
+        // });
 
         test('should handle error if postsService.createPost throws error', async () => {
             // given

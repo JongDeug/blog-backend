@@ -1,7 +1,7 @@
 import httpMocks from 'node-mocks-http';
 import { NextFunction, Request, Response } from 'express';
 import { User } from '@prisma';
-import { jwtVerify } from '@middleware/jwtVerify';
+import { jwtVerify } from '@middleware';
 import { AuthService } from '../../../src/domain/auth/auth.service';
 import { CustomJwtPayload } from '@custom-type/customJwtPayload';
 import { CustomError } from '@utils';

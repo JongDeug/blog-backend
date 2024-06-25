@@ -2,8 +2,6 @@ import { Request, Response, NextFunction, Router } from 'express';
 import { PostsService } from './posts.service';
 import { AuthService } from '../auth/auth.service';
 import { CreatePostDto, UpdatePostDto } from './dto';
-import { plainToInstance } from 'class-transformer';
-import { validate } from 'class-validator';
 import { upload, validateDtoWithFiles } from '@middleware';
 import { CustomError } from '@utils';
 
