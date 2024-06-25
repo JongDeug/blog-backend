@@ -12,21 +12,17 @@ export class PostsService {
 
         // I. 트랜젝션을 통해 중간에 실패해도 롤백할 수 있음.
         const newPost = await database.$transaction(async (database) => {
-            // I. 카테고리 없으면 생성
-            await database.category.upsert({
-                where: { name: dto.category },
-                update: {},
-                create: { name: dto.category },
-            });
-
             // I. 게시글 생성
             const post = await database.post.create({
                 data: {
                     title: dto.title,
                     content: dto.content,
-                    // I. 바로 categoryName 를 설정하면 무결성 유지가 되지 않음
+                    // I. 없는 경우 create, 있는 경우 connect
                     category: {
-                        connect: { name: dto.category },
+                        connectOrCreate: {
+                            where: { name: dto.category },
+                            create: { name: dto.category },
+                        },
                     },
                     author: {
                         connect: { id: user.id },
@@ -43,21 +39,17 @@ export class PostsService {
             if (dto.tags) {
                 // I. 방식 1
                 for (const tagName of dto.tags) {
-                    // I. 태그가 존재하면 그냥 넘어가고, 존재하지 않으면 생성함
-                    await database.tag.upsert({
-                        where: { name: tagName },
-                        update: {},
-                        create: { name: tagName },
-                    });
-
-                    // I. 생성한 태그와 게시글을 연결
+                    // I. 생성한 태그와 게시글을 연결, 태그가 없으면 생성, 있으면 연결
                     await database.postTag.create({
                         data: {
                             post: {
                                 connect: { id: post.id },
                             },
                             tag: {
-                                connect: { name: tagName },
+                                connectOrCreate: {
+                                    where: { name: tagName },
+                                    create: { name: tagName },
+                                },
                             },
                         },
                     });

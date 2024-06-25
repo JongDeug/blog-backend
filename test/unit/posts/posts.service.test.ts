@@ -43,18 +43,15 @@ describe('PostsService', () => {
             expect(result).toBe('newPostId');
             expect(authServiceMock.findUserById).toHaveBeenCalledWith(mockUserId);
             expect(prismaMock.$transaction).toHaveBeenCalled();
-            expect(prismaMock.category.upsert).toHaveBeenCalledWith({
-                where: { name: mockDto.category },
-                update: {},
-                create: { name: mockDto.category },
-            });
             expect(prismaMock.post.create).toHaveBeenCalledWith({
                 data: {
                     title: mockDto.title,
                     content: mockDto.content,
-                    // I. 바로 categoryName 를 설정하면 무결성 유지가 되지 않음
                     category: {
-                        connect: { name: mockDto.category },
+                        connectOrCreate: {
+                            where: { name: mockDto.category },
+                            create: { name: mockDto.category },
+                        },
                     },
                     author: {
                         connect: { id: mockUserId },
@@ -66,7 +63,6 @@ describe('PostsService', () => {
                     },
                 },
             });
-            expect(prismaMock.tag.upsert).toHaveBeenCalledTimes(mockDto.tags!.length);
             expect(prismaMock.postTag.create).toHaveBeenCalledTimes(mockDto.tags!.length);
         });
 
@@ -101,11 +97,6 @@ describe('PostsService', () => {
             // then
             expect(authServiceMock.findUserById).toHaveBeenCalledWith(mockUserId);
             expect(prismaMock.$transaction).toHaveBeenCalled();
-            expect(prismaMock.category.upsert).toHaveBeenCalledWith({
-                where: { name: mockDto.category },
-                update: {},
-                create: { name: mockDto.category },
-            });
             expect(prismaMock.post.create).toHaveBeenCalled();
         });
     });
