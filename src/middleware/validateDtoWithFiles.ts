@@ -1,7 +1,7 @@
 import { validate } from 'class-validator';
 import { plainToInstance } from 'class-transformer';
 import { Request, Response, NextFunction } from 'express';
-import { CustomError } from '@utils';
+import { CustomError } from '@utils/customError';
 
 export function validateDtoWithFiles(dtoClass: any) {
     // I. Express 미들웨어 반환

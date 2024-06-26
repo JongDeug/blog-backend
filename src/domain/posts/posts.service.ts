@@ -1,7 +1,8 @@
 import { CreatePostDto, UpdatePostDto } from './dto';
-import { CustomError, database, deleteImage } from '@utils';
+import { CustomError } from '@utils/customError';
+import database from '@utils/database';
+import { deleteImage } from '@utils/filesystem';
 import { AuthService } from '../auth/auth.service';
-import { Image } from '@prisma';
 
 export class PostsService {
     constructor(private readonly authService: AuthService) {
@@ -73,28 +74,28 @@ export class PostsService {
             where: { id: postId },
             include: {
                 images: true,
-                tags: true,
             },
         });
-        if (!post) throw new CustomError(404, 'Not Found', '게시글을 찾을 수 없습니다');
+        if (!post) throw new CustomError(404, 'Not Found', '게시글을 찾을 수 없습니다. 파라미터에 게시글 아이디를 넣었는지 확인해주세요');
 
         // I. user, post 본인 확인
         if (user.id !== post.authorId) {
             throw new CustomError(403, 'Forbidden', '게시글에 대한 권한이 없습니다');
         }
 
-        const updatedPost = await database.$transaction(async (database) => {
+        // I. 게시글 업데이트 트랜젝션
+        await database.$transaction(async (database) => {
             // I. images 는 post.id 활용해서 삭제 후 다시 createMany(post.update)
             await database.image.deleteMany({
                 where: { postId: post.id },
             });
 
-            // I. tags 는 post.id 활용해서 postTag 에 있는 놈들 다 삭제
+            // I. tags : post.id 활용해서 postTag 에 있는 놈들 다 삭제
             await database.postTag.deleteMany({
                 where: { postId: post.id },
             });
 
-            // I. postTag 새롭게 생성
+            // I. tags : postTag 새롭게 생성
             if (dto.tags) {
                 // I. 태그가 중복으로 들어왔을 경우 처리해야함
                 const set = new Set(dto.tags);
@@ -116,7 +117,7 @@ export class PostsService {
                 }
             }
 
-            return database.post.update({
+            await database.post.update({
                 where: { id: post.id },
                 data: {
                     title: dto.title,
@@ -133,25 +134,29 @@ export class PostsService {
                             data: dto.images.map(image => ({ url: image.path })),
                         },
                     },
-                    updatedAt: new Date().toISOString(),
+                    updatedAt: dto.updatedAt,
+                },
+            });
+
+            // I. 게시글이 업데이트 되면 고아 태그 삭제
+            await database.tag.deleteMany({
+                where: {
+                    posts: {
+                        // none: 관련된 PostTag 레코드가 없는 놈
+                        none: {},
+                    },
                 },
             });
         });
 
-        // I. 트랜잭션이 성공하면 고아 태그 삭제
-        await database.tag.deleteMany({
-            where: {
-                posts: {
-                    // none: 관련된 PostTag 레코드가 없는 놈
-                    none: {},
-                },
-            },
-        });
-
         // I. 트랜젝션이 성공하면 로컬 파일에 존재했던 이전 이미지 또한 지워야 함.
         if (post.images.length > 0) {
-            const result = await deleteImage(post.images);
-            console.log(result);
+            try {
+                const result = await deleteImage(post.images);
+                console.log(result);
+            } catch (err) {
+                console.log(`이미지 파일 삭제 오류: ${err}`);
+            }
         }
 
         // I. return 값 없음

@@ -4,7 +4,7 @@ import { PostsController } from '../../../src/domain/posts/posts.controller';
 import { PostsService } from '../../../src/domain/posts/posts.service';
 import { AuthService } from '../../../src/domain/auth/auth.service';
 import { User } from '@prisma';
-import { CustomError } from '@utils';
+import { CustomError } from '@utils/customError';
 
 jest.mock('../../../src/domain/auth/auth.service');
 jest.mock('../../../src/domain/posts/posts.service');
@@ -50,10 +50,7 @@ describe('PostsController', () => {
             expect(res._getJSONData()).toStrictEqual({ id: 'newPostId' });
             expect(res._isEndCalled()).toBeTruthy();
             expect(postsServiceMock.createPost).toHaveBeenCalledWith(req.user.id, {
-                title: 'Test Title',
-                content: 'Test Content',
-                category: 'TestCategory',
-                tags: ['Tag1', 'Tag2'],
+                ...req.body,
                 images: [{ path: 'image1.jpg' }, { path: 'image2.jpg' }],
             });
         });
@@ -67,21 +64,6 @@ describe('PostsController', () => {
             expect(next).toHaveBeenCalledWith(new CustomError(401, 'Unauthorized', '로그인을 진행해주세요'));
         });
 
-        // I. validationDtoWithFiles 적용해서 이제 필요없어짐!
-        // test('should handle error if validation dto fails', async () => {
-        //     // given
-        //     req.body = {
-        //         title: 12,
-        //         content: 'Test Content',
-        //         category: 'TestCategory',
-        //         tags: ['Tag1', 'Tag2'],
-        //     };
-        //     // when
-        //     await postsController.createPost(req, res, next);
-        //     // then
-        //     expect(next).toHaveBeenCalledWith(new CustomError(400, 'Bad Request', 'title: title must be a string'));
-        // });
-
         test('should handle error if postsService.createPost throws error', async () => {
             // given
             postsServiceMock.createPost.mockRejectedValue(new Error('데이터베이스: 게시글 생성 오류'));
@@ -89,6 +71,57 @@ describe('PostsController', () => {
             await postsController.createPost(req, res, next);
             // then
             expect(next).toHaveBeenCalledWith(new Error('데이터베이스: 게시글 생성 오류'));
+        });
+    });
+    // ---
+
+    // --- UpdatePost
+    describe('updatePost', () => {
+
+        beforeEach(() => {
+            req.user = { id: 'mockUserId' } as User;
+            req.body = {
+                title: 'Test Title',
+                content: 'Test Content',
+                category: 'TestCategory',
+                tags: ['Tag1', 'Tag2'],
+            };
+            req.files = [
+                { path: 'image1.jpg' } as Express.Multer.File,
+                { path: 'image2.jpg' } as Express.Multer.File,
+            ];
+            req.params.id = 'mockPostId';
+        });
+
+        test('should update a post successfully', async () => {
+            // when
+            await postsController.updatePost(req, res, next);
+            // then
+            expect(res.statusCode).toBe(200);
+            expect(res._getJSONData()).toStrictEqual({});
+            expect(res._isEndCalled()).toBeTruthy();
+            expect(postsServiceMock.updatePost).toHaveBeenCalledWith(req.user.id, req.params.id, {
+                ...req.body,
+                images: [{ path: 'image1.jpg' }, { path: 'image2.jpg' }],
+            });
+        });
+
+        test('should handle error if user is not authenticated', async () => {
+            // given
+            req.user = undefined;
+            // when
+            await postsController.updatePost(req, res, next);
+            // then
+            expect(next).toHaveBeenCalledWith(new CustomError(401, 'Unauthorized', '로그인을 진행해주세요'));
+        });
+
+        test('should handle error if postsService.updatePost throws error', async () => {
+            // given
+            postsServiceMock.updatePost.mockRejectedValue(new Error('데이터베이스: 게시글 수정 오류'));
+            // when
+            await postsController.updatePost(req, res, next);
+            // then
+            expect(next).toHaveBeenCalledWith(new Error('데이터베이스: 게시글 수정 오류'));
         });
     });
     // ---

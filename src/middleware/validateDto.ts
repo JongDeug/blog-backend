@@ -1,6 +1,7 @@
 import { validate } from 'class-validator';
 import { plainToInstance } from 'class-transformer';
 import { Request, Response, NextFunction } from 'express';
+import { CustomError } from '@utils/customError';
 
 export function validateDto(dtoClass: any) {
     // I. Express 미들웨어 반환
@@ -17,7 +18,8 @@ export function validateDto(dtoClass: any) {
             ).join('\n ');
 
             // I. validation 실패 시 에러 넘기기
-            next({ status: 400, message: errorMessages });
+            next(new CustomError(400, 'Bad Request', errorMessages));
+
         }
 
         // I. validation 성공

@@ -11,7 +11,7 @@ export const deleteImage = async (images: Image[]) => {
                 fs.unlinkSync(`${filepath}/${file.url}`);
                 resolve(`${file.url} 파일이 성공적으로 삭제됨`);
             } catch (err) {
-                throw err;
+                reject(err);
             }
         })),
     );

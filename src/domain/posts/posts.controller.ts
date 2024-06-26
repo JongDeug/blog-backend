@@ -2,8 +2,9 @@ import { Request, Response, NextFunction, Router } from 'express';
 import { PostsService } from './posts.service';
 import { AuthService } from '../auth/auth.service';
 import { CreatePostDto, UpdatePostDto } from './dto';
-import { upload, validateDtoWithFiles } from '@middleware';
-import { CustomError } from '@utils';
+import { validateDtoWithFiles } from '@middleware/validateDtoWithFiles';
+import { upload } from '@middleware/multer';
+import { CustomError } from '@utils/customError';
 
 export class PostsController {
     path: string;
@@ -23,9 +24,7 @@ export class PostsController {
     async createPost(req: Request, res: Response, next: NextFunction) {
         try {
             // I. JWT 인증 확인
-            if (!req.user) {
-                return next(new CustomError(401, 'Unauthorized', '로그인을 진행해주세요'));
-            }
+            if (!req.user) return next(new CustomError(401, 'Unauthorized', '로그인을 진행해주세요'));
 
             // I. postsService.createPost 호출
             const files = req.files as Express.Multer.File[];
@@ -41,9 +40,8 @@ export class PostsController {
     async updatePost(req: Request, res: Response, next: NextFunction) {
         try {
             // I. JWT 인증 확인
-            if (!req.user) {
-                return next(new CustomError(401, 'Unauthorized', '로그인을 진행해주세요'));
-            }
+            if (!req.user) return next(new CustomError(401, 'Unauthorized', '로그인을 진행해주세요'));
+
             // I. 게시글 Id 받기
             const { id } = req.params;
 

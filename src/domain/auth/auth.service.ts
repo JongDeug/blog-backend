@@ -1,4 +1,5 @@
-import { CustomError, database } from '@utils';
+import { CustomError } from '@utils/customError';
+import database from '@utils/database';
 import bcrypt from 'bcrypt';
 import jwt, { Secret, VerifyOptions } from 'jsonwebtoken';
 import { LoginDto, RegisterDto } from './dto';
