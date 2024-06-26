@@ -86,7 +86,7 @@ model PostLike {
   ///
   /// 게시글 ID {@link Post.id}
   postId String
-  post   Post   @relation(fields: [postId], references: [id])
+  post   Post   @relation(fields: [postId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   /// Foreign Key
   ///
@@ -154,13 +154,13 @@ model PostTag {
   ///
   /// 게시글 ID {@link Post.id}
   postId String
-  post   Post   @relation(fields: [postId], references: [id])
+  post   Post   @relation(fields: [postId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   /// Foreign Key
   ///
   /// 태그 ID {@link Tag.id}
   tagId String
-  tag   Tag    @relation(fields: [tagId], references: [name])
+  tag   Tag    @relation(fields: [tagId], references: [name], onUpdate: Cascade, onDelete: Cascade)
 
   @@id([postId, tagId])
 }
@@ -178,7 +178,7 @@ model Image {
   ///
   /// 게시글 ID {@link Post.id}
   postId String
-  post   Post   @relation(fields: [postId], references: [id])
+  post   Post   @relation(fields: [postId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 }
 
 /// 카테고리 테이블
@@ -220,7 +220,7 @@ model Comment {
   ///
   /// 게시글 ID {@link Post.id}
   postId String
-  posts  Post   @relation(fields: [postId], references: [id])
+  posts  Post   @relation(fields: [postId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   /// Foreign Key
   ///

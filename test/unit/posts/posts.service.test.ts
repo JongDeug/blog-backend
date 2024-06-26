@@ -197,7 +197,7 @@ describe('PostsService', () => {
             prismaMock.post.findUnique.mockResolvedValue(null);
             // when, then
             await expect(postsService.updatePost(mockUserId, mockPostId, mockDto)).rejects.toThrow(
-                new CustomError(404, 'Not Found', '게시글을 찾을 수 없습니다. 파라미터에 게시글 아이디를 넣었는지 확인해주세요'),
+                new CustomError(404, 'Not Found', '게시글을 찾을 수 없습니다'),
             );
             expect(authServiceMock.findUserById).toHaveBeenCalled();
             expect(prismaMock.post.findUnique).toHaveBeenCalled();
