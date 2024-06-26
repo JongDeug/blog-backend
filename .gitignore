@@ -13,11 +13,12 @@
 # Zero-install
 .pnp.*
 
-#idea, env, dist, test
+# chore
 .idea
 .env
 dist
 coverage/
+uploads/
 
 #DB
 mysql-data

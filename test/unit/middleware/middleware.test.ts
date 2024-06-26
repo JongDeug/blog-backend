@@ -4,7 +4,7 @@ import { User } from '@prisma';
 import { jwtVerify } from '@middleware/jwtVerify';
 import { AuthService } from '../../../src/domain/auth/auth.service';
 import { CustomJwtPayload } from '@custom-type/customJwtPayload';
-import { CustomError } from '@utils';
+import { CustomError } from '@utils/customError';
 
 jest.mock('../../../src/domain/auth/auth.service');
 

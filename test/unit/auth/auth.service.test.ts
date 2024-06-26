@@ -5,7 +5,7 @@ import bcrypt from 'bcrypt';
 import jwt, { Secret, VerifyOptions } from 'jsonwebtoken';
 import { User } from '@prisma';
 import { CustomJwtPayload } from '@custom-type/customJwtPayload';
-import { CustomError } from '@utils';
+import { CustomError } from '@utils/customError';
 
 jest.mock('bcrypt');
 jest.mock('jsonwebtoken');

@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma';
 import { mockReset, mockDeep, DeepMockProxy } from 'jest-mock-extended';
-import { database } from '@utils';
+import database from '@utils/database';
 
 // [싱글톤 패턴 적용] => Prisma
 // 복잡성이 낮은 간단한 게시판 프로젝트이므로

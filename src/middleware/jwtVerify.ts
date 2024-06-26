@@ -1,6 +1,6 @@
 import { RequestHandler } from 'express';
 import { AuthService } from '../domain/auth/auth.service';
-import { CustomError } from '@utils';
+import { CustomError } from '@utils/customError';
 
 export const jwtVerify = function(authService: AuthService): RequestHandler {
     return async function(req, res, next) {

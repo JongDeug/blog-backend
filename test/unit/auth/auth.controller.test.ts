@@ -2,8 +2,7 @@ import httpMocks from 'node-mocks-http';
 import { NextFunction, Request, Response } from 'express';
 import { AuthService } from '../../../src/domain/auth/auth.service';
 import { AuthController } from '../../../src/domain/auth/auth.controller';
-import { RegisterDto } from '../../../src/domain/auth/dto';
-import { CustomError } from '@utils';
+import { CustomError } from '@utils/customError';
 
 jest.mock('../../../src/domain/auth/auth.service'); // AuthService mocking
 
@@ -157,7 +156,7 @@ describe('AuthController', () => {
             expect(res._getJSONData()).toEqual({ message: '로그아웃 완료' });
             expect(res._isEndCalled()).toBeTruthy();
             expect(authServiceMock.logout).toHaveBeenCalledWith(req.cookies.accessToken);
-        })
+        });
 
         test('should handle error if accessToken is missing', async () => {
             // given
