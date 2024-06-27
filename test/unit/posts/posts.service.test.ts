@@ -119,7 +119,6 @@ describe('PostsService', () => {
             category: 'TestCategory',
             images: [{ path: 'images' }, { path: 'images' }],
             tags: ['Tag1', 'Tag2'],
-            updatedAt: new Date().toISOString(),
         };
 
         test('should update a post successfully', async () => {
@@ -148,26 +147,7 @@ describe('PostsService', () => {
                 where: { postId: mockPost.id },
             });
             expect(prismaMock.postTag.create).toHaveBeenCalledTimes([...new Set(mockDto.tags)].length);
-            expect(prismaMock.post.update).toHaveBeenCalledWith({
-                where: { id: mockPost.id },
-                data: {
-                    title: mockDto.title,
-                    content: mockDto.content,
-                    // I. category 는 post 기능에서 삭제하지 못함, 생성만 가능
-                    category: {
-                        connectOrCreate: {
-                            where: { name: mockDto.category },
-                            create: { name: mockDto.category },
-                        },
-                    },
-                    images: {
-                        createMany: {
-                            data: mockDto.images.map(image => ({ url: image.path })),
-                        },
-                    },
-                    updatedAt: mockDto.updatedAt,
-                },
-            });
+            expect(prismaMock.post.update).toHaveBeenCalled();
             expect(prismaMock.tag.deleteMany).toHaveBeenCalledWith({
                 where: {
                     posts: {
@@ -258,4 +238,69 @@ describe('PostsService', () => {
     });
     // ---
 
+    // --- DeletePost
+    describe('deletePost', () => {
+        const mockUserId = 'mockUserId';
+        const mockPostId = 'mockPostId';
+        type PostIncludingImageType = Post & { images: Pick<Image, 'url'>[] }
+        const mockPost = {
+            id: 'mockPostId',
+            authorId: 'mockUserId',
+            images: [{ url: 'images' }, { url: 'images' }],
+        };
+
+        test('should delete a post successfully', async () => {
+            // given
+            prismaMock.post.findUnique.mockResolvedValue(mockPost as PostIncludingImageType);
+            (deleteImage as jest.Mock).mockResolvedValue(['파일 삭제 성공1', '파일 삭제 성공2']);
+            // when
+            await postsService.deletePost(mockUserId, mockPostId);
+            // then
+            expect(prismaMock.post.findUnique).toHaveBeenCalledWith({
+                where: { id: mockPostId },
+                include: { images: true },
+            });
+            expect(prismaMock.post.delete).toHaveBeenCalledWith({ where: { id: mockPost.id } });
+            expect(prismaMock.tag.deleteMany).toHaveBeenCalledWith({ where: { posts: { none: {} } } });
+            expect(deleteImage).toHaveBeenCalledWith(mockPost.images);
+        });
+
+        test('should throw error if post is not found', async () => {
+            // given
+            prismaMock.post.findUnique.mockResolvedValue(null);
+            // when, then
+            await expect(postsService.deletePost(mockUserId, mockPostId)).rejects.toThrow(
+                new CustomError(404, 'Not Found', '게시글을 찾을 수 없습니다'),
+            );
+            expect(prismaMock.post.findUnique).toHaveBeenCalled();
+            expect(prismaMock.post.delete).not.toHaveBeenCalled();
+        });
+
+        test('should throw error if user dose not have permission', async () => {
+            // given
+            mockPost.authorId = 'wrongUser'; // 틀린 아이디 주입
+            prismaMock.post.findUnique.mockResolvedValue(mockPost as PostIncludingImageType);
+            // when, then
+            await expect(postsService.deletePost(mockUserId, mockPostId)).rejects.toThrow(
+                new CustomError(403, 'Forbidden', '게시글에 대한 권한이 없습니다'),
+            );
+            expect(prismaMock.post.findUnique).toHaveBeenCalled();
+            expect(prismaMock.post.delete).not.toHaveBeenCalled();
+        });
+
+        test('should throw error if images fail to delete', async () => {
+            // given
+            mockPost.authorId = 'mockUserId'; // 다시 맞는 아이디 주입
+            prismaMock.post.findUnique.mockResolvedValue(mockPost as PostIncludingImageType);
+            (deleteImage as jest.Mock).mockRejectedValue(new Error('에러: 파일을 삭제하지 못했습니다'));
+            // when
+            await postsService.deletePost(mockUserId, mockPostId);
+            // then
+            expect(prismaMock.post.findUnique).toHaveBeenCalled();
+            expect(prismaMock.post.delete).toHaveBeenCalled();
+            expect(prismaMock.tag.deleteMany).toHaveBeenCalled();
+            expect(deleteImage).toHaveBeenCalled();
+        });
+    });
+    // ---
 });

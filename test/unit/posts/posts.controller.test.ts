@@ -125,4 +125,41 @@ describe('PostsController', () => {
         });
     });
     // ---
+
+    // --- DeletePost
+    describe('deletePost', () => {
+        beforeEach(() => {
+            req.user = { id: 'mockUserId' } as User;
+            req.params.id = 'mockPostId';
+        });
+
+        test('should delete a post successfully', async () => {
+            // when
+            await postsController.deletePost(req, res, next);
+            // then
+            expect(res.statusCode).toBe(200);
+            expect(res._getJSONData()).toStrictEqual({});
+            expect(res._isEndCalled()).toBeTruthy();
+            expect(postsServiceMock.deletePost).toHaveBeenCalledWith(req.user.id, req.params.id);
+        });
+
+        test('should handle error if user is not authenticated', async () => {
+            // given
+            req.user = undefined;
+            // when
+            await postsController.deletePost(req, res, next);
+            // then
+            expect(next).toHaveBeenCalledWith(new CustomError(401, 'Unauthorized', '로그인을 진행해주세요'));
+        });
+
+        test('should handle error if postsService.deletePost throws error', async () => {
+            // given
+            postsServiceMock.deletePost.mockRejectedValue(new Error('데이터베이스: 게시글 삭제 오류'));
+            // when
+            await postsController.deletePost(req, res, next);
+            // then
+            expect(next).toHaveBeenCalledWith(new Error('데이터베이스: 게시글 삭제 오류'));
+        });
+    });
+    // ---
 });

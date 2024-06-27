@@ -21,6 +21,4 @@ export class UpdatePostDto {
 
     @IsArray()
     images: ImagePath[];
-
-    updatedAt = new Date().toISOString();
 }

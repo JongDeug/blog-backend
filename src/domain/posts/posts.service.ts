@@ -134,7 +134,7 @@ export class PostsService {
                             data: dto.images.map(image => ({ url: image.path })),
                         },
                     },
-                    updatedAt: dto.updatedAt,
+                    updatedAt: new Date().toISOString(),
                 },
             });
 
@@ -164,7 +164,10 @@ export class PostsService {
 
     async deletePost(userId: string, postId: string) {
         // I. post 가져오기
-        const post = await database.post.findUnique({ where: { id: postId } });
+        const post = await database.post.findUnique({
+            where: { id: postId },
+            include: { images: true },
+        });
         if (!post) throw new CustomError(404, 'Not Found', '게시글을 찾을 수 없습니다');
 
         // I. user, post 비교해 권한 체크하기
@@ -185,6 +188,13 @@ export class PostsService {
         });
 
         // I. 로컬 이미지 삭제하기
-        // I. 게시글 수정에서 이미지가 어차피 onUpdate : CASCADE 니까 deleteMany를 하지 않아도 될듯함 다시보자고
+        if (post.images.length > 0) {
+            try {
+                const result = await deleteImage(post.images);
+                console.log(result);
+            } catch (err) {
+                console.log(`이미지 파일 삭제 오류: ${err}`);
+            }
+        }
     }
 }

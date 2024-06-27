@@ -136,7 +136,7 @@ export class AuthService {
         };
 
         return jwt.sign(payload, process.env.JWT_SECRET as Secret, {
-            expiresIn: isRefreshToken ? '1d' : 120,
+            expiresIn: isRefreshToken ? '1d' : '1h',
         });
     }
 
