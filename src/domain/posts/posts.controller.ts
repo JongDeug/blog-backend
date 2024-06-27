@@ -19,6 +19,7 @@ export class PostsController {
     init() {
         this.router.post('/', upload.array('images', 12), validateDtoWithFiles(CreatePostDto), this.createPost.bind(this));
         this.router.patch('/:id', upload.array('images', 12), validateDtoWithFiles(UpdatePostDto), this.updatePost.bind(this));
+        this.router.delete('/:id', this.deletePost.bind(this));
     }
 
     async createPost(req: Request, res: Response, next: NextFunction) {
@@ -42,13 +43,30 @@ export class PostsController {
             // I. JWT 인증 확인
             if (!req.user) return next(new CustomError(401, 'Unauthorized', '로그인을 진행해주세요'));
 
-            // I. 게시글 Id 받기
+            // I. 게시글 id 받기
             const { id } = req.params;
 
             // I. postsService.updatePost 호출
             const files = req.files as Express.Multer.File[];
             const images = files.map(file => ({ path: file.path }));
             await this.postsService.updatePost(req.user.id, id, { ...req.body, images });
+
+            res.status(200).json({});
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    async deletePost(req: Request, res: Response, next: NextFunction) {
+        try {
+            // I. JWT 인증 확인
+            if (!req.user) return next(new CustomError(401, 'Unauthorized', '로그인을 진행해주세요'));
+
+            // I. 게시글 id 받기
+            const { id } = req.params;
+
+            // I. postService.deletePost 호출
+            await this.postsService.deletePost(req.user.id, id);
 
             res.status(200).json({});
         } catch (err) {

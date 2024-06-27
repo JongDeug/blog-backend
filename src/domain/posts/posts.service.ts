@@ -76,7 +76,7 @@ export class PostsService {
                 images: true,
             },
         });
-        if (!post) throw new CustomError(404, 'Not Found', '게시글을 찾을 수 없습니다. 파라미터에 게시글 아이디를 넣었는지 확인해주세요');
+        if (!post) throw new CustomError(404, 'Not Found', '게시글을 찾을 수 없습니다');
 
         // I. user, post 본인 확인
         if (user.id !== post.authorId) {
@@ -134,7 +134,7 @@ export class PostsService {
                             data: dto.images.map(image => ({ url: image.path })),
                         },
                     },
-                    updatedAt: dto.updatedAt,
+                    updatedAt: new Date().toISOString(),
                 },
             });
 
@@ -142,7 +142,7 @@ export class PostsService {
             await database.tag.deleteMany({
                 where: {
                     posts: {
-                        // none: 관련된 PostTag 레코드가 없는 놈
+                        // none: 관련된 posts: PostTag[] 레코드가 없는 놈
                         none: {},
                     },
                 },
@@ -160,5 +160,41 @@ export class PostsService {
         }
 
         // I. return 값 없음
+    }
+
+    async deletePost(userId: string, postId: string) {
+        // I. post 가져오기
+        const post = await database.post.findUnique({
+            where: { id: postId },
+            include: { images: true },
+        });
+        if (!post) throw new CustomError(404, 'Not Found', '게시글을 찾을 수 없습니다');
+
+        // I. user, post 비교해 권한 체크하기
+        if (userId !== post.authorId) {
+            throw new CustomError(403, 'Forbidden', '게시글에 대한 권한이 없습니다');
+        }
+
+        // I. 게시글 삭제하기
+        await database.post.delete({
+            where: { id: post.id },
+        });
+
+        // I. 고아 데이터 삭제하기
+        await database.tag.deleteMany({
+            where: {
+                posts: { none: {} },
+            },
+        });
+
+        // I. 로컬 이미지 삭제하기
+        if (post.images.length > 0) {
+            try {
+                const result = await deleteImage(post.images);
+                console.log(result);
+            } catch (err) {
+                console.log(`이미지 파일 삭제 오류: ${err}`);
+            }
+        }
     }
 }
