@@ -183,6 +183,8 @@ export class PostsService {
                 posts: { none: {} },
             },
         });
+
         // I. 로컬 이미지 삭제하기
+        // I. 게시글 수정에서 이미지가 어차피 onUpdate : CASCADE 니까 deleteMany를 하지 않아도 될듯함 다시보자고
     }
 }

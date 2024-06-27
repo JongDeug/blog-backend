@@ -1,7 +1,7 @@
 import { CustomError } from '@utils/customError';
 import database from '@utils/database';
 import bcrypt from 'bcrypt';
-import jwt, { Secret, VerifyOptions } from 'jsonwebtoken';
+import jwt, { JsonWebTokenError, Secret, VerifyOptions } from 'jsonwebtoken';
 import { LoginDto, RegisterDto } from './dto';
 import { User } from '@prisma';
 import { CustomJwtPayload } from '@custom-type/customJwtPayload';
@@ -136,7 +136,7 @@ export class AuthService {
         };
 
         return jwt.sign(payload, process.env.JWT_SECRET as Secret, {
-            expiresIn: isRefreshToken ? '1d' : '2h',
+            expiresIn: isRefreshToken ? '1d' : 120,
         });
     }
 
@@ -144,8 +144,16 @@ export class AuthService {
         try {
             return <CustomJwtPayload>jwt.verify(token, process.env.JWT_SECRET as Secret, options);
         } catch (err) {
-            // I. 401 Unauthorized
-            throw new CustomError(401, 'Unauthorized', '토큰이 만료됐거나 잘못된 토큰입니다');
+            let message;
+            if (err instanceof Error) message = err.name; // I. error 타입 에러 => instanceof 로 해결
+            // I. 토큰은 유효한데 만료됐을 경우
+            if (message === 'TokenExpiredError') {
+                throw new CustomError(401, 'Unauthorized', '만료된 토큰입니다');
+            }
+            // I. 토큰 자체가 유효하지 않을 경우
+            else {
+                throw new CustomError(401, 'Unauthorized', '잘못된 토큰입니다');
+            }
         }
     }
 }
