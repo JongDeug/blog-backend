@@ -74,8 +74,8 @@ model GuestUser {
   /// ---
   /// RELATIONS
   /// ---
-  posts    PostLike[]
-  comments Comment[]
+  postLikes PostLike[]
+  comments  Comment[]
 }
 
 /// 비회원 <=> 게시글 다대다, 게시글 좋아요 테이블
@@ -115,10 +115,10 @@ model Post {
   /// ---
   /// RELATIONS
   /// ---
-  comments   Comment[]
-  images     Image[]
-  tags       PostTag[]
-  guestUsers PostLike[]
+  comments  Comment[]
+  images    Image[]
+  tags      PostTag[]
+  postLikes PostLike[]
 
   /// Foreign Key
   ///

@@ -228,4 +228,32 @@ export class PostsService {
         // I. posts, postCount 반환
         return { posts, postCount: posts.length };
     }
+
+    async getPost(postId: string) {
+        // I. 게시글 상세 조회
+        const post = await database.post.findUnique({
+            where: { id: postId },
+            include: {
+                tags: true,
+                postLikes: true,
+                images: {
+                    select: {
+                        id: true,
+                        url: true,
+                    },
+                },
+                author: {
+                    select: {
+                        name: true,
+                    },
+                },
+                comments: true, // R. comment 작성 후 고치기
+            },
+        });
+
+        // I. 게시글이 없으면 에러 반환
+        if (!post) throw new CustomError(404, 'Not Found', '게시글을 찾을 수 없습니다');
+
+        return { post };
+    }
 }
