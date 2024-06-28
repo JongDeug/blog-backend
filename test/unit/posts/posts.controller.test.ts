@@ -3,7 +3,7 @@ import { NextFunction, Request, Response } from 'express';
 import { PostsController } from '../../../src/domain/posts/posts.controller';
 import { PostsService } from '../../../src/domain/posts/posts.service';
 import { AuthService } from '../../../src/domain/auth/auth.service';
-import { User } from '@prisma';
+import { Post, User } from '@prisma';
 import { CustomError } from '@utils/customError';
 
 jest.mock('../../../src/domain/auth/auth.service');
@@ -62,6 +62,7 @@ describe('PostsController', () => {
             await postsController.createPost(req, res, next);
             // then
             expect(next).toHaveBeenCalledWith(new CustomError(401, 'Unauthorized', '로그인을 진행해주세요'));
+            expect(postsServiceMock.createPost).not.toHaveBeenCalled();
         });
 
         test('should handle error if postsService.createPost throws error', async () => {
@@ -77,7 +78,6 @@ describe('PostsController', () => {
 
     // --- UpdatePost
     describe('updatePost', () => {
-
         beforeEach(() => {
             req.user = { id: 'mockUserId' } as User;
             req.body = {
@@ -113,6 +113,7 @@ describe('PostsController', () => {
             await postsController.updatePost(req, res, next);
             // then
             expect(next).toHaveBeenCalledWith(new CustomError(401, 'Unauthorized', '로그인을 진행해주세요'));
+            expect(postsServiceMock.updatePost).not.toHaveBeenCalled();
         });
 
         test('should handle error if postsService.updatePost throws error', async () => {
@@ -150,6 +151,7 @@ describe('PostsController', () => {
             await postsController.deletePost(req, res, next);
             // then
             expect(next).toHaveBeenCalledWith(new CustomError(401, 'Unauthorized', '로그인을 진행해주세요'));
+            expect(postsServiceMock.deletePost).not.toHaveBeenCalled();
         });
 
         test('should handle error if postsService.deletePost throws error', async () => {
@@ -159,6 +161,71 @@ describe('PostsController', () => {
             await postsController.deletePost(req, res, next);
             // then
             expect(next).toHaveBeenCalledWith(new Error('데이터베이스: 게시글 삭제 오류'));
+        });
+    });
+    // ---
+
+    // --- GetPosts
+    describe('getPosts', () => {
+        const mockReturnedPosts = [
+            { id: 'mockId1' } as Post,
+            { id: 'mockId2' } as Post,
+        ];
+
+        beforeEach(() => {
+            req.pagination = {
+                skip: 10,
+                take: 10,
+            };
+            req.query.searchQuery = '';
+            req.query.category = '';
+        });
+
+        test('should get posts successfully', async () => {
+            // given
+            postsServiceMock.getPosts.mockResolvedValue({
+                posts: mockReturnedPosts,
+                postCount: mockReturnedPosts.length,
+            });
+            // when
+            await postsController.getPosts(req, res, next);
+            // then
+            expect(res.statusCode).toBe(200);
+            expect(res._getJSONData()).toStrictEqual({
+                posts: mockReturnedPosts,
+                postCount: mockReturnedPosts.length,
+            });
+            expect(res._isEndCalled()).toBeTruthy();
+            expect(postsServiceMock.getPosts).toHaveBeenCalledWith(req.pagination, req.query.searchQuery, req.query.category);
+        });
+
+        test('should handle error if searchQuery type is object', async () => {
+            // given
+            req.query.searchQuery = ['mock', 'mock'];
+            // when
+            await postsController.getPosts(req, res, next);
+            // then
+            expect(next).toHaveBeenCalledWith(new CustomError(400, 'Bad Request', 'searchQuery: 잘못된 형식입니다'));
+            expect(postsServiceMock.getPosts).not.toHaveBeenCalled();
+        });
+
+        test('should handle error if category type is object', async () => {
+            // given
+            req.query.category = ['mock', 'mock'];
+            // when
+            await postsController.getPosts(req, res, next);
+            // then
+            expect(next).toHaveBeenCalledWith(new CustomError(400, 'Bad Request', 'category: 잘못된 형식입니다'));
+            expect(postsServiceMock.getPosts).not.toHaveBeenCalled();
+        });
+
+        test('should handle error if postsService.getPosts throws error', async () => {
+            // given
+            postsServiceMock.getPosts.mockRejectedValue(new Error('데이터베이스: 게시글 목록 조회 오류'));
+            // when
+            await postsController.getPosts(req, res, next);
+            // then
+            expect(next).toHaveBeenCalledWith(new Error('데이터베이스: 게시글 목록 조회 오류'));
         });
     });
     // ---

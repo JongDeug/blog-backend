@@ -3,6 +3,7 @@ import { CustomError } from '@utils/customError';
 import database from '@utils/database';
 import { deleteImage } from '@utils/filesystem';
 import { AuthService } from '../auth/auth.service';
+import { PaginationType } from '@custom-type/customPagination';
 
 export class PostsService {
     constructor(private readonly authService: AuthService) {
@@ -196,5 +197,35 @@ export class PostsService {
                 console.log(`이미지 파일 삭제 오류: ${err}`);
             }
         }
+    }
+
+    async getPosts(pagination: PaginationType, searchQuery: string | undefined, category: string | undefined) {
+        // I. 카테고리 옵션 설정, 있으면 { name : ... } , 없으면 {}
+        let categoryOptions = category ? { name: category } : {};
+
+        // I. post search 쿼리(제목, 내용)에 해당하는 게시글 가져오기
+        const posts = await database.post.findMany({
+            where: {
+                OR: [
+                    { title: { contains: searchQuery ?? '' } },
+                    { content: { contains: searchQuery ?? '' } },
+                ],
+                category: categoryOptions,
+            },
+            select: {
+                id: true,
+                title: true,
+                content: true,
+                createdAt: true,
+            },
+            orderBy: {
+                createdAt: 'desc', // 내림, 최신순
+            },
+            skip: pagination.skip,
+            take: pagination.take,
+        });
+
+        // I. posts, postCount 반환
+        return { posts, postCount: posts.length };
     }
 }

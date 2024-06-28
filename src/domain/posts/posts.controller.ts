@@ -5,6 +5,8 @@ import { CreatePostDto, UpdatePostDto } from './dto';
 import { validateDtoWithFiles } from '@middleware/validateDtoWithFiles';
 import { upload } from '@middleware/multer';
 import { CustomError } from '@utils/customError';
+import { pagination } from '@middleware/pagination';
+import { PaginationType } from '@custom-type/customPagination';
 
 export class PostsController {
     path: string;
@@ -20,6 +22,7 @@ export class PostsController {
         this.router.post('/', upload.array('images', 12), validateDtoWithFiles(CreatePostDto), this.createPost.bind(this));
         this.router.patch('/:id', upload.array('images', 12), validateDtoWithFiles(UpdatePostDto), this.updatePost.bind(this));
         this.router.delete('/:id', this.deletePost.bind(this));
+        this.router.get('/', pagination, this.getPosts.bind(this));
     }
 
     async createPost(req: Request, res: Response, next: NextFunction) {
@@ -69,6 +72,27 @@ export class PostsController {
             await this.postsService.deletePost(req.user.id, id);
 
             res.status(200).json({});
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    async getPosts(req: Request, res: Response, next: NextFunction) {
+        try {
+            // I. JWT 다른 사용자도 볼 수 있음
+
+            // I. query 체킹
+            const { searchQuery, category } = req.query;
+            // I. query 타입 가드
+            if (typeof searchQuery === 'object') return next(new CustomError(400, 'Bad Request', 'searchQuery: 잘못된 형식입니다'));
+            if (typeof category === 'object') return next(new CustomError(400, 'Bad Request', 'category: 잘못된 형식입니다'));
+
+            const pagination: PaginationType = req.pagination; // I. middleware pagination 참고
+
+            // I. postsService.getPosts 호출
+            const { posts, postCount } = await this.postsService.getPosts(pagination, searchQuery, category);
+
+            res.status(200).json({ posts, postCount });
         } catch (err) {
             next(err);
         }

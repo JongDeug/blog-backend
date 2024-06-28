@@ -5,6 +5,7 @@ import { CreatePostDto, UpdatePostDto } from '../../../src/domain/posts/dto';
 import { Image, Post, User } from '@prisma';
 import { CustomError } from '@utils/customError';
 import { deleteImage } from '@utils/filesystem';
+import { PaginationType } from '@custom-type/customPagination';
 
 jest.mock('../../../src/domain/auth/auth.service');
 jest.mock('@utils/filesystem'); // 정확한 명칭으로 설정하니 에러가 사라짐.
@@ -301,6 +302,112 @@ describe('PostsService', () => {
             expect(prismaMock.tag.deleteMany).toHaveBeenCalled();
             expect(deleteImage).toHaveBeenCalled();
         });
+    });
+    // ---
+
+    // --- GetPosts
+    describe('getPosts', () => {
+        const mockPagination: PaginationType = {
+            skip: 10,
+            take: 10,
+        };
+        const mockSearchQuery = 'mockSearchQuery';
+        const mockCategory = 'mockCategory';
+        const mockReturnedPosts = [
+            { id: 'mockId1' } as Post,
+            { id: 'mockId2' } as Post,
+        ];
+
+        test('should get posts successfully', async () => {
+            // given
+            prismaMock.post.findMany.mockResolvedValue(mockReturnedPosts);
+            // when
+            const result = await postsService.getPosts(mockPagination, mockSearchQuery, mockCategory);
+            // then
+            expect(result.posts).toStrictEqual(mockReturnedPosts);
+            expect(result.postCount).toBe(mockReturnedPosts.length);
+            expect(prismaMock.post.findMany).toHaveBeenCalledWith({
+                where: {
+                    OR: [
+                        { title: { contains: mockSearchQuery } },
+                        { content: { contains: mockSearchQuery } },
+                    ],
+                    category: { name: mockCategory },
+                },
+                select: {
+                    id: true,
+                    title: true,
+                    content: true,
+                    createdAt: true,
+                },
+                orderBy: {
+                    createdAt: 'desc', // 내림, 최신순
+                },
+                skip: mockPagination.skip,
+                take: mockPagination.take,
+            });
+        });
+
+        test('should get posts successfully even if searchQuery is undefined', async () => {
+            // given
+            prismaMock.post.findMany.mockResolvedValue(mockReturnedPosts);
+            // when
+            const result = await postsService.getPosts(mockPagination, undefined, mockCategory);
+            // then
+            expect(result.posts).toStrictEqual(mockReturnedPosts);
+            expect(result.postCount).toBe(mockReturnedPosts.length);
+            expect(prismaMock.post.findMany).toHaveBeenCalledWith({
+                where: {
+                    OR: [
+                        { title: { contains: '' } }, // 만약 undefined 이라면
+                        { content: { contains: '' } }, // 만약 undefined 이라면
+                    ],
+                    category: { name: mockCategory },
+                },
+                select: {
+                    id: true,
+                    title: true,
+                    content: true,
+                    createdAt: true,
+                },
+                orderBy: {
+                    createdAt: 'desc', // 내림, 최신순
+                },
+                skip: mockPagination.skip,
+                take: mockPagination.take,
+            });
+        });
+
+        test('should get posts successfully even if category is undefined', async () => {
+            // given
+            prismaMock.post.findMany.mockResolvedValue(mockReturnedPosts);
+            // when
+            const result = await postsService.getPosts(mockPagination, mockSearchQuery, undefined);
+            // then
+            expect(result.posts).toStrictEqual(mockReturnedPosts);
+            expect(result.postCount).toBe(mockReturnedPosts.length);
+            expect(prismaMock.post.findMany).toHaveBeenCalledWith({
+                where: {
+                    OR: [
+                        { title: { contains: mockSearchQuery } },
+                        { content: { contains: mockSearchQuery } },
+                    ],
+                    category: {}, // 만약 undefined 이라면
+                },
+                select: {
+                    id: true,
+                    title: true,
+                    content: true,
+                    createdAt: true,
+                },
+                orderBy: {
+                    createdAt: 'desc', // 내림, 최신순
+                },
+                skip: mockPagination.skip,
+                take: mockPagination.take,
+            });
+        });
+
     });
     // ---
 });
