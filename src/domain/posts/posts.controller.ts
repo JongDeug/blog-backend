@@ -23,6 +23,7 @@ export class PostsController {
         this.router.patch('/:id', upload.array('images', 12), validateDtoWithFiles(UpdatePostDto), this.updatePost.bind(this));
         this.router.delete('/:id', this.deletePost.bind(this));
         this.router.get('/', pagination, this.getPosts.bind(this));
+        this.router.get('/:id', this.getPost.bind(this));
     }
 
     async createPost(req: Request, res: Response, next: NextFunction) {
@@ -79,7 +80,7 @@ export class PostsController {
 
     async getPosts(req: Request, res: Response, next: NextFunction) {
         try {
-            // I. JWT 다른 사용자도 볼 수 있음
+            // I. JWT 필요 X
 
             // I. query 체킹
             const { searchQuery, category } = req.query;
@@ -93,6 +94,21 @@ export class PostsController {
             const { posts, postCount } = await this.postsService.getPosts(pagination, searchQuery, category);
 
             res.status(200).json({ posts, postCount });
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    async getPost(req: Request, res: Response, next: NextFunction) {
+        try {
+            // I. JWT 필요 X
+
+            // I. param 으로 postId 받기
+            const { id } = req.params;
+            // I. postsService.getPost 호출
+            const { post } = await this.postsService.getPost(id);
+
+            res.status(200).json({ post });
         } catch (err) {
             next(err);
         }
