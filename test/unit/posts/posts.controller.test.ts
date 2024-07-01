@@ -4,9 +4,7 @@ import { PostsController } from '../../../src/domain/posts/posts.controller';
 import { PostsService } from '../../../src/domain/posts/posts.service';
 import { AuthService } from '../../../src/domain/auth/auth.service';
 import { Prisma, Post, User } from '@prisma';
-
 import { CustomError } from '@utils/customError';
-import { prismaMock } from '../../singleton';
 
 jest.mock('../../../src/domain/auth/auth.service');
 jest.mock('../../../src/domain/posts/posts.service');
