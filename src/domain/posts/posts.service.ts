@@ -45,6 +45,8 @@ export class PostsService {
                 const tags = [...set];
                 for (const tagName of tags) {
                     // I. 생성한 태그와 게시글을 연결, 태그가 없으면 생성, 있으면 연결
+                    // I. createMany 는 사용할 수 없음. => 일대다는 되는데, 다대다에는 제공되지 않음
+                    // I. createMany works only on a single entity and not on sub-entities.
                     await database.postTag.create({
                         data: {
                             post: {
@@ -86,7 +88,7 @@ export class PostsService {
 
         // I. 게시글 업데이트 트랜젝션
         await database.$transaction(async (database) => {
-            // I. images 는 post.id 활용해서 삭제 후 다시 createMany(post.update)
+            // I. images 는 post.id 활용해서 삭제 후 다시 생성
             await database.image.deleteMany({
                 where: { postId: post.id },
             });
