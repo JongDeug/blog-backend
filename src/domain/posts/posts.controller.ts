@@ -110,7 +110,7 @@ export class PostsController {
 
             res.status(200).json({ post });
         } catch (err) {
-
+            next(err);
         }
     }
 }

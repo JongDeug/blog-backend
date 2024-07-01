@@ -2,7 +2,7 @@ import { PostsService } from '../../../src/domain/posts/posts.service';
 import { AuthService } from '../../../src/domain/auth/auth.service';
 import { prismaMock } from '../../singleton';
 import { CreatePostDto, UpdatePostDto } from '../../../src/domain/posts/dto';
-import { Image, Post, User } from '@prisma';
+import { Image, Post, Prisma, User } from '@prisma';
 import { CustomError } from '@utils/customError';
 import { deleteImage } from '@utils/filesystem';
 import { PaginationType } from '@custom-type/customPagination';
@@ -407,7 +407,52 @@ describe('PostsService', () => {
                 take: mockPagination.take,
             });
         });
-
     });
     // ---
+
+    // --- GetPost
+    describe('getPost', () => {
+        const mockPostId = 'mockPostId';
+        type getPostType = Prisma.PromiseReturnType<typeof prismaMock.post.findUnique>
+        const mockReturnedPost = { id: 'mockPostId' };
+
+        test('should get post successfully', async () => {
+            // given
+            prismaMock.post.findUnique.mockResolvedValue(mockReturnedPost as getPostType);
+            // when
+            const result = await postsService.getPost(mockPostId);
+            // then
+            expect(result.post).toStrictEqual(mockReturnedPost);
+            expect(prismaMock.post.findUnique).toHaveBeenCalledWith({
+                where: { id: mockPostId },
+                include: {
+                    tags: true,
+                    postLikes: true,
+                    images: {
+                        select: {
+                            id: true,
+                            url: true,
+                        },
+                    },
+                    author: {
+                        select: {
+                            name: true,
+                        },
+                    },
+                    comments: true, // R. comment 작성 후 고치기
+                },
+            });
+        });
+
+        test('should throw error if post is not found', async () => {
+            // given
+            prismaMock.post.findUnique.mockResolvedValue(null);
+            // when, then
+            await expect(postsService.getPost).rejects.toThrow(
+                new CustomError(404, 'Not Found', '게시글을 찾을 수 없습니다'),
+            );
+            expect(prismaMock.post.findUnique).toHaveBeenCalled();
+        });
+    });
+    //
 });
