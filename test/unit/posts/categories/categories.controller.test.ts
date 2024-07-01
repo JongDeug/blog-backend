@@ -63,4 +63,46 @@ describe('CategoriesController', () => {
         });
     });
     // ---
+
+    // --- UpdateCategory
+    describe('updateCategory', () => {
+        beforeEach(() => {
+            req.user = { id: 'mockUserId' } as User;
+            req.params.name = 'targetCategory';
+            req.body = {
+                name: 'newCategory',
+            };
+        });
+
+        test('should update a category successfully', async () => {
+            // when
+            await categoriesController.updateCategory(req, res, next);
+            // then
+            expect(res.statusCode).toBe(200);
+            expect(res._getJSONData()).toStrictEqual({});
+            expect(res._isEndCalled()).toBeTruthy();
+            expect(categoriesServiceMock.updateCategory).toHaveBeenCalledWith(req.params.name, req.body);
+        });
+
+        test('should handle error if user is not authenticated', async () => {
+            // given
+            req.user = undefined;
+            // when
+            await categoriesController.updateCategory(req, res, next);
+            // then
+            expect(next).toHaveBeenCalledWith(new CustomError(401, 'Unauthorized', '로그인을 진행해주세요'));
+            expect(categoriesServiceMock.updateCategory).not.toHaveBeenCalled();
+        });
+
+        test('should handle error if categoriesServiceMock.updateCategory throws error', async () => {
+            // given
+            categoriesServiceMock.updateCategory.mockRejectedValue(new Error('데이터베이스: 카테고리 수정 오류'));
+            // when
+            await categoriesController.updateCategory(req, res, next);
+            // then
+            expect(next).toHaveBeenCalledWith(new Error('데이터베이스: 카테고리 수정 오류'));
+        });
+
+    });
+    // ---
 });
