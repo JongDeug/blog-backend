@@ -9,6 +9,12 @@ describe('CategoriesService', () => {
 
     beforeEach(() => {
         categoriesService = new CategoriesService();
+        categoriesService.findCategoryByName = jest.fn();
+    });
+
+    // Util 함수 mock 해제
+    afterEach(() => {
+        (categoriesService.findCategoryByName as jest.Mock).mockRestore();
     });
 
     // --- CreateCategory
@@ -19,8 +25,6 @@ describe('CategoriesService', () => {
         const mockReturnedCategory = { name: '이미 존재하는 카테고리' };
 
         test('should create a category successfully', async () => {
-            // given
-            categoriesService.findCategoryByName = jest.fn();
             // then
             await categoriesService.createCategory(mockDto);
             // when
@@ -30,7 +34,7 @@ describe('CategoriesService', () => {
 
         test('should throw error if category already exists', async () => {
             // given
-            categoriesService.findCategoryByName = jest.fn().mockImplementation(() => {
+            (categoriesService.findCategoryByName as jest.Mock).mockImplementation(() => {
                 throw new CustomError(409, 'Conflict', '이미 존재하는 카테고리입니다');
             });
             // when, then
@@ -51,8 +55,6 @@ describe('CategoriesService', () => {
         const mockName = 'mockName';
 
         test('should update a category successfully', async () => {
-            // given
-            categoriesService.findCategoryByName = jest.fn();
             // when
             await categoriesService.updateCategory(mockName, mockDto);
             // then
@@ -67,7 +69,7 @@ describe('CategoriesService', () => {
 
         test('should throw error if target category is not found', async () => {
             // given
-            categoriesService.findCategoryByName = jest.fn().mockImplementation(() => {
+            (categoriesService.findCategoryByName as jest.Mock).mockImplementation(() => {
                 throw new CustomError(404, 'Not Found', '카테고리를 찾을 수 없습니다');
             });
             // when
@@ -81,7 +83,7 @@ describe('CategoriesService', () => {
 
         test('should throw error if new category is already exists', async () => {
             // given
-            categoriesService.findCategoryByName = jest.fn()
+            (categoriesService.findCategoryByName as jest.Mock)
                 .mockImplementationOnce(() => {
                 })
                 .mockImplementationOnce(() => {
@@ -103,8 +105,6 @@ describe('CategoriesService', () => {
         const mockName = 'mockName';
 
         test('should delete a category successfully', async () => {
-            // given
-            categoriesService.findCategoryByName = jest.fn();
             // when
             await categoriesService.deleteCategory(mockName);
             // then
@@ -114,7 +114,7 @@ describe('CategoriesService', () => {
 
         test('should throw error if category is not found', async () => {
             // given
-            categoriesService.findCategoryByName = jest.fn().mockImplementation(() => {
+            (categoriesService.findCategoryByName as jest.Mock).mockImplementation(() => {
                 throw new CustomError(404, 'Not Found', '카테고리를 찾을 수 없습니다');
             });
             // when, then
@@ -127,11 +127,21 @@ describe('CategoriesService', () => {
 
         test('should throw error if foreign key constraint failed', async () => {
             // given
-            categoriesService.findCategoryByName = jest.fn();
             prismaMock.category.delete.mockRejectedValue(new Prisma.PrismaClientKnownRequestError('Foreign key constraint failed', { code: 'P2003' } as Prisma.PrismaClientKnownRequestError));
             // when, then
             await expect(categoriesService.deleteCategory(mockName)).rejects.toThrow(
                 new CustomError(400, 'Bad Request', '카테고리를 참조하고 있는 Post가 존재합니다'),
+            );
+            expect(categoriesService.findCategoryByName).toHaveBeenCalled();
+            expect(prismaMock.category.delete).toHaveBeenCalled();
+        });
+
+        test('should throw error if database.category.delete throw another errors', async () => {
+            // given
+            prismaMock.category.delete.mockRejectedValue(new Error('데이터베이스: 카테고리 삭제 오류'));
+            // when, then
+            await expect(categoriesService.deleteCategory(mockName)).rejects.toThrow(
+                new Error('데이터베이스: 카테고리 삭제 오류'),
             );
             expect(categoriesService.findCategoryByName).toHaveBeenCalled();
             expect(prismaMock.category.delete).toHaveBeenCalled();

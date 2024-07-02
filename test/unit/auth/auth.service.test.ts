@@ -2,9 +2,7 @@ import { AuthService } from '../../../src/domain/auth/auth.service';
 import { prismaMock } from '../../singleton';
 import { LoginDto, RegisterDto } from '../../../src/domain/auth/dto';
 import bcrypt from 'bcrypt';
-import jwt, { Secret, VerifyOptions } from 'jsonwebtoken';
 import { User } from '@prisma';
-import { CustomJwtPayload } from '@custom-type/customJwtPayload';
 import { CustomError } from '@utils/customError';
 
 jest.mock('bcrypt');
@@ -15,24 +13,14 @@ describe('AuthService', () => {
 
     beforeEach(() => {
         authService = new AuthService();
-        authService.signToken = jest.fn().mockImplementation((user, isRefreshToken) => {
-            const payload = {
-                id: user.id,
-                email: user.email,
-                type: isRefreshToken ? 'refresh' : 'access',
-            };
-            return jwt.sign(payload, 'mocked-secret', {
-                expiresIn: isRefreshToken ? '1d' : '2h',
-            });
-        });
-        authService.verifyToken = jest.fn().mockImplementation(((token: string, options: VerifyOptions = {}) => {
-            try {
-                return <CustomJwtPayload>jwt.verify(token, process.env.JWT_SECRET as Secret, options);
-            } catch (err) {
-                // I. 401 Unauthorized
-                throw new CustomError(401, 'Unauthorized', '토큰이 만료됐거나 잘못된 토큰입니다');
-            }
-        }));
+        authService.signToken = jest.fn();
+        authService.verifyToken = jest.fn();
+    });
+
+    // Util 함수 mock 해제
+    afterEach(() => {
+        (authService.signToken as jest.Mock).mockRestore();
+        (authService.verifyToken as jest.Mock).mockRestore();
     });
 
     // --- Register
@@ -276,6 +264,7 @@ describe('AuthService', () => {
 
     // --- Utils
     describe('utils', () => {
+
     });
     // ---
 });

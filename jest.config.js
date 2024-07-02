@@ -4,10 +4,13 @@ module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
   setupFilesAfterEnv: ['<rootDir>/test/singleton.ts'],
-  moduleNameMapper: {
+  moduleNameMapper: { // 절대 경로
     "@utils/(.*)$": "<rootDir>/src/utils/$1",
     "@middleware/(.*)$": "<rootDir>/src/middleware/$1",
     "@prisma": "<rootDir>/prisma/prisma-client/index",
     "@custom-type/(.*)$": "<rootDir>/types/$1"
-  }
+  },
+  coveragePathIgnorePatterns: [ // coverage 무시
+    "/prisma/",
+  ],
 };
