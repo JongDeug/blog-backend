@@ -130,7 +130,7 @@ model Post {
   ///
   /// 작성자 ID {@link Category.id}
   categoryName String
-  category     Category @relation(fields: [categoryName], references: [name])
+  category     Category @relation(fields: [categoryName], references: [name], onUpdate: Cascade, onDelete: Restrict)
 }
 
 /// 태그 테이블
