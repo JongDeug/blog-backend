@@ -119,11 +119,7 @@ export class AuthService {
     async findUserById(userId: string) {
         const user = await database.user.findUnique({ where: { id: userId } });
 
-        if (!user) throw new CustomError(
-            404,
-            'Not Found',
-            '유저를 찾을 수 없습니다',
-        );
+        if (!user) throw new CustomError(404, 'Not Found', '유저를 찾을 수 없습니다');
 
         return user;
     }
@@ -144,16 +140,15 @@ export class AuthService {
         try {
             return <CustomJwtPayload>jwt.verify(token, process.env.JWT_SECRET as Secret, options);
         } catch (err) {
-            let message;
-            if (err instanceof Error) message = err.name; // I. error 타입 에러 => instanceof 로 해결
-            // I. 토큰은 유효한데 만료됐을 경우
-            if (message === 'TokenExpiredError') {
-                throw new CustomError(401, 'Unauthorized', '만료된 토큰입니다');
+            if (err instanceof Error) {
+                // I. 토큰은 유효한데 만료됐을 경우
+                // I. error 타입 에러 => instanceof 로 해결
+                if (err.name === 'TokenExpiredError') {
+                    throw new CustomError(401, 'Unauthorized', '만료된 토큰입니다');
+                }
             }
             // I. 토큰 자체가 유효하지 않을 경우
-            else {
-                throw new CustomError(401, 'Unauthorized', '잘못된 토큰입니다');
-            }
+            throw new CustomError(401, 'Unauthorized', '잘못된 토큰입니다');
         }
     }
 }

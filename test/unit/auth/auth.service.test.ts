@@ -4,23 +4,18 @@ import { LoginDto, RegisterDto } from '../../../src/domain/auth/dto';
 import bcrypt from 'bcrypt';
 import { User } from '@prisma';
 import { CustomError } from '@utils/customError';
+import jwt, { Secret } from 'jsonwebtoken';
 
 jest.mock('bcrypt');
 jest.mock('jsonwebtoken');
 
-describe('AuthService', () => {
+describe('AuthService Main Function', () => {
     let authService: AuthService;
 
     beforeEach(() => {
         authService = new AuthService();
         authService.signToken = jest.fn();
         authService.verifyToken = jest.fn();
-    });
-
-    // Util 함수 mock 해제
-    afterEach(() => {
-        (authService.signToken as jest.Mock).mockRestore();
-        (authService.verifyToken as jest.Mock).mockRestore();
     });
 
     // --- Register
@@ -260,11 +255,134 @@ describe('AuthService', () => {
             expect(prismaMock.user.findUnique).not.toHaveBeenCalled();
         });
     });
+});
 
+describe('AuthService Util Function', () => {
+    let authService: AuthService;
 
-    // --- Utils
-    describe('utils', () => {
+    beforeEach(() => {
+        authService = new AuthService();
+    });
 
+    // --- FindUserById
+    describe('findUserById', () => {
+        const mockUserId = 'mockUserId';
+        const mockReturnedUser = { id: 'mockUserId' };
+
+        test('should find a user by id successfully', async () => {
+            // given
+            prismaMock.user.findUnique.mockResolvedValue(mockReturnedUser as User);
+            // when
+            const result = await authService.findUserById(mockUserId);
+            // then
+            expect(result).toStrictEqual(mockReturnedUser);
+            expect(prismaMock.user.findUnique).toHaveBeenCalledWith({ where: { id: mockUserId } });
+        });
+
+        test('should throw error if user is not found', async () => {
+            // given
+            prismaMock.user.findUnique.mockResolvedValue(null);
+            // when, then
+            await expect(authService.findUserById(mockUserId)).rejects.toThrow(
+                new CustomError(404, 'Not Found', '유저를 찾을 수 없습니다'),
+            );
+            expect(prismaMock.user.findUnique).toHaveBeenCalled();
+        });
+    });
+    // ---
+
+    // --- SignToken
+    describe('signToken', () => {
+        const mockUser = { id: 'mockUserId', email: 'test@gmail.com' };
+
+        test('should sign access token successfully', () => {
+            // given
+            (jwt.sign as jest.Mock).mockImplementation(() => 'fakeAccessToken');
+            // when
+            const result = authService.signToken(mockUser, false);
+            // then
+            expect(result).toBe('fakeAccessToken');
+            expect(jwt.sign).toHaveBeenCalledWith({
+                id: mockUser.id,
+                email: mockUser.email,
+                type: 'access',
+            }, process.env.JWT_SECRET as Secret, { expiresIn: '1h' });
+        });
+
+        test('should sign refresh token successfully', () => {
+            // given
+            (jwt.sign as jest.Mock).mockImplementation(() => 'fakeRefreshToken');
+            // when
+            const result = authService.signToken(mockUser, true);
+            // then
+            expect(result).toBe('fakeRefreshToken');
+            expect(jwt.sign).toHaveBeenCalledWith({
+                id: mockUser.id,
+                email: mockUser.email,
+                type: 'refresh',
+            }, process.env.JWT_SECRET as Secret, { expiresIn: '1d' });
+        });
+    });
+    // ---
+
+    // --- VerifyToken
+    describe('verifyToken', () => {
+        const mockToken = 'mockToken';
+
+        test('should verify token successfully without options', () => {
+            // given
+            (jwt.verify as jest.Mock).mockReturnValue({ id: 'mockUserId' });
+            // when
+            const result = authService.verifyToken(mockToken);
+            // then
+            expect(result).toStrictEqual({ id: 'mockUserId' });
+            expect(jwt.verify).toHaveBeenCalledWith(mockToken, process.env.JWT_SECRET as Secret, {});
+        });
+
+        test('should verify token successfully with options', () => {
+            // given
+            (jwt.verify as jest.Mock).mockReturnValue({ id: 'mockUserId' });
+            // when
+            const result = authService.verifyToken(mockToken, { ignoreExpiration: true });
+            // then
+            expect(result).toStrictEqual({ id: 'mockUserId' });
+            expect(jwt.verify).toHaveBeenCalledWith(mockToken, process.env.JWT_SECRET as Secret, { ignoreExpiration: true });
+        });
+
+        test('should throw error if token is expired', () => {
+            // given
+            const error = new Error('verify 에러');
+            error.name = 'TokenExpiredError';
+            (jwt.verify as jest.Mock).mockImplementation(() => {
+                throw error;
+            });
+            // when, then
+            try {
+                authService.verifyToken(mockToken, {});
+            } catch (err) {
+                expect(err).toStrictEqual(
+                    new CustomError(401, 'Unauthorized', '만료된 토큰입니다'),
+                );
+            }
+            expect(jwt.verify).toHaveBeenCalled();
+        });
+
+        test('should throw error if token is invalid', () => {
+            // given
+            const error = new Error('verify 에러');
+            (jwt.verify as jest.Mock).mockImplementation(() => {
+                throw error;
+            });
+            // when, then
+            try {
+                authService.verifyToken(mockToken, {});
+            } catch (err) {
+                expect(err).toStrictEqual(
+                    new CustomError(401, 'Unauthorized', '잘못된 토큰입니다'),
+                );
+            }
+            expect(jwt.verify).toHaveBeenCalled();
+        });
     });
     // ---
 });
