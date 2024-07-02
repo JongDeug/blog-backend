@@ -1,15 +1,15 @@
 import { CreateCategoryDto, UpdateCategoryDto } from './dto';
 import database from '@utils/database';
 import { CustomError } from '@utils/customError';
+import { Prisma } from '@prisma';
 
 export class CategoriesService {
     constructor() {
     }
 
     async createCategory(dto: CreateCategoryDto) {
-        // I. 카테고리가 이미 있는지 확인
-        const isExist = await database.category.findUnique({ where: { name: dto.name } });
-        if (isExist) throw new CustomError(409, 'Conflict', '이미 존재하는 카테고리입니다');
+        // I. 카테고리를 찾고, 있으면 Conflict 에러
+        await this.findCategoryByName(dto.name, 409);
 
         // I. 카테고리 생성
         await database.category.create({
@@ -18,13 +18,11 @@ export class CategoriesService {
     }
 
     async updateCategory(name: string, dto: UpdateCategoryDto) {
-        // I. 기존 카테고리의 존재 여부 확인
-        const isTargetCategoryExist= await database.category.findUnique({ where: { name } });
-        if (!isTargetCategoryExist) throw new CustomError(404, 'Not Found', '바꾸려는 카테고리를 찾을 수 없습니다');
+        // I. 카테고리를 찾고, 없으면 Not Found 에러
+        await this.findCategoryByName(name, 404);
 
-        // I. 새로운 카테고리의 존재 여부 확인
-        const isNewCategoryExists = await database.category.findUnique({ where: { name: dto.name } });
-        if (isNewCategoryExists) throw new CustomError(409, 'Conflict', '업데이트 하려는 카테고리가 이미 존재합니다');
+        // I. 업데이트 하려는 카테고리가 있으면 Conflict 에러
+        await this.findCategoryByName(dto.name, 409);
 
         // I. 카테고리 업데이트
         await database.category.update({
@@ -32,4 +30,38 @@ export class CategoriesService {
             data: { name: dto.name },
         });
     }
+
+    async deleteCategory(name: string) {
+        // I. 카테고리를 찾고, 없으면 Not Found 에러
+        await this.findCategoryByName(name, 404);
+
+        // I. 카테고리 삭제
+        try {
+            await database.category.delete({ where: { name } });
+        } catch (err) {
+            if (err instanceof Prisma.PrismaClientKnownRequestError) {
+                if (err.code === 'P2003') {
+                    // onDelete 를 Restrict 로 설정
+                    // 따라서 부모인 카테고리를 삭제하면, 이를 참조하는 Post 자식이 있으면 에러를 반환함
+                    throw new CustomError(400, 'Bad Request', '카테고리를 참조하고 있는 Post가 존재합니다');
+                }
+            }
+            throw err;
+        }
+    }
+
+    /**
+     * Utils
+     * findCategoryByName : 카테고리명으로 카테고리 검색
+     */
+    async findCategoryByName(name: string, statusCode: number) {
+        const isExist = await database.category.findUnique({ where: { name } });
+
+        if (statusCode === 404) {
+            if (!isExist) throw new CustomError(404, 'Not Found', '카테고리를 찾을 수 없습니다');
+        } else if (statusCode === 409) {
+            if (isExist) throw new CustomError(409, 'Conflict', '이미 존재하는 카테고리입니다');
+        }
+    }
+
 }

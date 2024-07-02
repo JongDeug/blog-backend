@@ -102,7 +102,44 @@ describe('CategoriesController', () => {
             // then
             expect(next).toHaveBeenCalledWith(new Error('데이터베이스: 카테고리 수정 오류'));
         });
+    });
+    // ---
 
+    // --- DeleteCategory
+    describe('deleteCategory', () => {
+        beforeEach(() => {
+            req.user = { id: 'mockUserId' } as User;
+            req.params.name = 'targetCategory';
+        });
+
+        test('should delete a category successfully', async () => {
+            // when
+            await categoriesController.deleteCategory(req, res, next);
+            // then
+            expect(res.statusCode).toBe(200);
+            expect(res._getJSONData()).toStrictEqual({});
+            expect(res._isEndCalled()).toBeTruthy();
+            expect(categoriesServiceMock.deleteCategory).toHaveBeenCalledWith(req.params.name);
+        });
+
+        test('should handle error if user is not authenticated', async () => {
+            // given
+            req.user = undefined;
+            // when
+            await categoriesController.deleteCategory(req, res, next);
+            // then
+            expect(next).toHaveBeenCalledWith(new CustomError(401, 'Unauthorized', '로그인을 진행해주세요'));
+            expect(categoriesServiceMock.deleteCategory).not.toHaveBeenCalled();
+        });
+
+        test('should handle error if categoriesServiceMock.deleteCategory throws error', async () => {
+            // given
+            categoriesServiceMock.deleteCategory.mockRejectedValue(new Error('데이터베이스: 카테고리 삭제 오류'));
+            // when
+            await categoriesController.deleteCategory(req, res, next);
+            // then
+            expect(next).toHaveBeenCalledWith(new Error('데이터베이스: 카테고리 삭제 오류'));
+        });
     });
     // ---
 });
