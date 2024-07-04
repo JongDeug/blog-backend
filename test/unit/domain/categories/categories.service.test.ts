@@ -4,17 +4,12 @@ import { CreateCategoryDto } from '../../../../src/domain/categories/dto';
 import { prismaMock } from '../../../singleton';
 import { CustomError } from '@utils/customError';
 
-describe('CategoriesService', () => {
+describe('CategoriesService Main Functions', () => {
     let categoriesService: CategoriesService;
 
     beforeEach(() => {
         categoriesService = new CategoriesService();
         categoriesService.findCategoryByName = jest.fn();
-    });
-
-    // Util 함수 mock 해제
-    afterEach(() => {
-        (categoriesService.findCategoryByName as jest.Mock).mockRestore();
     });
 
     // --- CreateCategory
@@ -161,6 +156,58 @@ describe('CategoriesService', () => {
             // then
             expect(result).toStrictEqual(mockCategories.map(category => category.name));
             expect(prismaMock.category.findMany).toHaveBeenCalledWith({});
+        });
+    });
+    // ---
+});
+
+describe('CategoriesService Util Functions', () => {
+    let categoriesService: CategoriesService;
+
+    beforeEach(() => {
+        categoriesService = new CategoriesService();
+    });
+
+    // --- FindCategoryByName
+    describe('findCategoryByName', () => {
+        // I. 카테고리가 존재하면서 404 가 인자로 주어졌을 때 => Error X
+        test('should not throw error if category exists and statusCode is 404', async () => {
+            // given
+            prismaMock.category.findUnique.mockResolvedValue({ name: 'mockCategory' });
+            // when, then
+            await expect(categoriesService.findCategoryByName('mockCategory', 404)).resolves.toBeUndefined();
+            expect(prismaMock.category.findUnique).toHaveBeenCalledWith({ where: { name: 'mockCategory' } });
+        });
+
+        // I. 카테고리가 존재하지 않으면서 409 가 인자로 주어졌을 때 => Error X
+        test('should not throw error if category does not exist and statusCode is 409', async () => {
+            // given
+            prismaMock.category.findUnique.mockResolvedValue(null);
+            // when, then
+            await expect(categoriesService.findCategoryByName('mockCategory', 409)).resolves.toBeUndefined();
+            expect(prismaMock.category.findUnique).toHaveBeenCalledWith({ where: { name: 'mockCategory' } });
+        });
+
+        // I. 카테고리가 존재하지 않으면서 404 가 인자로 주어졌을 때 => Error O
+        test('should throw error if category does not exist and statusCode is 404', async () => {
+            // given
+            prismaMock.category.findUnique.mockResolvedValue(null);
+            // when, then
+            await expect(categoriesService.findCategoryByName('mockCategory', 404)).rejects.toThrow(
+                new CustomError(404, 'Not Found', '카테고리를 찾을 수 없습니다'),
+            );
+            expect(prismaMock.category.findUnique).toHaveBeenCalled();
+        });
+
+        // I. 카테고리가 존재하면서 409 가 인자로 주어졌을 때 => Error O
+        test('should throw error if category exists and statusCode is 409', async () => {
+            // given
+            prismaMock.category.findUnique.mockResolvedValue({ name: 'mockCategory' });
+            // when, then
+            await expect(categoriesService.findCategoryByName('mockCategory', 409)).rejects.toThrow(
+                new CustomError(409, 'Conflict', '이미 존재하는 카테고리입니다'),
+            );
+            expect(prismaMock.category.findUnique).toHaveBeenCalled();
         });
     });
     // ---
