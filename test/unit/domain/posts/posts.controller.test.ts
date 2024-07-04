@@ -1,13 +1,13 @@
 import httpMocks from 'node-mocks-http';
 import { NextFunction, Request, Response } from 'express';
-import { PostsController } from '../../../src/domain/posts/posts.controller';
-import { PostsService } from '../../../src/domain/posts/posts.service';
-import { AuthService } from '../../../src/domain/auth/auth.service';
+import { PostsController } from '../../../../src/domain/posts/posts.controller';
+import { PostsService } from '../../../../src/domain/posts/posts.service';
+import { AuthService } from '../../../../src/domain/auth/auth.service';
 import { Prisma, Post, User } from '@prisma';
 import { CustomError } from '@utils/customError';
 
-jest.mock('../../../src/domain/auth/auth.service');
-jest.mock('../../../src/domain/posts/posts.service');
+jest.mock('../../../../src/domain/auth/auth.service');
+jest.mock('../../../../src/domain/posts/posts.service');
 
 describe('PostsController', () => {
     let req: httpMocks.MockRequest<Request>;

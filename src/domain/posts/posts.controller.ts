@@ -102,6 +102,7 @@ export class PostsController {
     async getPost(req: Request, res: Response, next: NextFunction) {
         try {
             // I. JWT 필요 X
+            console.log(req.url)
 
             // I. param 으로 postId 받기
             const { id } = req.params;

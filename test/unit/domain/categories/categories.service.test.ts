@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma';
-import { CategoriesService } from '../../../../src/domain/posts/categories/categories.service';
-import { CreateCategoryDto } from '../../../../src/domain/posts/categories/dto';
+import { CategoriesService } from '../../../../src/domain/categories/categories.service';
+import { CreateCategoryDto } from '../../../../src/domain/categories/dto';
 import { prismaMock } from '../../../singleton';
 import { CustomError } from '@utils/customError';
 
@@ -145,6 +145,22 @@ describe('CategoriesService', () => {
             );
             expect(categoriesService.findCategoryByName).toHaveBeenCalled();
             expect(prismaMock.category.delete).toHaveBeenCalled();
+        });
+    });
+    // ---
+
+    // --- GetCategories
+    describe('getCategories', () => {
+        const mockCategories = [{ name: 'mock1' }, { name: 'mock2' }, { name: 'mock3' }];
+
+        test('should get categories successfully', async () => {
+            // given
+            prismaMock.category.findMany.mockResolvedValue(mockCategories);
+            // when
+            const result = await categoriesService.getCategories();
+            // then
+            expect(result).toStrictEqual(mockCategories.map(category => category.name));
+            expect(prismaMock.category.findMany).toHaveBeenCalledWith({});
         });
     });
     // ---

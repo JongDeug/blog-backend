@@ -1,10 +1,10 @@
 import httpMocks from 'node-mocks-http';
 import { NextFunction, Request, Response } from 'express';
-import { AuthService } from '../../../src/domain/auth/auth.service';
-import { AuthController } from '../../../src/domain/auth/auth.controller';
+import { AuthService } from '../../../../src/domain/auth/auth.service';
+import { AuthController } from '../../../../src/domain/auth/auth.controller';
 import { CustomError } from '@utils/customError';
 
-jest.mock('../../../src/domain/auth/auth.service'); // AuthService mocking
+jest.mock('../../../../src/domain/auth/auth.service'); // AuthService mocking
 
 describe('AuthController', () => {
     let req: httpMocks.MockRequest<Request>;

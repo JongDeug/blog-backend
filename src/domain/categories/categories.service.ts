@@ -50,6 +50,13 @@ export class CategoriesService {
         }
     }
 
+    async getCategories() {
+        // I. 모든 카테고리 반환
+        const categories = await database.category.findMany({});
+
+        return categories.map(category => category.name);
+    }
+
     /**
      * Utils
      * findCategoryByName : 카테고리명으로 카테고리 검색

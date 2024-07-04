@@ -1,13 +1,13 @@
-import { PostsService } from '../../../src/domain/posts/posts.service';
-import { AuthService } from '../../../src/domain/auth/auth.service';
-import { prismaMock } from '../../singleton';
-import { CreatePostDto, UpdatePostDto } from '../../../src/domain/posts/dto';
+import { PostsService } from '../../../../src/domain/posts/posts.service';
+import { AuthService } from '../../../../src/domain/auth/auth.service';
+import { prismaMock } from '../../../singleton';
+import { CreatePostDto, UpdatePostDto } from '../../../../src/domain/posts/dto';
 import { Image, Post, Prisma, User } from '@prisma';
 import { CustomError } from '@utils/customError';
 import { deleteImage } from '@utils/filesystem';
 import { PaginationType } from '@custom-type/customPagination';
 
-jest.mock('../../../src/domain/auth/auth.service');
+jest.mock('../../../../src/domain/auth/auth.service');
 jest.mock('@utils/filesystem'); // 정확한 명칭으로 설정하니 에러가 사라짐.
 
 describe('PostsService', () => {

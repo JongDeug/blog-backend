@@ -1,5 +1,5 @@
-import { CategoriesController } from '../../../../src/domain/posts/categories/categories.controller';
-import { CategoriesService } from '../../../../src/domain/posts/categories/categories.service';
+import { CategoriesController } from '../../../../src/domain/categories/categories.controller';
+import { CategoriesService } from '../../../../src/domain/categories/categories.service';
 import { NextFunction, Request, Response } from 'express';
 import httpMocks from 'node-mocks-http';
 import { User } from '@prisma';
@@ -7,7 +7,7 @@ import { CustomError } from '@utils/customError';
 import { PostsService } from '../../../../src/domain/posts/posts.service';
 import { prismaMock } from '../../../singleton';
 
-jest.mock('../../../../src/domain/posts/categories/categories.service');
+jest.mock('../../../../src/domain/categories/categories.service');
 
 describe('CategoriesController', () => {
     let req: httpMocks.MockRequest<Request>;
@@ -140,6 +140,33 @@ describe('CategoriesController', () => {
             // then
             expect(next).toHaveBeenCalledWith(new Error('데이터베이스: 카테고리 삭제 오류'));
         });
+    });
+    // ---
+
+    // --- GetCategories
+    describe('getCategories', () => {
+        const mockCategories = ['mock1', 'mock2', 'mock3'];
+
+        test('should get categories', async () => {
+            // given
+            categoriesServiceMock.getCategories.mockResolvedValue(mockCategories);
+            // when
+            await categoriesController.getCategories(req, res, next);
+            // then
+            expect(res.statusCode).toBe(200);
+            expect(res._getJSONData()).toStrictEqual({ categories: mockCategories });
+            expect(res._isEndCalled()).toBeTruthy();
+            expect(categoriesServiceMock.getCategories).toHaveBeenCalledWith();
+        });
+
+        test('should handle error if categoriesServiceMock.getCategories throws error', async () => {
+            // given
+            categoriesServiceMock.getCategories.mockRejectedValue(new Error('데이터베이스: 카테고리 조회 오류'));
+            // when
+            await categoriesController.getCategories(req, res, next);
+            // then
+            expect(next).toHaveBeenCalledWith(new Error('데이터베이스: 카테고리 조회 오류'));
+        })
     });
     // ---
 });
