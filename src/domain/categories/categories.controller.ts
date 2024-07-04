@@ -9,7 +9,7 @@ export class CategoriesController {
     router: Router;
 
     constructor(private readonly categoriesService: CategoriesService) {
-        this.path = '/posts/categories';
+        this.path = '/categories';
         this.router = Router();
         this.init();
     }
@@ -18,6 +18,7 @@ export class CategoriesController {
         this.router.post('/', validateDto(CreateCategoryDto), this.createCategory.bind(this));
         this.router.patch('/:name', validateDto(UpdateCategoryDto), this.updateCategory.bind(this));
         this.router.delete('/:name', this.deleteCategory.bind(this));
+        this.router.get('/', this.getCategories.bind(this));
     }
 
     async createCategory(req: Request, res: Response, next: NextFunction) {
@@ -63,6 +64,19 @@ export class CategoriesController {
             await this.categoriesService.deleteCategory(name);
 
             res.status(200).json({});
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    async getCategories(req: Request, res: Response, next: NextFunction) {
+        try {
+            // I. JWT 확인 X
+
+            // I. categoriesService.getCategories 호출
+            const categories = await this.categoriesService.getCategories();
+
+            res.status(200).json({ categories });
         } catch (err) {
             next(err);
         }

@@ -9,6 +9,8 @@ export const jwtVerify = function(authService: AuthService): RequestHandler {
             if (req.url.startsWith('/auth')) return next();
             // I. '/posts' 로 시작하는 GET 메소드 요청은 인증에서 제외한다.
             if (req.url.startsWith('/posts') && req.method === 'GET') return next();
+            // I. '/categories' 로 시작하는 GET 메소드 요청은 인증에서 제외한다.
+            if (req.url.startsWith('/categories') && req.method === 'GET') return next();
 
             // I. cookie 에서 access token 추출, 만약 없으면 에러 반환
             const accessToken = req.cookies.accessToken;
