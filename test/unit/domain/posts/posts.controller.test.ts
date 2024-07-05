@@ -225,10 +225,11 @@ describe('PostsController', () => {
     // --- GetPost
     describe('getPost', () => {
         type getPostType = Prisma.PromiseReturnType<typeof postsServiceMock.getPost>
-        const mockReturnedPost = { post: { id: 'mockPostId' } };
+        const mockReturnedPost = { post: { id: 'mockPostId' }, isLiked: true };
 
         beforeEach(() => {
             req.params.id = 'mockPostId';
+            req.cookies.guestUserId = 'mockGuestUserId';
         });
 
         test('should get a post successfully', async () => {
@@ -238,9 +239,14 @@ describe('PostsController', () => {
             await postsController.getPost(req, res, next);
             // then
             expect(res.statusCode).toBe(200);
-            expect(res._getJSONData()).toStrictEqual(mockReturnedPost);
+            expect(res._getJSONData()).toStrictEqual({
+                post: {
+                    ...mockReturnedPost.post,
+                    isLiked: mockReturnedPost.isLiked,
+                },
+            });
             expect(res._isEndCalled()).toBeTruthy();
-            expect(postsServiceMock.getPost).toHaveBeenCalledWith(req.params.id);
+            expect(postsServiceMock.getPost).toHaveBeenCalledWith(req.params.id, req.cookies.guestUserId);
         });
 
         test('should handle error if postsService.getPost throws error', async () => {

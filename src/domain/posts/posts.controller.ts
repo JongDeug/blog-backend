@@ -24,6 +24,8 @@ export class PostsController {
         this.router.delete('/:id', this.deletePost.bind(this));
         this.router.get('/', pagination, this.getPosts.bind(this));
         this.router.get('/:id', this.getPost.bind(this));
+        // =====================================================================================
+        this.router.post('/like', this.postLike.bind(this));
     }
 
     async createPost(req: Request, res: Response, next: NextFunction) {
@@ -102,14 +104,36 @@ export class PostsController {
     async getPost(req: Request, res: Response, next: NextFunction) {
         try {
             // I. JWT 필요 X
-            console.log(req.url)
 
             // I. param 으로 postId 받기
             const { id } = req.params;
             // I. postsService.getPost 호출
-            const { post } = await this.postsService.getPost(id);
+            const { post, isLiked } = await this.postsService.getPost(id, req.cookies['guestUserId']);
 
-            res.status(200).json({ post });
+            res.status(200).json({ post: { ...post, isLiked } });
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    async postLike(req: Request, res: Response, next: NextFunction) {
+        try {
+            // I. JWT 필요 X
+
+            // I. postsService.postLike 호출
+            const { guestUserId, message } = await this.postsService.postLike(req.cookies['guestUserId'], req.body);
+
+            if (guestUserId) {
+                // I. Http Only Cookie 를 사용해 토큰 전송
+                res.cookie('guestUserId', guestUserId, {
+                    httpOnly: true,
+                    maxAge: 2 * 60 * 60 * 1000,
+                    // sameSite: 'strict', // sameSite 속성 설정
+                    // secure: true // HTTPS 연결에서만 쿠키가 전송되도록 설정
+                });
+            }
+
+            res.status(200).json({ message });
         } catch (err) {
             next(err);
         }
