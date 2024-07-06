@@ -269,6 +269,8 @@ export class PostsService {
             },
         });
 
+        console.log(guestUserId);
+
         // I. 좋아요 생성 시, 백엔드에서도 한 번 더 체킹
         if (dto.tryToLike && !isLiked) {
             await database.postLike.create({
@@ -280,7 +282,7 @@ export class PostsService {
 
             return;
         }
-        // I. 좋아요 삭제 시, 고아 게스트까지 삭제
+        // I. 좋아요 삭제 시
         else if (!dto.tryToLike && isLiked) {
             await database.postLike.delete({
                 where: {
@@ -291,12 +293,13 @@ export class PostsService {
                 },
             });
 
-            await database.guestUser.deleteMany({
-                where: {
-                    postLikes: { none: {} },
-                    comments: { none: {} },
-                },
-            });
+            // I. 고아 게스트 삭제인데 목적성에 맞지 않은 것 같음 => 생략
+            // await database.guestUser.deleteMany({
+            //     where: {
+            //         postLikes: { none: {} },
+            //         comments: { none: {} },
+            //     },
+            // });
 
             return;
         }

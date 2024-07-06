@@ -111,7 +111,7 @@ export class PostsController {
             const { guestUserId } = req.cookies;
 
             // I. postsService.getPost 호출
-            const { post     } = await this.postsService.getPost(id, guestUserId);
+            const { post } = await this.postsService.getPost(id, guestUserId);
 
             res.status(200).json({ post });
         } catch (err) {
@@ -135,7 +135,6 @@ export class PostsController {
                 // I. Http Only Cookie 를 사용해 토큰 전송
                 res.cookie('guestUserId', guestUserId, {
                     httpOnly: true,
-                    maxAge: 2 * 60 * 60 * 1000,
                     // sameSite: 'strict', // sameSite 속성 설정
                     // secure: true // HTTPS 연결에서만 쿠키가 전송되도록 설정
                 });
