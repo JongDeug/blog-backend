@@ -5,8 +5,10 @@ import { PostsService } from '../../../../src/domain/posts/posts.service';
 import { AuthService } from '../../../../src/domain/auth/auth.service';
 import { Prisma, Post, User } from '@prisma';
 import { CustomError } from '@utils/customError';
+import { UsersService } from '../../../../src/domain/users/users.service';
 
 jest.mock('../../../../src/domain/auth/auth.service');
+jest.mock('../../../../src/domain/users/users.service');
 jest.mock('../../../../src/domain/posts/posts.service');
 
 describe('PostsController', () => {
@@ -15,13 +17,15 @@ describe('PostsController', () => {
     let next: NextFunction;
     let postsController: PostsController;
     let postsServiceMock: jest.Mocked<PostsService>;
+    let usersServiceMock: jest.Mocked<UsersService>;
 
     beforeEach(() => {
         req = httpMocks.createRequest();
         res = httpMocks.createResponse();
         next = jest.fn();
-        postsServiceMock = jest.mocked(new PostsService(new AuthService())) as jest.Mocked<PostsService>;
-        postsController = new PostsController(postsServiceMock);
+        postsServiceMock = jest.mocked(new PostsService(new UsersService())) as jest.Mocked<PostsService>;
+        usersServiceMock = jest.mocked(new UsersService()) as jest.Mocked<UsersService>;
+        postsController = new PostsController(postsServiceMock, usersServiceMock);
     });
 
     // --- CreatePost
@@ -224,8 +228,9 @@ describe('PostsController', () => {
 
     // --- GetPost
     describe('getPost', () => {
-        type getPostType = Prisma.PromiseReturnType<typeof postsServiceMock.getPost>
-        const mockReturnedPost = { post: { id: 'mockPostId' }, isLiked: true };
+        type GetPostType = Prisma.PromiseReturnType<typeof postsServiceMock.getPost>
+        type PostWithIsLiked = GetPostType & { isLiked: boolean }
+        const mockReturnedPost = { post: { id: 'mockPostId', isLiked: true } };
 
         beforeEach(() => {
             req.params.id = 'mockPostId';
@@ -234,17 +239,12 @@ describe('PostsController', () => {
 
         test('should get a post successfully', async () => {
             // given
-            postsServiceMock.getPost.mockResolvedValue(mockReturnedPost as getPostType);
+            postsServiceMock.getPost.mockResolvedValue(mockReturnedPost as PostWithIsLiked);
             // when
             await postsController.getPost(req, res, next);
             // then
             expect(res.statusCode).toBe(200);
-            expect(res._getJSONData()).toStrictEqual({
-                post: {
-                    ...mockReturnedPost.post,
-                    isLiked: mockReturnedPost.isLiked,
-                },
-            });
+            expect(res._getJSONData()).toStrictEqual(mockReturnedPost);
             expect(res._isEndCalled()).toBeTruthy();
             expect(postsServiceMock.getPost).toHaveBeenCalledWith(req.params.id, req.cookies.guestUserId);
         });
@@ -256,6 +256,66 @@ describe('PostsController', () => {
             await postsController.getPost(req, res, next);
             // then
             expect(next).toHaveBeenCalledWith(new Error('데이터베이스: 게시글 상세 조회 오류'));
+        });
+    });
+    // ---
+
+    // --- PostLike
+    describe('postLike', () => {
+
+        beforeEach(() => {
+            req.cookies.guestUserId = 'mockGuestUserId';
+            req.body = {
+                postId: 'mockPostId',
+                tryToLike: true,
+            };
+        });
+
+        test('should create a postLike or delete a postLike successfully', async () => {
+            // when
+            await postsController.postLike(req, res, next);
+            // then
+            expect(res.statusCode).toBe(200);
+            expect(res._getJSONData()).toStrictEqual({});
+            expect(res._isEndCalled()).toBeTruthy();
+            expect(postsServiceMock.postLike).toHaveBeenCalledWith(req.cookies.guestUserId, req.body);
+        });
+
+        test('should create a postLike or delete a postLike successfully if guestUserId is undefined', async () => {
+            // given
+            req.cookies.guestUserId = undefined;
+            usersServiceMock.createGuestUser.mockResolvedValue('mockGuestUserId');
+            // when
+            await postsController.postLike(req, res, next);
+            // then
+            expect(res.statusCode).toBe(200);
+            expect(res._getJSONData()).toStrictEqual({});
+            expect(res._isEndCalled()).toBeTruthy();
+            expect(res.cookies).toHaveProperty('guestUserId');
+            expect(res.cookies.guestUserId.value).toEqual('mockGuestUserId');
+            expect(postsServiceMock.postLike).toHaveBeenCalledWith('mockGuestUserId', req.body);
+        });
+
+        test('should handle error if usersService.createGuestUser throw errors', async () => {
+            // given
+            req.cookies.guestUserId = undefined;
+            usersServiceMock.createGuestUser.mockRejectedValue(new Error('데이터베이스: 게스트 생성 실패'));
+            // when
+            await postsController.postLike(req, res, next);
+            // then
+            expect(next).toHaveBeenCalledWith(new Error('데이터베이스: 게스트 생성 실패'));
+            expect(usersServiceMock.createGuestUser).toHaveBeenCalled();
+            expect(res.cookies.guestUserId).toBeUndefined();
+            expect(postsServiceMock.postLike).not.toHaveBeenCalled();
+        });
+
+        test('should handle error if postsService.postLike throw errors', async () => {
+            // given
+            postsServiceMock.postLike.mockRejectedValue(new Error('데이터베이스: 게시글 좋아요 오류'));
+            // when
+            await postsController.postLike(req, res, next);
+            // then
+            expect(next).toHaveBeenCalledWith(new Error('데이터베이스: 게시글 좋아요 오류'));
         });
     });
     // ---

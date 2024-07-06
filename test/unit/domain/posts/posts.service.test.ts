@@ -1,22 +1,22 @@
 import { PostsService } from '../../../../src/domain/posts/posts.service';
-import { AuthService } from '../../../../src/domain/auth/auth.service';
 import { prismaMock } from '../../../singleton';
 import { CreatePostDto, UpdatePostDto } from '../../../../src/domain/posts/dto';
 import { Image, Post, Prisma, User } from '@prisma';
 import { CustomError } from '@utils/customError';
 import { deleteImage } from '@utils/filesystem';
 import { PaginationType } from '@custom-type/customPagination';
+import { UsersService } from '../../../../src/domain/users/users.service';
 
-jest.mock('../../../../src/domain/auth/auth.service');
+jest.mock('../../../../src/domain/users/users.service');
 jest.mock('@utils/filesystem'); // 정확한 명칭으로 설정하니 에러가 사라짐.
 
-describe('PostsService', () => {
+describe('PostsService Main Functions', () => {
     let postsService: PostsService;
-    let authServiceMock: jest.Mocked<AuthService>;
+    let usersServiceMock: jest.Mocked<UsersService>;
 
     beforeEach(() => {
-        authServiceMock = jest.mocked(new AuthService()) as jest.Mocked<AuthService>;
-        postsService = new PostsService(authServiceMock);
+        usersServiceMock = jest.mocked(new UsersService()) as jest.Mocked<UsersService>;
+        postsService = new PostsService(usersServiceMock);
         postsService.findPostById = jest.fn();
     });
 
@@ -33,7 +33,7 @@ describe('PostsService', () => {
 
         test('should create a post successfully', async () => {
             // given
-            authServiceMock.findUserById.mockResolvedValue({ id: mockUserId } as User);
+            usersServiceMock.findUserById.mockResolvedValue({ id: mockUserId } as User);
             // 아직 이해가 필요해!!!
             prismaMock.$transaction.mockImplementation(async (callback) => {
                 return callback(prismaMock);
@@ -44,7 +44,7 @@ describe('PostsService', () => {
             const result = await postsService.createPost(mockUserId, mockDto);
             // then
             expect(result).toBe('newPostId');
-            expect(authServiceMock.findUserById).toHaveBeenCalledWith(mockUserId);
+            expect(usersServiceMock.findUserById).toHaveBeenCalledWith(mockUserId);
             expect(prismaMock.$transaction).toHaveBeenCalled();
             expect(prismaMock.post.create).toHaveBeenCalledWith({
                 data: {
@@ -71,20 +71,20 @@ describe('PostsService', () => {
 
         test('should throw error if user is not found', async () => {
             // given
-            authServiceMock.findUserById.mockRejectedValue(
+            usersServiceMock.findUserById.mockRejectedValue(
                 new CustomError(404, 'User Not Found', '유저를 찾을 수 없습니다'),
             );
             // when, then
             await expect(postsService.createPost(mockUserId, mockDto)).rejects.toThrow(
                 new CustomError(404, 'User Not Found', '유저를 찾을 수 없습니다'),
             );
-            expect(authServiceMock.findUserById).toHaveBeenCalledWith(mockUserId);
+            expect(usersServiceMock.findUserById).toHaveBeenCalledWith(mockUserId);
             expect(prismaMock.$transaction).not.toHaveBeenCalled(); // not
         });
 
         test('should rollback transaction on failure', async () => {
             // given
-            authServiceMock.findUserById.mockResolvedValue({ id: mockUserId } as User);
+            usersServiceMock.findUserById.mockResolvedValue({ id: mockUserId } as User);
             prismaMock.$transaction.mockImplementation(async (callback) => {
                 try {
                     await callback(prismaMock);
@@ -98,7 +98,7 @@ describe('PostsService', () => {
             await expect(postsService.createPost(mockUserId, mockDto)).rejects.toEqual(new Error('데이터베이스: 게시글 생성 오류'));
 
             // then
-            expect(authServiceMock.findUserById).toHaveBeenCalledWith(mockUserId);
+            expect(usersServiceMock.findUserById).toHaveBeenCalledWith(mockUserId);
             expect(prismaMock.$transaction).toHaveBeenCalled();
             expect(prismaMock.post.create).toHaveBeenCalled();
         });
@@ -125,7 +125,7 @@ describe('PostsService', () => {
 
         test('should update a post successfully', async () => {
             // given
-            authServiceMock.findUserById.mockResolvedValue({ id: mockUserId } as User);
+            usersServiceMock.findUserById.mockResolvedValue({ id: mockUserId } as User);
             (postsService.findPostById as jest.Mock).mockResolvedValue(mockPost as PostIncludingImageType);
             prismaMock.$transaction.mockImplementation(async (callback) => {
                 return callback(prismaMock);
@@ -134,7 +134,7 @@ describe('PostsService', () => {
             // when
             await postsService.updatePost(mockUserId, mockPostId, mockDto);
             // then
-            expect(authServiceMock.findUserById).toHaveBeenCalledWith(mockUserId);
+            expect(usersServiceMock.findUserById).toHaveBeenCalledWith(mockUserId);
             expect(postsService.findPostById).toHaveBeenCalledWith(mockPostId, { images: true });
             expect(prismaMock.$transaction).toHaveBeenCalled();
             expect(prismaMock.image.deleteMany).toHaveBeenCalledWith({
@@ -157,20 +157,20 @@ describe('PostsService', () => {
 
         test('should throw error if user is not found', async () => {
             // given
-            authServiceMock.findUserById.mockRejectedValue(
+            usersServiceMock.findUserById.mockRejectedValue(
                 new CustomError(404, 'Not Found', '유저를 찾을 수 없습니다'),
             );
             // when, then
             await expect(postsService.updatePost(mockUserId, mockPostId, mockDto)).rejects.toThrow(
                 new CustomError(404, 'User Not Found', '유저를 찾을 수 없습니다'),
             );
-            expect(authServiceMock.findUserById).toHaveBeenCalled();
+            expect(usersServiceMock.findUserById).toHaveBeenCalled();
             expect(postsService.findPostById).not.toHaveBeenCalled();
         });
 
         test('should throw error if post is not found', async () => {
             // given
-            authServiceMock.findUserById.mockResolvedValue({ id: mockUserId } as User);
+            usersServiceMock.findUserById.mockResolvedValue({ id: mockUserId } as User);
             (postsService.findPostById as jest.Mock).mockRejectedValue(
                 new CustomError(404, 'Not Found', '게시글을 찾을 수 없습니다'),
             );
@@ -178,28 +178,28 @@ describe('PostsService', () => {
             await expect(postsService.updatePost(mockUserId, mockPostId, mockDto)).rejects.toThrow(
                 new CustomError(404, 'Not Found', '게시글을 찾을 수 없습니다'),
             );
-            expect(authServiceMock.findUserById).toHaveBeenCalled();
+            expect(usersServiceMock.findUserById).toHaveBeenCalled();
             expect(postsService.findPostById).toHaveBeenCalled();
             expect(prismaMock.$transaction).not.toHaveBeenCalled();
         });
 
         test('should throw error if user does not have permission', async () => {
             // given
-            authServiceMock.findUserById.mockResolvedValue({ id: mockUserId } as User);
+            usersServiceMock.findUserById.mockResolvedValue({ id: mockUserId } as User);
             mockPost.authorId = 'wrongUser'; // 틀린 아이디 주입
             (postsService.findPostById as jest.Mock).mockResolvedValue(mockPost as PostIncludingImageType);
             // when, then
             await expect(postsService.updatePost(mockUserId, mockPostId, mockDto)).rejects.toThrow(
                 new CustomError(403, 'Forbidden', '게시글에 대한 권한이 없습니다'),
             );
-            expect(authServiceMock.findUserById).toHaveBeenCalled();
+            expect(usersServiceMock.findUserById).toHaveBeenCalled();
             expect(postsService.findPostById).toHaveBeenCalled();
             expect(prismaMock.$transaction).not.toHaveBeenCalled();
         });
 
         test('should rollback transaction on failure', async () => {
             // given
-            authServiceMock.findUserById.mockResolvedValue({ id: mockUserId } as User);
+            usersServiceMock.findUserById.mockResolvedValue({ id: mockUserId } as User);
             mockPost.authorId = 'mockUserId'; // 다시 맞는 아이디 주입
             (postsService.findPostById as jest.Mock).mockResolvedValue(mockPost as PostIncludingImageType);
             prismaMock.$transaction.mockImplementation(async (callback) => {
@@ -214,7 +214,7 @@ describe('PostsService', () => {
             await expect(postsService.updatePost(mockUserId, mockPostId, mockDto)).rejects.toEqual(
                 new Error('데이터베이스: 게시글 업데이트 오류'),
             );
-            expect(authServiceMock.findUserById).toHaveBeenCalled();
+            expect(usersServiceMock.findUserById).toHaveBeenCalled();
             expect(postsService.findPostById).toHaveBeenCalled();
             expect(prismaMock.$transaction).toHaveBeenCalled();
             expect(prismaMock.post.update).toHaveBeenCalled();
@@ -223,7 +223,7 @@ describe('PostsService', () => {
 
         test('should throw error if images fail to delete', async () => {
             // given
-            authServiceMock.findUserById.mockResolvedValue({ id: mockUserId } as User);
+            usersServiceMock.findUserById.mockResolvedValue({ id: mockUserId } as User);
             (postsService.findPostById as jest.Mock).mockResolvedValue(mockPost as PostIncludingImageType);
             prismaMock.$transaction.mockImplementation(async (callback) => {
                 return callback(prismaMock);
@@ -232,7 +232,7 @@ describe('PostsService', () => {
             // when
             await postsService.updatePost(mockUserId, mockPostId, mockDto);
             // then
-            expect(authServiceMock.findUserById).toHaveBeenCalled();
+            expect(usersServiceMock.findUserById).toHaveBeenCalled();
             expect(postsService.findPostById).toHaveBeenCalled();
             expect(prismaMock.$transaction).toHaveBeenCalled();
             expect(prismaMock.post.update).toHaveBeenCalled();
@@ -428,7 +428,7 @@ describe('PostsService', () => {
             // when
             const result = await postsService.getPost(mockPostId, mockGuestUserId);
             // then
-            expect(result).toStrictEqual({ post: mockReturnedPost, isLiked: true });
+            expect(result).toStrictEqual({ post: { ...mockReturnedPost, isLiked: true } });
             expect(postsService.findPostById).toHaveBeenCalledWith(mockPostId, {
                 tags: true,
                 _count: {
@@ -463,4 +463,147 @@ describe('PostsService', () => {
         });
     });
     //
+
+    // --- PostLike
+    describe('postLike', () => {
+        const mockGuestUserId = 'mockGuestUserId';
+        const mockDto = { postId: 'mockPostId', tryToLike: true };
+        const mockReturnedPost = { id: mockDto.postId };
+        const mockReturnedLiked = { postId: mockDto.postId, guestUserId: mockGuestUserId };
+
+        // I. 좋아요 생성
+        test('should create a postLike if tryToLike is true and postLike does not exist', async () => {
+            // given
+            (postsService.findPostById as jest.Mock).mockResolvedValue(mockReturnedPost);
+            prismaMock.postLike.findUnique.mockResolvedValue(null);
+            // when, then
+            await expect(postsService.postLike(mockGuestUserId, mockDto)).resolves.toBeUndefined();
+            expect(postsService.findPostById as jest.Mock).toHaveBeenCalledWith(mockDto.postId);
+            expect(prismaMock.postLike.findUnique).toHaveBeenCalledWith({
+                where: {
+                    postId_guestUserId: {
+                        postId: mockReturnedPost.id,
+                        guestUserId: mockGuestUserId,
+                    },
+                },
+            });
+            expect(prismaMock.postLike.create).toHaveBeenCalledWith({
+                data: {
+                    post: { connect: { id: mockReturnedPost.id } },
+                    guestUser: { connect: { id: mockGuestUserId } },
+                },
+            });
+            expect(prismaMock.postLike.delete).not.toHaveBeenCalled();
+        });
+
+        // I. 좋아요 삭제
+        test('should delete a postLike if tryToLike is false and postLike exits', async () => {
+            // given
+            mockDto.tryToLike = false;
+            (postsService.findPostById as jest.Mock).mockResolvedValue(mockReturnedPost);
+            prismaMock.postLike.findUnique.mockResolvedValue({ postId: 'mockPostId', guestUserId: mockGuestUserId });
+            // when, then
+            await expect(postsService.postLike(mockGuestUserId, mockDto)).resolves.toBeUndefined();
+            expect(prismaMock.postLike.delete).toHaveBeenCalledWith({
+                where: {
+                    postId_guestUserId: {
+                        postId: mockReturnedPost.id,
+                        guestUserId: mockGuestUserId,
+                    },
+                },
+            });
+            expect(prismaMock.guestUser.deleteMany).toHaveBeenCalledWith({
+                where: {
+                    postLikes: { none: {} },
+                    comments: { none: {} },
+                },
+            });
+            expect(prismaMock.postLike.create).not.toHaveBeenCalled();
+        });
+
+        test('should throw error if client sends an invalid request', async () => {
+            // given
+            mockDto.tryToLike = false;
+            (postsService.findPostById as jest.Mock).mockResolvedValue(mockReturnedPost);
+            prismaMock.postLike.findUnique.mockResolvedValue(null);
+            // when, then
+            await expect(postsService.postLike(mockGuestUserId, mockDto)).rejects.toThrow(
+                new CustomError(400, 'Bad Request', '잘못된 요청입니다'),
+            );
+            expect(postsService.findPostById).toHaveBeenCalled();
+            expect(prismaMock.postLike.findUnique).toHaveBeenCalled();
+            expect(prismaMock.postLike.create).not.toHaveBeenCalled();
+            expect(prismaMock.postLike.delete).not.toHaveBeenCalled();
+        });
+
+        test('should throw error if post is not found', async () => {
+            // given
+            (postsService.findPostById as jest.Mock).mockRejectedValue(
+                new CustomError(404, 'Not Found', '게시글을 찾을 수 없습니다'),
+            );
+            // when, then
+            await expect(postsService.postLike(mockGuestUserId, mockDto)).rejects.toThrow(
+                new CustomError(404, 'Not Found', '게시글을 찾을 수 없습니다'),
+            );
+            expect(postsService.findPostById).toHaveBeenCalled();
+            expect(prismaMock.postLike.findUnique).not.toHaveBeenCalled();
+        });
+    });
+    // ---
+});
+
+describe('PostsService Util Functions', () => {
+    let postsService: PostsService;
+    let usersServiceMock: jest.Mocked<UsersService>;
+
+    beforeEach(() => {
+        usersServiceMock = jest.mocked(new UsersService()) as jest.Mocked<UsersService>;
+        postsService = new PostsService(usersServiceMock);
+    });
+
+    // --- FindPostById
+    describe('findPostById', () => {
+        const mockPostId = 'mockPostId';
+        type GetPostType = Prisma.PromiseReturnType<typeof prismaMock.post.findUnique>
+        type PostWithImages = GetPostType & { images: [] }
+        const mockReturnedPost = { id: 'mockPostId' };
+        const mockReturnedPostWithImages = { id: 'mockPostId', images: [] };
+
+        test('should get a post successfully without includeOptions', async () => {
+            // given
+            prismaMock.post.findUnique.mockResolvedValue(mockReturnedPost as GetPostType);
+            // when
+            const result = await postsService.findPostById(mockPostId);
+            // then
+            expect(result).toStrictEqual(mockReturnedPost);
+            expect(prismaMock.post.findUnique).toHaveBeenCalledWith({
+                where: { id: mockPostId },
+                include: {},
+            });
+        });
+
+        test('should get a post successfully with includeOptions', async () => {
+            // given
+            prismaMock.post.findUnique.mockResolvedValue(mockReturnedPostWithImages as PostWithImages);
+            // when
+            const result = await postsService.findPostById(mockPostId, { images: true });
+            // then
+            expect(result).toStrictEqual(mockReturnedPostWithImages);
+            expect(prismaMock.post.findUnique).toHaveBeenCalledWith({
+                where: { id: mockPostId },
+                include: { images: true },
+            });
+        });
+
+        test('should throw error if post is not found', async () => {
+            // given
+            prismaMock.post.findUnique.mockResolvedValue(null);
+            // when, then
+            await expect(postsService.findPostById(mockPostId, { images: true })).rejects.toThrow(
+                new CustomError(404, 'Not Found', '게시글을 찾을 수 없습니다'),
+            );
+            expect(prismaMock.post.findUnique).toHaveBeenCalled();
+        });
+    });
+    // ---
 });

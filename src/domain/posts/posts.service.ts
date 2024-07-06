@@ -2,18 +2,18 @@ import { CreatePostDto, PostLikeDto, UpdatePostDto } from './dto';
 import { CustomError } from '@utils/customError';
 import database from '@utils/database';
 import { deleteImage } from '@utils/filesystem';
-import { AuthService } from '../auth/auth.service';
 import { PaginationType } from '@custom-type/customPagination';
 import { Prisma } from '@prisma';
+import { UsersService } from '../users/users.service';
 
 
 export class PostsService {
-    constructor(private readonly authService: AuthService) {
+    constructor(private readonly usersService: UsersService) {
     }
 
     async createPost(userId: string, dto: CreatePostDto) {
         // I. user 찾기, user 가 없다면 에러 반환
-        const user = await this.authService.findUserById(userId);
+        const user = await this.usersService.findUserById(userId);
 
         // I. 트랜젝션을 통해 중간에 실패해도 롤백할 수 있음.
         const newPost = await database.$transaction(async (database) => {
@@ -73,7 +73,7 @@ export class PostsService {
 
     async updatePost(userId: string, postId: string, dto: UpdatePostDto) {
         // I. user 가져오기
-        const user = await this.authService.findUserById(userId);
+        const user = await this.usersService.findUserById(userId);
         // I. post 가져오기
         const post = await this.findPostById(postId, { images: true });
 
@@ -247,54 +247,50 @@ export class PostsService {
 
         // I. 게시글 좋아요 여부
         const isLiked = post.postLikes.some(el => el.guestUserId === guestUserId);
-        return { post, isLiked };
+
+        return {
+            post: {
+                ...post, isLiked,
+            },
+        };
     }
 
     // 게시글 좋아요 ==========================================================================================
 
-    async postLike(guestUserId: string | undefined, dto: PostLikeDto) {
+    async postLike(guestUserId: string, dto: PostLikeDto) {
         // I. 공통 로직(게시글 존재 여부, 게시글 좋아요 유무)
         const post = await this.findPostById(dto.postId);
         const isLiked = await database.postLike.findUnique({
             where: {
                 postId_guestUserId: {
                     postId: post.id,
-                    guestUserId: guestUserId ?? '',
+                    guestUserId: guestUserId,
                 },
             },
         });
 
         // I. 좋아요 생성 시, 백엔드에서도 한 번 더 체킹
         if (dto.tryToLike && !isLiked) {
-            const postLike = await database.postLike.create({
+            await database.postLike.create({
                 data: {
-                    post: {
-                        connect: { id: post.id },
-                    },
-                    guestUser: {
-                        // I. 쿠키에 guestUserId 있으면 연결, 없으면 생성 후 연결
-                        connectOrCreate: {
-                            where: { id: guestUserId ?? '' },
-                            create: {},
-                        },
-                    },
+                    post: { connect: { id: post.id } },
+                    guestUser: { connect: { id: guestUserId } },
                 },
             });
 
-            return { guestUserId: postLike.guestUserId, message: '게시글 좋아요 생성' };
+            return;
         }
-        // I. 좋아요 삭제 시
+        // I. 좋아요 삭제 시, 고아 게스트까지 삭제
         else if (!dto.tryToLike && isLiked) {
             await database.postLike.delete({
                 where: {
                     postId_guestUserId: {
                         postId: post.id,
-                        guestUserId: guestUserId!, // guestUserId 가 없을 수 없음 => isLiked 구하는 과정에서 id 가 없으면 if 로 들어올 수 없음
+                        guestUserId: guestUserId,
                     },
                 },
             });
 
-            // I. 고아 게스트 삭제(게시글 좋아요, 댓글이 없으면 사용하지 않는 고아)
             await database.guestUser.deleteMany({
                 where: {
                     postLikes: { none: {} },
@@ -302,20 +298,20 @@ export class PostsService {
                 },
             });
 
-            return { guestUserId, message: '게시글 좋아요 삭제' };
+            return;
         }
 
-        return { guestUserId, message: '동작하지 않음' };
+        throw new CustomError(400, 'Bad Request', '잘못된 요청입니다');
     }
 
     /**
      * Utils
-     * findPost : 게시글 찾기, Prisma.PostInclude 로 type 해결 ㄷㄷ !
+     * findPostById : 게시글 찾기, Prisma.PostInclude 로 type 해결 ㄷㄷ !
      */
-    async findPostById(postId: string, includeOption: Prisma.PostInclude = {}) {
+    async findPostById(postId: string, includeOptions: Prisma.PostInclude = {}) {
         const post = await database.post.findUnique({
             where: { id: postId },
-            include: { ...includeOption },
+            include: { ...includeOptions },
         });
 
         if (!post) throw new CustomError(404, 'Not Found', '게시글을 찾을 수 없습니다');
