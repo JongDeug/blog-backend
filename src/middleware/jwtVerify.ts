@@ -1,8 +1,9 @@
 import { RequestHandler } from 'express';
 import { AuthService } from '../domain/auth/auth.service';
 import { CustomError } from '@utils/customError';
+import { UsersService } from '../domain/users/users.service';
 
-export const jwtVerify = function(authService: AuthService): RequestHandler {
+export const jwtVerify = function(authService: AuthService, usersService: UsersService): RequestHandler {
     return async function(req, res, next) {
         try {
             // I. '/auth' 는 인증에서 제외한다
@@ -28,7 +29,7 @@ export const jwtVerify = function(authService: AuthService): RequestHandler {
             }
 
             // I. 검증에 성공하면 decode 된 유저 정보를 가지고 유저가 있는지 확인
-            req.user = await authService.findUserById(decoded.id);
+            req.user = await usersService.findUserById(decoded.id);
 
             // I. 에러 없이 미들웨어를 통과
             next();

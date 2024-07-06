@@ -1,17 +1,19 @@
-import { CreatePostDto, UpdatePostDto } from './dto';
+import { CreatePostDto, PostLikeDto, UpdatePostDto } from './dto';
 import { CustomError } from '@utils/customError';
 import database from '@utils/database';
 import { deleteImage } from '@utils/filesystem';
-import { AuthService } from '../auth/auth.service';
 import { PaginationType } from '@custom-type/customPagination';
+import { Prisma } from '@prisma';
+import { UsersService } from '../users/users.service';
+
 
 export class PostsService {
-    constructor(private readonly authService: AuthService) {
+    constructor(private readonly usersService: UsersService) {
     }
 
     async createPost(userId: string, dto: CreatePostDto) {
         // I. user 찾기, user 가 없다면 에러 반환
-        const user = await this.authService.findUserById(userId);
+        const user = await this.usersService.findUserById(userId);
 
         // I. 트랜젝션을 통해 중간에 실패해도 롤백할 수 있음.
         const newPost = await database.$transaction(async (database) => {
@@ -71,15 +73,9 @@ export class PostsService {
 
     async updatePost(userId: string, postId: string, dto: UpdatePostDto) {
         // I. user 가져오기
-        const user = await this.authService.findUserById(userId);
+        const user = await this.usersService.findUserById(userId);
         // I. post 가져오기
-        const post = await database.post.findUnique({
-            where: { id: postId },
-            include: {
-                images: true,
-            },
-        });
-        if (!post) throw new CustomError(404, 'Not Found', '게시글을 찾을 수 없습니다');
+        const post = await this.findPostById(postId, { images: true });
 
         // I. user, post 본인 확인
         if (user.id !== post.authorId) {
@@ -167,11 +163,7 @@ export class PostsService {
 
     async deletePost(userId: string, postId: string) {
         // I. post 가져오기
-        const post = await database.post.findUnique({
-            where: { id: postId },
-            include: { images: true },
-        });
-        if (!post) throw new CustomError(404, 'Not Found', '게시글을 찾을 수 없습니다');
+        const post = await this.findPostById(postId, { images: true });
 
         // I. user, post 비교해 권한 체크하기
         if (userId !== post.authorId) {
@@ -231,31 +223,99 @@ export class PostsService {
         return { posts, postCount: posts.length };
     }
 
-    async getPost(postId: string) {
+    async getPost(postId: string, guestUserId: string | undefined) {
         // I. 게시글 상세 조회
-        const post = await database.post.findUnique({
-            where: { id: postId },
-            include: {
-                tags: true,
-                postLikes: true,
-                images: {
-                    select: {
-                        id: true,
-                        url: true,
-                    },
+        const post = await this.findPostById(postId, {
+            tags: true,
+            _count: {
+                select: { postLikes: true },
+            },
+            postLikes: true,
+            images: {
+                select: {
+                    id: true,
+                    url: true,
                 },
-                author: {
-                    select: {
-                        name: true,
-                    },
+            },
+            author: {
+                select: {
+                    name: true,
                 },
-                comments: true, // R. comment 작성 후 고치기
+            },
+            comments: true, // R. comment 작성 후 고치기
+        });
+
+        // I. 게시글 좋아요 여부
+        const isLiked = post.postLikes.some(el => el.guestUserId === guestUserId);
+
+        return {
+            post: {
+                ...post, isLiked,
+            },
+        };
+    }
+
+    // 게시글 좋아요 ==========================================================================================
+
+    async postLike(guestUserId: string, dto: PostLikeDto) {
+        // I. 공통 로직(게시글 존재 여부, 게시글 좋아요 유무)
+        const post = await this.findPostById(dto.postId);
+        const isLiked = await database.postLike.findUnique({
+            where: {
+                postId_guestUserId: {
+                    postId: post.id,
+                    guestUserId: guestUserId,
+                },
             },
         });
 
-        // I. 게시글이 없으면 에러 반환
+        // I. 좋아요 생성 시, 백엔드에서도 한 번 더 체킹
+        if (dto.tryToLike && !isLiked) {
+            await database.postLike.create({
+                data: {
+                    post: { connect: { id: post.id } },
+                    guestUser: { connect: { id: guestUserId } },
+                },
+            });
+
+            return;
+        }
+        // I. 좋아요 삭제 시, 고아 게스트까지 삭제
+        else if (!dto.tryToLike && isLiked) {
+            await database.postLike.delete({
+                where: {
+                    postId_guestUserId: {
+                        postId: post.id,
+                        guestUserId: guestUserId,
+                    },
+                },
+            });
+
+            await database.guestUser.deleteMany({
+                where: {
+                    postLikes: { none: {} },
+                    comments: { none: {} },
+                },
+            });
+
+            return;
+        }
+
+        throw new CustomError(400, 'Bad Request', '잘못된 요청입니다');
+    }
+
+    /**
+     * Utils
+     * findPostById : 게시글 찾기, Prisma.PostInclude 로 type 해결 ㄷㄷ !
+     */
+    async findPostById(postId: string, includeOptions: Prisma.PostInclude = {}) {
+        const post = await database.post.findUnique({
+            where: { id: postId },
+            include: { ...includeOptions },
+        });
+
         if (!post) throw new CustomError(404, 'Not Found', '게시글을 찾을 수 없습니다');
 
-        return { post };
+        return post;
     }
 }

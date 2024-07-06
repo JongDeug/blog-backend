@@ -264,32 +264,6 @@ describe('AuthService Util Function', () => {
         authService = new AuthService();
     });
 
-    // --- FindUserById
-    describe('findUserById', () => {
-        const mockUserId = 'mockUserId';
-        const mockReturnedUser = { id: 'mockUserId' };
-
-        test('should find a user by id successfully', async () => {
-            // given
-            prismaMock.user.findUnique.mockResolvedValue(mockReturnedUser as User);
-            // when
-            const result = await authService.findUserById(mockUserId);
-            // then
-            expect(result).toStrictEqual(mockReturnedUser);
-            expect(prismaMock.user.findUnique).toHaveBeenCalledWith({ where: { id: mockUserId } });
-        });
-
-        test('should throw error if user is not found', async () => {
-            // given
-            prismaMock.user.findUnique.mockResolvedValue(null);
-            // when, then
-            await expect(authService.findUserById(mockUserId)).rejects.toThrow(
-                new CustomError(404, 'Not Found', '유저를 찾을 수 없습니다'),
-            );
-            expect(prismaMock.user.findUnique).toHaveBeenCalled();
-        });
-    });
-    // ---
 
     // --- SignToken
     describe('signToken', () => {

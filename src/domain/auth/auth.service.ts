@@ -1,7 +1,7 @@
 import { CustomError } from '@utils/customError';
 import database from '@utils/database';
 import bcrypt from 'bcrypt';
-import jwt, { JsonWebTokenError, Secret, VerifyOptions } from 'jsonwebtoken';
+import jwt, { Secret, VerifyOptions } from 'jsonwebtoken';
 import { LoginDto, RegisterDto } from './dto';
 import { User } from '@prisma';
 import { CustomJwtPayload } from '@custom-type/customJwtPayload';
@@ -112,18 +112,9 @@ export class AuthService {
 
     /**
      * Utils
-     * findUserById : userId 로 user 검색
      * signToken : 토큰 서명(생성)
      * verifyToken : 토큰 검증
      */
-    async findUserById(userId: string) {
-        const user = await database.user.findUnique({ where: { id: userId } });
-
-        if (!user) throw new CustomError(404, 'Not Found', '유저를 찾을 수 없습니다');
-
-        return user;
-    }
-
     signToken(user: Pick<User, 'email' | 'id'>, isRefreshToken: boolean) {
         const payload = {
             id: user.id,

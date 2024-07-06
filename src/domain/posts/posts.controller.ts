@@ -7,12 +7,13 @@ import { upload } from '@middleware/multer';
 import { CustomError } from '@utils/customError';
 import { pagination } from '@middleware/pagination';
 import { PaginationType } from '@custom-type/customPagination';
+import { UsersService } from '../users/users.service';
 
 export class PostsController {
     path: string;
     router: Router;
 
-    constructor(private readonly postsService: PostsService) {
+    constructor(private readonly postsService: PostsService, private readonly usersService: UsersService) {
         this.path = '/posts';
         this.router = Router();
         this.init();
@@ -24,6 +25,8 @@ export class PostsController {
         this.router.delete('/:id', this.deletePost.bind(this));
         this.router.get('/', pagination, this.getPosts.bind(this));
         this.router.get('/:id', this.getPost.bind(this));
+        // =====================================================================================
+        this.router.post('/like', this.postLike.bind(this));
     }
 
     async createPost(req: Request, res: Response, next: NextFunction) {
@@ -102,18 +105,50 @@ export class PostsController {
     async getPost(req: Request, res: Response, next: NextFunction) {
         try {
             // I. JWT 필요 X
-            console.log(req.url)
 
-            // I. param 으로 postId 받기
+            // I. param 으로 postId 받기, cookies 에서 guestUserId 추출
             const { id } = req.params;
+            const { guestUserId } = req.cookies;
+
             // I. postsService.getPost 호출
-            const { post } = await this.postsService.getPost(id);
+            const { post     } = await this.postsService.getPost(id, guestUserId);
 
             res.status(200).json({ post });
         } catch (err) {
             next(err);
         }
     }
+
+    // 게시글 좋아요 ==========================================================================================
+
+    async postLike(req: Request, res: Response, next: NextFunction) {
+        try {
+            // I. JWT 필요 X
+
+            // I. cookies 에서 guestUserId 추출
+            let { guestUserId } = req.cookies;
+
+            // I. guestUserId 생성
+            if (!guestUserId) {
+                guestUserId = await this.usersService.createGuestUser();
+
+                // I. Http Only Cookie 를 사용해 토큰 전송
+                res.cookie('guestUserId', guestUserId, {
+                    httpOnly: true,
+                    maxAge: 2 * 60 * 60 * 1000,
+                    // sameSite: 'strict', // sameSite 속성 설정
+                    // secure: true // HTTPS 연결에서만 쿠키가 전송되도록 설정
+                });
+            }
+
+            // I. postsService.postLike 호출
+            await this.postsService.postLike(guestUserId, req.body);
+
+            res.status(200).json({});
+        } catch (err) {
+            next(err);
+        }
+    }
 }
 
-export default new PostsController(new PostsService(new AuthService()));
+export default new PostsController(new PostsService(new UsersService()), new UsersService());
