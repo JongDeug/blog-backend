@@ -220,7 +220,7 @@ model Comment {
   ///
   /// 게시글 ID {@link Post.id}
   postId String
-  posts  Post   @relation(fields: [postId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  post   Post   @relation(fields: [postId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   /// Foreign Key
   ///

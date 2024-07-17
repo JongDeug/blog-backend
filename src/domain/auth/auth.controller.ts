@@ -16,13 +16,13 @@ export class AuthController {
     }
 
     init() {
-        this.router.post('/register', validateDto(RegisterDto), this.register.bind(this));
-        this.router.post('/login', validateDto(LoginDto), this.login.bind(this));
-        this.router.get('/refresh', this.refresh.bind(this));
-        this.router.get('/logout', this.logout.bind(this));
+        this.router.post('/register', validateDto(RegisterDto), this.register);
+        this.router.post('/login', validateDto(LoginDto), this.login);
+        this.router.get('/refresh', this.refresh);
+        this.router.get('/logout', this.logout);
     }
 
-    async register(req: Request, res: Response, next: NextFunction) {
+    register = async (req: Request, res: Response, next: NextFunction) => {
         try {
             // I. authService.register 에 req.body 넘기기
             const { accessToken, refreshToken } = await this.authService.register(req.body);
@@ -48,7 +48,7 @@ export class AuthController {
         }
     };
 
-    async login(req: Request, res: Response, next: NextFunction) {
+    login = async (req: Request, res: Response, next: NextFunction) => {
         try {
             // I. authService.login 에 req.body 넣기
             const { accessToken, refreshToken } = await this.authService.login(req.body);
@@ -74,7 +74,7 @@ export class AuthController {
         }
     };
 
-    async refresh(req: Request, res: Response, next: NextFunction) {
+    refresh = async (req: Request, res: Response, next: NextFunction) => {
         try {
             // I. refresh token 이 없으면 에러 발생
             const token = req.cookies.refreshToken;
@@ -102,9 +102,9 @@ export class AuthController {
         } catch (err) {
             next(err);
         }
-    }
+    };
 
-    async logout(req: Request, res: Response, next: NextFunction) {
+    logout = async (req: Request, res: Response, next: NextFunction) => {
         try {
             // I. access token 이 없으면 에러 발생
             const token = req.cookies.accessToken;
@@ -122,7 +122,7 @@ export class AuthController {
         } catch (err) {
             next(err);
         }
-    }
+    };
 }
 
 export default new AuthController(new AuthService());

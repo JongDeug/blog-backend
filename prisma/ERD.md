@@ -64,7 +64,7 @@ erDiagram
 "PostTag" }o--|| "Tag" : tag
 "Image" }o--|| "Post" : post
 "Comment" }o--o| "Comment" : parentComment
-"Comment" }o--|| "Post" : posts
+"Comment" }o--|| "Post" : post
 "Comment" }o--o| "User" : author
 "Comment" }o--o| "GuestUser" : guestUser
 ```
