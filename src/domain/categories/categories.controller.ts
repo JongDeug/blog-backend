@@ -15,13 +15,13 @@ export class CategoriesController {
     }
 
     init() {
-        this.router.post('/', validateDto(CreateCategoryDto), this.createCategory.bind(this));
-        this.router.patch('/:name', validateDto(UpdateCategoryDto), this.updateCategory.bind(this));
-        this.router.delete('/:name', this.deleteCategory.bind(this));
-        this.router.get('/', this.getCategories.bind(this));
+        this.router.post('/', validateDto(CreateCategoryDto), this.createCategory);
+        this.router.patch('/:name', validateDto(UpdateCategoryDto), this.updateCategory);
+        this.router.delete('/:name', this.deleteCategory);
+        this.router.get('/', this.getCategories);
     }
 
-    async createCategory(req: Request, res: Response, next: NextFunction) {
+    createCategory = async (req: Request, res: Response, next: NextFunction) => {
         try {
             // I. JWT 인증 확인
             if (!req.user) return next(new CustomError(401, 'Unauthorized', '로그인을 진행해주세요'));
@@ -33,9 +33,9 @@ export class CategoriesController {
         } catch (err) {
             next(err);
         }
-    }
+    };
 
-    async updateCategory(req: Request, res: Response, next: NextFunction) {
+    updateCategory = async (req: Request, res: Response, next: NextFunction) => {
         try {
             // I. JWT 인증 확인
             if (!req.user) return next(new CustomError(401, 'Unauthorized', '로그인을 진행해주세요'));
@@ -50,9 +50,9 @@ export class CategoriesController {
         } catch (err) {
             next(err);
         }
-    }
+    };
 
-    async deleteCategory(req: Request, res: Response, next: NextFunction) {
+    deleteCategory = async (req: Request, res: Response, next: NextFunction) => {
         try {
             // I. JWT 확인
             if (!req.user) return next(new CustomError(401, 'Unauthorized', '로그인을 진행해주세요'));
@@ -67,9 +67,9 @@ export class CategoriesController {
         } catch (err) {
             next(err);
         }
-    }
+    };
 
-    async getCategories(req: Request, res: Response, next: NextFunction) {
+    getCategories = async (req: Request, res: Response, next: NextFunction) => {
         try {
             // I. JWT 확인 X
 
@@ -80,7 +80,7 @@ export class CategoriesController {
         } catch (err) {
             next(err);
         }
-    }
+    };
 }
 
 export default new CategoriesController(new CategoriesService());

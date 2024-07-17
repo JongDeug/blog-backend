@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction, Router } from 'express';
 import { PostsService } from './posts.service';
-import { AuthService } from '../auth/auth.service';
 import { CreatePostDto, UpdatePostDto } from './dto';
 import { validateDtoWithFiles } from '@middleware/validateDtoWithFiles';
 import { upload } from '@middleware/multer';
@@ -8,28 +7,39 @@ import { CustomError } from '@utils/customError';
 import { pagination } from '@middleware/pagination';
 import { PaginationType } from '@custom-type/customPagination';
 import { UsersService } from '../users/users.service';
+import { CommentsController } from './comments/comments.controller';
+import { CommentsService } from './comments/comments.service';
+import { validateDto } from '@middleware/validateDto';
+import { CreateCommentDto } from './comments/dto';
 
 export class PostsController {
     path: string;
     router: Router;
+    commentsController: CommentsController;
 
-    constructor(private readonly postsService: PostsService, private readonly usersService: UsersService) {
+    constructor
+    (private readonly postsService: PostsService,
+     private readonly usersService: UsersService,
+    ) {
         this.path = '/posts';
         this.router = Router();
+        this.commentsController = new CommentsController(new CommentsService(new UsersService(), new PostsService(new UsersService())));
         this.init();
     }
 
     init() {
-        this.router.post('/', upload.array('images', 12), validateDtoWithFiles(CreatePostDto), this.createPost.bind(this));
-        this.router.patch('/:id', upload.array('images', 12), validateDtoWithFiles(UpdatePostDto), this.updatePost.bind(this));
-        this.router.delete('/:id', this.deletePost.bind(this));
-        this.router.get('/', pagination, this.getPosts.bind(this));
-        this.router.get('/:id', this.getPost.bind(this));
+        this.router.post('/', upload.array('images', 12), validateDtoWithFiles(CreatePostDto), this.createPost);
+        this.router.patch('/:id', upload.array('images', 12), validateDtoWithFiles(UpdatePostDto), this.updatePost);
+        this.router.delete('/:id', this.deletePost);
+        this.router.get('/', pagination, this.getPosts);
+        this.router.get('/:id', this.getPost);
         // =====================================================================================
-        this.router.post('/like', this.postLike.bind(this));
+        this.router.post('/like', this.postLike);
+        // =====================================================================================
+        this.router.post('/comments', validateDto(CreateCommentDto), this.commentsController.createComment);
     }
 
-    async createPost(req: Request, res: Response, next: NextFunction) {
+    createPost = async (req: Request, res: Response, next: NextFunction) => {
         try {
             // I. JWT 인증 확인
             if (!req.user) return next(new CustomError(401, 'Unauthorized', '로그인을 진행해주세요'));
@@ -43,9 +53,9 @@ export class PostsController {
         } catch (err) {
             next(err);
         }
-    }
+    };
 
-    async updatePost(req: Request, res: Response, next: NextFunction) {
+    updatePost = async (req: Request, res: Response, next: NextFunction) => {
         try {
             // I. JWT 인증 확인
             if (!req.user) return next(new CustomError(401, 'Unauthorized', '로그인을 진행해주세요'));
@@ -62,9 +72,9 @@ export class PostsController {
         } catch (err) {
             next(err);
         }
-    }
+    };
 
-    async deletePost(req: Request, res: Response, next: NextFunction) {
+    deletePost = async (req: Request, res: Response, next: NextFunction) => {
         try {
             // I. JWT 인증 확인
             if (!req.user) return next(new CustomError(401, 'Unauthorized', '로그인을 진행해주세요'));
@@ -79,9 +89,9 @@ export class PostsController {
         } catch (err) {
             next(err);
         }
-    }
+    };
 
-    async getPosts(req: Request, res: Response, next: NextFunction) {
+    getPosts = async (req: Request, res: Response, next: NextFunction) => {
         try {
             // I. JWT 필요 X
 
@@ -100,9 +110,9 @@ export class PostsController {
         } catch (err) {
             next(err);
         }
-    }
+    };
 
-    async getPost(req: Request, res: Response, next: NextFunction) {
+    getPost = async (req: Request, res: Response, next: NextFunction) => {
         try {
             // I. JWT 필요 X
 
@@ -117,11 +127,11 @@ export class PostsController {
         } catch (err) {
             next(err);
         }
-    }
+    };
 
     // 게시글 좋아요 ==========================================================================================
 
-    async postLike(req: Request, res: Response, next: NextFunction) {
+    postLike = async (req: Request, res: Response, next: NextFunction) => {
         try {
             // I. JWT 필요 X
 
@@ -147,7 +157,10 @@ export class PostsController {
         } catch (err) {
             next(err);
         }
-    }
+    };
 }
 
-export default new PostsController(new PostsService(new UsersService()), new UsersService());
+export default new PostsController(
+    new PostsService(new UsersService()),
+    new UsersService(),
+);

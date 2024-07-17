@@ -269,8 +269,6 @@ export class PostsService {
             },
         });
 
-        console.log(guestUserId);
-
         // I. 좋아요 생성 시, 백엔드에서도 한 번 더 체킹
         if (dto.tryToLike && !isLiked) {
             await database.postLike.create({
