@@ -12,7 +12,6 @@ export class CommentsController {
             if (!req.user) return next(new CustomError(401, 'Unauthorized', '로그인을 진행해주세요'));
 
             // I. commentsService.createComment 호출
-
             const newCommentId = await this.commentsService.createComment(req.user.id, req.body);
 
             res.status(201).json({ newCommentId });

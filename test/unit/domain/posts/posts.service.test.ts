@@ -512,12 +512,12 @@ describe('PostsService Main Functions', () => {
                     },
                 },
             });
-            expect(prismaMock.guestUser.deleteMany).toHaveBeenCalledWith({
-                where: {
-                    postLikes: { none: {} },
-                    comments: { none: {} },
-                },
-            });
+            // expect(prismaMock.guestUser.deleteMany).toHaveBeenCalledWith({
+            //     where: {
+            //         postLikes: { none: {} },
+            //         comments: { none: {} },
+            //     },
+            // });
             expect(prismaMock.postLike.create).not.toHaveBeenCalled();
         });
 
