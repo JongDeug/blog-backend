@@ -19,4 +19,27 @@ export class CommentsController {
             next(err);
         }
     };
+
+    createCommentGuest = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            // I. JWT 인증 x
+
+            // I. commentsService.createCommentGuest 호출
+            const { newCommentId, guestId } = await this.commentsService.createCommentGuest(req.body);
+
+            // I. 쿠키에 배열로 저장
+            const postId = req.cookies[`${req.body.postId}`];
+            if (postId) {
+                let parse = JSON.parse(postId);
+                parse.push(guestId);
+                res.cookie(`${req.body.postId}`, JSON.stringify(parse), {});
+            } else {
+                res.cookie(`${req.body.postId}`, JSON.stringify([guestId]), {});
+            }
+
+            res.status(201).json({ newCommentId });
+        } catch (err) {
+            next(err);
+        }
+    };
 }

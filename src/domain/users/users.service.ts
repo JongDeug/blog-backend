@@ -16,7 +16,7 @@ export class UsersService {
     }
 
     async createGuestUser() {
-        const guest = await database.guestUser.create({data:{}});
+        const guest = await database.guestLike.create({data:{}});
         return guest.id;
     }
 }

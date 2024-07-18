@@ -27,7 +27,7 @@ datasource db {
 // yarn prisma migarte dev --create-only : 실제 반영하지 않고 migration 파일만 변경
 // yarn pnpify prisma generate : 현재 파일 기반으로 @prisma/client 생성
 
-// [알고 가지]
+// [알고 가자]
 // - @relation 붙으면 객체임
 // - 일 대 일 관계 설정 시 나중에 생성 되는 곳에 @relation 을 붙여 주면 됨
 // - @unique 는 해당 테이블 행에서 오직 유일하다는 뜻
@@ -56,29 +56,36 @@ model User {
   comments Comment[]
 }
 
-/// 비회원 테이블
-///
-/// 비회원도 게시글 좋아요, 댓글 기능을 사용할 수 있도록 하는 테이블이다.
+/// 비회원 좋아요 테이블
 ///
 /// @namespace Blog
-model GuestUser {
+model GuestLike {
   /// Pirmary Key
-  id       String  @id @default(uuid())
-  /// 닉네임
-  nickName String? @db.VarChar(100)
-  /// 이메일
-  email    String? @db.VarChar(200)
-  /// 비밀번호
-  password String?
+  id String @id @default(uuid())
 
   /// ---
   /// RELATIONS
   /// ---
   postLikes PostLike[]
-  comments  Comment[]
 }
 
-/// 비회원 <=> 게시글 다대다, 게시글 좋아요 테이블
+/// 비회원 댓글 테이블
+///
+/// @namespace Blog
+model GuestComment {
+  /// Pirmary Key
+  id        String   @id @default(uuid())
+  /// 닉네임
+  nickName  String   @db.VarChar(100)
+  /// 이메일
+  email     String   @db.VarChar(200)
+  /// 비밀번호
+  password  String
+  /// 댓글
+  comment Comment?
+}
+
+/// 비회원 <=> 게시글 : 다대다, 게시글 좋아요 테이블
 ///
 /// @namespace Blog
 model PostLike {
@@ -90,11 +97,11 @@ model PostLike {
 
   /// Foreign Key
   ///
-  /// 비회원 ID {@link GuestUser.id}
-  guestUserId String
-  guestUser   GuestUser @relation(fields: [guestUserId], references: [id])
+  /// 비회원 ID {@link GuestLike.id}
+  guestId String
+  guest   GuestLike @relation(fields: [guestId], references: [id])
 
-  @@id([postId, guestUserId])
+  @@id([postId, guestId])
 }
 
 /// 게시글 테이블
@@ -230,8 +237,8 @@ model Comment {
 
   /// Foreign Key
   ///
-  /// 작성자(비회원) ID {@link GuestUser.id}
-  guestUserId String?
-  guestUser   GuestUser? @relation(fields: [guestUserId], references: [id])
+  /// 작성자(비회원) ID {@link GuestComment.id}
+  guestId String?       @unique
+  guest   GuestComment? @relation(fields: [guestId], references: [id])
 }
 
