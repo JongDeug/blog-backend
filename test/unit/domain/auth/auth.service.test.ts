@@ -11,46 +11,78 @@ jest.mock('jsonwebtoken');
 
 describe('AuthService Main Function', () => {
     let authService: AuthService;
+    let mockData: any = {};
 
     beforeEach(() => {
         authService = new AuthService();
         authService.signToken = jest.fn();
         authService.verifyToken = jest.fn();
+        // mock data
+        mockData.returnedUser = {
+            id: '1234',
+            name: 'jonghwan',
+            email: 'jong@gmail.com',
+            password: 'hashedPassword',
+            description: 'hello',
+            refreshToken: 'mockToken',
+        };
+        mockData.accessToken = 'mockAccessToken';
+        mockData.refreshToken = 'mockRefreshToken';
+        mockData.decodedAccess = {
+            id: '1234',
+            email: 'test@gmail.com',
+            type: 'access',
+        };
+        mockData.decodedRefresh = {
+            id: '1234',
+            email: 'test@gmail.com',
+            type: 'refresh',
+        };
     });
 
     // --- Register
     describe('register', () => {
-        let mockDto: RegisterDto = { name: 'jonghwan', email: 'jong@gmail.com', password: '1234' };
-        let mockReturnedUser = { id: '1', email: 'jong@gmail.com' } as User;
+        beforeEach(() => {
+            mockData.registerDto = {
+                name: 'jonghwan',
+                email: 'jong@gmail.com',
+                password: '1234',
+            };
+        });
 
         test('should create a new user successfully', async () => {
             // given
             prismaMock.user.findUnique.mockResolvedValue(null);
             (bcrypt.hash as jest.Mock).mockResolvedValue('hashedPassword');
-            prismaMock.user.create.mockResolvedValue(mockReturnedUser);
+            prismaMock.user.create.mockResolvedValue(mockData.returnedUser);
             (authService.signToken as jest.Mock).mockReturnValueOnce('fakeAccessToken').mockReturnValueOnce('fakeRefreshToken');
             // when
-            const result = await authService.register(mockDto);
+            const result = await authService.register(mockData.registerDto);
             // then
             expect(result).toEqual({ accessToken: 'fakeAccessToken', refreshToken: 'fakeRefreshToken' });
-            expect(prismaMock.user.findUnique).toHaveBeenCalledWith({ where: { email: mockDto.email } });
-            expect(bcrypt.hash).toHaveBeenCalledWith(mockDto.password, Number(process.env.PASSWORD_SALT));
-            expect(prismaMock.user.create).toHaveBeenCalledWith({ data: { ...mockDto, password: 'hashedPassword' } });
-            expect(authService.signToken).toHaveBeenCalledWith(mockReturnedUser, false);
-            expect(authService.signToken).toHaveBeenCalledWith(mockReturnedUser, true);
+            expect(prismaMock.user.findUnique).toHaveBeenCalledWith({ where: { email: mockData.registerDto.email } });
+            expect(bcrypt.hash).toHaveBeenCalledWith(mockData.registerDto.password, Number(process.env.PASSWORD_SALT));
+            expect(prismaMock.user.create).toHaveBeenCalledWith({
+                data: {
+                    ...mockData.registerDto,
+                    password: 'hashedPassword',
+                },
+            });
+            expect(authService.signToken).toHaveBeenCalledWith(mockData.returnedUser, false);
+            expect(authService.signToken).toHaveBeenCalledWith(mockData.returnedUser, true);
             expect(prismaMock.user.update).toHaveBeenCalledWith({
-                where: { id: mockReturnedUser.id },
+                where: { id: mockData.returnedUser.id },
                 data: { refreshToken: 'fakeRefreshToken' },
             });
         });
 
         test('should throw error if email already exists', async () => {
             // given
-            prismaMock.user.findUnique.mockResolvedValue(mockReturnedUser);
+            prismaMock.user.findUnique.mockResolvedValue(mockData.returnedUser);
             // when, then
-            await expect(authService.register(mockDto)).rejects.toThrow(new CustomError(409, 'Conflict', '이미 존재하는 이메일 입니다'));
+            await expect(authService.register(mockData.returnedUser)).rejects.toThrow(new CustomError(409, 'Conflict', '이미 존재하는 이메일 입니다'));
             // then : 검증
-            expect(prismaMock.user.findUnique).toHaveBeenCalledWith({ where: { email: mockDto.email } });
+            expect(prismaMock.user.findUnique).toHaveBeenCalledWith({ where: { email: mockData.returnedUser.email } });
             expect(bcrypt.hash).not.toHaveBeenCalled();
         });
     });
@@ -58,31 +90,28 @@ describe('AuthService Main Function', () => {
 
     // --- Login
     describe('login', () => {
-        let mockDto: LoginDto = { email: 'test@gmail.com', password: '12345' };
-        let mockReturnedUser: User = {
-            id: '1',
-            name: 'jonghwan',
-            email: 'jong@gmail.com',
-            password: 'hashedPassword',
-            description: 'hello',
-            refreshToken: null,
-        };
+        beforeEach(() => {
+            mockData.loginDto = {
+                email: 'test@gmail.com',
+                password: '12345',
+            };
+        });
 
         test('should login successfully if password is correct', async () => {
             // given
-            prismaMock.user.findUnique.mockResolvedValue(mockReturnedUser);
+            prismaMock.user.findUnique.mockResolvedValue(mockData.returnedUser);
             (bcrypt.compare as jest.Mock).mockResolvedValue(true);
             (authService.signToken as jest.Mock).mockReturnValueOnce('fakeAccessToken').mockReturnValueOnce('fakeRefreshToken');
             // when
-            const result = await authService.login(mockDto);
+            const result = await authService.login(mockData.loginDto);
             // then
             expect(result).toEqual({ accessToken: 'fakeAccessToken', refreshToken: 'fakeRefreshToken' });
-            expect(prismaMock.user.findUnique).toHaveBeenCalledWith({ where: { email: mockDto.email } });
-            expect(bcrypt.compare).toHaveBeenCalledWith(mockDto.password, mockReturnedUser.password);
-            expect(authService.signToken).toHaveBeenCalledWith(mockReturnedUser, false);
-            expect(authService.signToken).toHaveBeenCalledWith(mockReturnedUser, true);
+            expect(prismaMock.user.findUnique).toHaveBeenCalledWith({ where: { email: mockData.loginDto.email } });
+            expect(bcrypt.compare).toHaveBeenCalledWith(mockData.loginDto.password, mockData.returnedUser.password);
+            expect(authService.signToken).toHaveBeenCalledWith(mockData.returnedUser, false);
+            expect(authService.signToken).toHaveBeenCalledWith(mockData.returnedUser, true);
             expect(prismaMock.user.update).toHaveBeenCalledWith({
-                where: { id: mockReturnedUser.id },
+                where: { id: mockData.returnedUser.id },
                 data: { refreshToken: 'fakeRefreshToken' },
             });
         });
@@ -91,21 +120,21 @@ describe('AuthService Main Function', () => {
             // given
             prismaMock.user.findUnique.mockResolvedValue(null);
             // when, then
-            await expect(authService.login(mockDto)).rejects.toThrow(new CustomError(404, 'Not Found', '가입되지 않은 이메일 입니다'));
+            await expect(authService.login(mockData.loginDto)).rejects.toThrow(new CustomError(404, 'Not Found', '가입되지 않은 이메일 입니다'));
             // then
-            expect(prismaMock.user.findUnique).toHaveBeenCalledWith({ where: { email: mockDto.email } });
+            expect(prismaMock.user.findUnique).toHaveBeenCalledWith({ where: { email: mockData.loginDto.email } });
             expect(bcrypt.compare).not.toHaveBeenCalled();
         });
 
         test('should throw error if the password is incorrect', async () => {
             // given
-            prismaMock.user.findUnique.mockResolvedValue(mockReturnedUser);
+            prismaMock.user.findUnique.mockResolvedValue(mockData.returnedUser);
             (bcrypt.compare as jest.Mock).mockResolvedValue(false);
             // when, then
-            await expect(authService.login(mockDto)).rejects.toThrow(new CustomError(400, 'Bad Request', '비밀번호를 잘못 입력하셨습니다'));
+            await expect(authService.login(mockData.loginDto)).rejects.toThrow(new CustomError(400, 'Bad Request', '비밀번호를 잘못 입력하셨습니다'));
             // then
-            expect(prismaMock.user.findUnique).toHaveBeenCalledWith({ where: { email: mockDto.email } });
-            expect(bcrypt.compare).toHaveBeenCalledWith(mockDto.password, mockReturnedUser.password);
+            expect(prismaMock.user.findUnique).toHaveBeenCalledWith({ where: { email: mockData.loginDto.email } });
+            expect(bcrypt.compare).toHaveBeenCalledWith(mockData.loginDto.password, mockData.returnedUser.password);
             expect(authService.signToken).not.toHaveBeenCalled();
         });
     });
@@ -113,41 +142,20 @@ describe('AuthService Main Function', () => {
 
     // --- Refresh
     describe('refresh', () => {
-        const mockAccessToken = 'mockAccessToken';
-        const mockRefreshToken = 'mockRefreshToken';
-        const mockDecodedAccess = {
-            id: '1234',
-            email: 'test@gmail.com',
-            type: 'access',
-        };
-        const mockDecodedRefresh = {
-            id: '1234',
-            email: 'test@gmail.com',
-            type: 'refresh',
-        };
-        const mockReturnedUser: User = {
-            id: '1234',
-            name: 'jonghwan',
-            email: 'jong@gmail.com',
-            password: 'hashedPassword',
-            description: 'hello',
-            refreshToken: 'mockToken',
-        };
-
         test('should refresh JWT tokens successfully', async () => {
             // given
-            (authService.verifyToken as jest.Mock).mockReturnValue(mockDecodedRefresh);
-            prismaMock.user.findUnique.mockResolvedValue(mockReturnedUser);
+            (authService.verifyToken as jest.Mock).mockReturnValue(mockData.decodedRefresh);
+            prismaMock.user.findUnique.mockResolvedValue(mockData.returnedUser);
             (authService.signToken as jest.Mock).mockReturnValueOnce('fakeAccessToken').mockReturnValueOnce('fakeRefreshToken');
             // when
-            const result = await authService.refresh(mockRefreshToken);
+            const result = await authService.refresh(mockData.refreshToken);
             // then
             expect(result).toStrictEqual({ accessToken: 'fakeAccessToken', refreshToken: 'fakeRefreshToken' });
-            expect(authService.verifyToken).toHaveBeenCalledWith(mockRefreshToken);
-            expect(authService.signToken).toHaveBeenCalledWith({ ...mockDecodedRefresh }, false);
-            expect(authService.signToken).toHaveBeenCalledWith({ ...mockDecodedRefresh }, true);
+            expect(authService.verifyToken).toHaveBeenCalledWith(mockData.refreshToken);
+            expect(authService.signToken).toHaveBeenCalledWith({ ...mockData.decodedRefresh }, false);
+            expect(authService.signToken).toHaveBeenCalledWith({ ...mockData.decodedRefresh }, true);
             expect(prismaMock.user.update).toHaveBeenCalledWith({
-                where: { id: mockDecodedRefresh.id },
+                where: { id: mockData.decodedRefresh.id },
                 data: { refreshToken: 'fakeRefreshToken' },
             });
         });
@@ -158,35 +166,35 @@ describe('AuthService Main Function', () => {
                 throw new CustomError(401, 'Unauthorized', '토큰이 만료됐거나 잘못된 토큰입니다');
             });
             // when, then
-            await expect(authService.refresh(mockAccessToken)).rejects.toThrow(
+            await expect(authService.refresh(mockData.accessToken)).rejects.toThrow(
                 new CustomError(401, 'Unauthorized', '토큰이 만료됐거나 잘못된 토큰입니다'),
             );
-            expect(authService.verifyToken).toHaveBeenCalledWith(mockAccessToken);
+            expect(authService.verifyToken).toHaveBeenCalledWith(mockData.accessToken);
             expect(prismaMock.user.findUnique).not.toHaveBeenCalled();
         });
 
         test('should throw error if token type is access', async () => {
             // given
-            (authService.verifyToken as jest.Mock).mockReturnValue(mockDecodedAccess);
+            (authService.verifyToken as jest.Mock).mockReturnValue(mockData.decodedAccess);
             // when, then
-            await expect(authService.refresh(mockAccessToken)).rejects.toThrow(new CustomError(401, 'Unauthorized', '토큰 재발급은 refresh 토큰으로만 가능합니다'));
+            await expect(authService.refresh(mockData.accessToken)).rejects.toThrow(new CustomError(401, 'Unauthorized', '토큰 재발급은 refresh 토큰으로만 가능합니다'));
             // then
-            expect(authService.verifyToken).toHaveBeenCalledWith(mockAccessToken);
+            expect(authService.verifyToken).toHaveBeenCalledWith(mockData.accessToken);
             expect(prismaMock.user.findUnique).not.toHaveBeenCalled();
         });
 
         test('should throw error if token is different with stored token in database', async () => {
             // given
-            (authService.verifyToken as jest.Mock).mockReturnValue(mockDecodedRefresh);
+            (authService.verifyToken as jest.Mock).mockReturnValue(mockData.decodedRefresh);
             prismaMock.user.findUnique.mockResolvedValue(null);
             // when, then
-            await expect(authService.refresh(mockRefreshToken)).rejects.toThrow(new CustomError(401, 'Unauthorized', '토큰 유효성 검증에 실패했습니다'));
+            await expect(authService.refresh(mockData.refreshToken)).rejects.toThrow(new CustomError(401, 'Unauthorized', '토큰 유효성 검증에 실패했습니다'));
             // then
-            expect(authService.verifyToken).toHaveBeenCalledWith(mockRefreshToken);
+            expect(authService.verifyToken).toHaveBeenCalledWith(mockData.refreshToken);
             expect(prismaMock.user.findUnique).toHaveBeenCalledWith({
                 where: {
-                    id: mockDecodedRefresh.id,
-                    refreshToken: mockRefreshToken,
+                    id: mockData.decodedRefresh.id,
+                    refreshToken: mockData.refreshToken,
                 },
             });
             expect(authService.signToken).not.toHaveBeenCalled();
@@ -196,38 +204,17 @@ describe('AuthService Main Function', () => {
 
     // --- Logout
     describe('logout', () => {
-        const mockAccessToken = 'fakeAccessToken';
-        const mockRefreshToken = 'fakeRefreshToken';
-        const mockDecodedAccess = {
-            id: '1234',
-            email: 'test@gmail.com',
-            type: 'access',
-        };
-        const mockDecodedRefresh = {
-            id: '1234',
-            email: 'test@gmail.com',
-            type: 'refresh',
-        };
-        const mockReturnedUser: User = {
-            id: '1',
-            name: 'jonghwan',
-            email: 'jong@gmail.com',
-            password: 'hashedPassword',
-            description: 'hello',
-            refreshToken: null,
-        };
-
         test('should logout successfully', async () => {
             // given
-            (authService.verifyToken as jest.Mock).mockReturnValue(mockDecodedAccess);
-            prismaMock.user.findUnique.mockResolvedValue(mockReturnedUser);
+            (authService.verifyToken as jest.Mock).mockReturnValue(mockData.decodedAccess);
+            prismaMock.user.findUnique.mockResolvedValue(mockData.returnedUser);
             // when
-            await authService.logout(mockAccessToken);
+            await authService.logout(mockData.accessToken);
             // then
-            expect(authService.verifyToken).toHaveBeenCalledWith(mockAccessToken, { ignoreExpiration: true });
-            expect(prismaMock.user.findUnique).toHaveBeenCalledWith({ where: { id: mockDecodedAccess.id } });
+            expect(authService.verifyToken).toHaveBeenCalledWith(mockData.accessToken, { ignoreExpiration: true });
+            expect(prismaMock.user.findUnique).toHaveBeenCalledWith({ where: { id: mockData.decodedAccess.id } });
             expect(prismaMock.user.update).toHaveBeenCalledWith({
-                where: { id: mockDecodedAccess.id },
+                where: { id: mockData.decodedAccess.id },
                 data: { refreshToken: null },
             });
         });
@@ -238,20 +225,20 @@ describe('AuthService Main Function', () => {
                 throw new CustomError(401, 'Unauthorized', '토큰이 만료됐거나 잘못된 토큰입니다');
             });
             // when, then
-            await expect(authService.logout(mockAccessToken)).rejects.toThrow(
+            await expect(authService.logout(mockData.accessToken)).rejects.toThrow(
                 new CustomError(401, 'Unauthorized', '토큰이 만료됐거나 잘못된 토큰입니다'),
             );
-            expect(authService.verifyToken).toHaveBeenCalledWith(mockAccessToken, { ignoreExpiration: true });
+            expect(authService.verifyToken).toHaveBeenCalledWith(mockData.accessToken, { ignoreExpiration: true });
             expect(prismaMock.user.findUnique).not.toHaveBeenCalled();
         });
 
         test('should throw error if token type is refresh', async () => {
             // given
-            (authService.verifyToken as jest.Mock).mockReturnValue(mockDecodedRefresh);
+            (authService.verifyToken as jest.Mock).mockReturnValue(mockData.decodedRefresh);
             // when, then
-            await expect(authService.logout(mockRefreshToken)).rejects.toThrow(new CustomError(401, 'Unauthorized', '로그아웃은 access 토큰으로만 가능합니다'));
+            await expect(authService.logout(mockData.refreshToken)).rejects.toThrow(new CustomError(401, 'Unauthorized', '로그아웃은 access 토큰으로만 가능합니다'));
             // then
-            expect(authService.verifyToken).toHaveBeenCalledWith(mockRefreshToken, { ignoreExpiration: true });
+            expect(authService.verifyToken).toHaveBeenCalledWith(mockData.refreshToken, { ignoreExpiration: true });
             expect(prismaMock.user.findUnique).not.toHaveBeenCalled();
         });
     });
@@ -259,6 +246,7 @@ describe('AuthService Main Function', () => {
 
 describe('AuthService Util Function', () => {
     let authService: AuthService;
+    let mockData: any = {};
 
     beforeEach(() => {
         authService = new AuthService();
@@ -267,18 +255,20 @@ describe('AuthService Util Function', () => {
 
     // --- SignToken
     describe('signToken', () => {
-        const mockUser = { id: 'mockUserId', email: 'test@gmail.com' };
+        beforeEach(() => {
+            mockData.user = { id: 'mockUserId', email: 'test@gmail.com' };
+        });
 
         test('should sign access token successfully', () => {
             // given
             (jwt.sign as jest.Mock).mockImplementation(() => 'fakeAccessToken');
             // when
-            const result = authService.signToken(mockUser, false);
+            const result = authService.signToken(mockData.user, false);
             // then
             expect(result).toBe('fakeAccessToken');
             expect(jwt.sign).toHaveBeenCalledWith({
-                id: mockUser.id,
-                email: mockUser.email,
+                id: mockData.user.id,
+                email: mockData.user.email,
                 type: 'access',
             }, process.env.JWT_SECRET as Secret, { expiresIn: '1h' });
         });
@@ -287,12 +277,12 @@ describe('AuthService Util Function', () => {
             // given
             (jwt.sign as jest.Mock).mockImplementation(() => 'fakeRefreshToken');
             // when
-            const result = authService.signToken(mockUser, true);
+            const result = authService.signToken(mockData.user, true);
             // then
             expect(result).toBe('fakeRefreshToken');
             expect(jwt.sign).toHaveBeenCalledWith({
-                id: mockUser.id,
-                email: mockUser.email,
+                id: mockData.user.id,
+                email: mockData.user.email,
                 type: 'refresh',
             }, process.env.JWT_SECRET as Secret, { expiresIn: '1d' });
         });
@@ -301,26 +291,28 @@ describe('AuthService Util Function', () => {
 
     // --- VerifyToken
     describe('verifyToken', () => {
-        const mockToken = 'mockToken';
+        beforeEach(() => {
+            mockData.token = 'mockToken';
+        });
 
         test('should verify token successfully without options', () => {
             // given
             (jwt.verify as jest.Mock).mockReturnValue({ id: 'mockUserId' });
             // when
-            const result = authService.verifyToken(mockToken);
+            const result = authService.verifyToken(mockData.token);
             // then
             expect(result).toStrictEqual({ id: 'mockUserId' });
-            expect(jwt.verify).toHaveBeenCalledWith(mockToken, process.env.JWT_SECRET as Secret, {});
+            expect(jwt.verify).toHaveBeenCalledWith(mockData.token, process.env.JWT_SECRET as Secret, {});
         });
 
         test('should verify token successfully with options', () => {
             // given
             (jwt.verify as jest.Mock).mockReturnValue({ id: 'mockUserId' });
             // when
-            const result = authService.verifyToken(mockToken, { ignoreExpiration: true });
+            const result = authService.verifyToken(mockData.token, { ignoreExpiration: true });
             // then
             expect(result).toStrictEqual({ id: 'mockUserId' });
-            expect(jwt.verify).toHaveBeenCalledWith(mockToken, process.env.JWT_SECRET as Secret, { ignoreExpiration: true });
+            expect(jwt.verify).toHaveBeenCalledWith(mockData.token, process.env.JWT_SECRET as Secret, { ignoreExpiration: true });
         });
 
         test('should throw error if token is expired', () => {
@@ -332,7 +324,7 @@ describe('AuthService Util Function', () => {
             });
             // when, then
             try {
-                authService.verifyToken(mockToken, {});
+                authService.verifyToken(mockData.token, {});
             } catch (err) {
                 expect(err).toStrictEqual(
                     new CustomError(401, 'Unauthorized', '만료된 토큰입니다'),
@@ -349,7 +341,7 @@ describe('AuthService Util Function', () => {
             });
             // when, then
             try {
-                authService.verifyToken(mockToken, {});
+                authService.verifyToken(mockData.token, {});
             } catch (err) {
                 expect(err).toStrictEqual(
                     new CustomError(401, 'Unauthorized', '잘못된 토큰입니다'),

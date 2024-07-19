@@ -1,13 +1,14 @@
 import { CommentsService } from '../../../../../src/domain/posts/comments/comments.service';
 import { UsersService } from '../../../../../src/domain/users/users.service';
 import { PostsService } from '../../../../../src/domain/posts/posts.service';
-import { Post, User, Comment, Prisma } from '@prisma';
+import { User, Comment, Prisma } from '@prisma';
 import { prismaMock } from '../../../../singleton';
-import { PromiseReturnType } from 'prisma/prisma-client/scripts/default-index';
 import { CustomError } from '@utils/customError';
+import bcrypt from 'bcrypt';
 
 jest.mock('../../../../../src/domain/users/users.service');
 jest.mock('../../../../../src/domain/posts/posts.service');
+jest.mock('bcrypt');
 
 
 describe('CommentsService', () => {
@@ -35,8 +36,8 @@ describe('CommentsService', () => {
 
         test('should create a comment successfully', async () => {
             // given
-            usersServiceMock.findUserById.mockResolvedValue({ id: mockData.userId } as User);
-            postsServiceMock.findPostById.mockResolvedValue({ id: mockData.createCommentDto.postId } as FindPostByIdType);
+            usersServiceMock.findUserById = jest.fn().mockResolvedValue({ id: mockData.userId } as User);
+            postsServiceMock.findPostById = jest.fn().mockResolvedValue({ id: mockData.createCommentDto.postId } as FindPostByIdType);
             prismaMock.comment.create.mockResolvedValue({ id: 'mockCommentId' } as Comment);
             // when
             const result = await commentsService.createComment(mockData.userId, mockData.createCommentDto);
@@ -76,8 +77,8 @@ describe('CommentsService', () => {
 
         test('should throw error if post is not found', async () => {
             // given
-            usersServiceMock.findUserById.mockResolvedValue({ id: mockData.userId } as User);
-            postsServiceMock.findPostById.mockRejectedValue(
+            usersServiceMock.findUserById = jest.fn().mockResolvedValue({ id: mockData.userId } as User);
+            postsServiceMock.findPostById = jest.fn().mockRejectedValue(
                 new CustomError(404, 'Not Found', '게시글을 찾을 수 없습니다'),
             );
             // when, then
@@ -87,6 +88,24 @@ describe('CommentsService', () => {
             expect(usersServiceMock.findUserById).toHaveBeenCalled();
             expect(postsServiceMock.findPostById).toHaveBeenCalled();
             expect(prismaMock.comment.create).not.toHaveBeenCalled();
+        });
+    });
+    // ---
+
+    // --- CreateCommentGuest
+    describe('createCommentGuest', () => {
+        beforeEach(() => {
+            mockData.createCommentGuestDto = {
+                postId: 'mockPostId',
+                content: 'mockContent',
+                nickName: 'mockNickname',
+                email: 'mockEmail',
+                password: 'mockPassword',
+            };
+        });
+
+        test('should create a comment successfully', () => {
+
         });
     });
     // ---

@@ -1,13 +1,15 @@
 import { NextFunction, Request, Response } from 'express';
 import httpMocks from 'node-mocks-http';
-import { CommentsService } from '../../../../../src/domain/posts/comments/comments.service';
-import { CommentsController } from '../../../../../src/domain/posts/comments/comments.controller';
 import { PostsService } from '../../../../../src/domain/posts/posts.service';
 import { UsersService } from '../../../../../src/domain/users/users.service';
 import { CustomError } from '@utils/customError';
 import { User } from '@prisma';
+import { CommentsController } from '../../../../../src/domain/posts/comments/comments.controller';
+import { CommentsService } from '../../../../../src/domain/posts/comments/comments.service';
 
 jest.mock('../../../../../src/domain/posts/comments/comments.service');
+jest.mock('../../../../../src/domain/posts/posts.service');
+jest.mock('../../../../../src/domain/users/users.service');
 
 describe('CommentsController', () => {
     let req: httpMocks.MockRequest<Request>;

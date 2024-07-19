@@ -4,14 +4,13 @@ import { PostsService } from '../posts.service';
 import database from '@utils/database';
 import bcrypt from 'bcrypt';
 import transporter from '@utils/nodemailer';
-import * as process from 'node:process';
 
 export class CommentsService {
 
     constructor(private readonly usersService: UsersService, private readonly postsService: PostsService) {
     }
 
-    createComment = async (userId: string, dto: CreateCommentDto) => {
+    async createComment(userId: string, dto: CreateCommentDto) {
         // I. user 확인
         const user = await this.usersService.findUserById(userId);
         // I. post 확인
@@ -37,7 +36,7 @@ export class CommentsService {
         return newComment.id;
     };
 
-    createCommentGuest = async (dto: CreateCommentGuestDto) => {
+    async createCommentGuest(dto: CreateCommentGuestDto) {
         // I. guest 생성
         const hashedPwd = await bcrypt.hash(dto.password, Number(process.env.PASSWORD_SALT));
         const guest = await database.guestComment.create({
@@ -63,7 +62,7 @@ export class CommentsService {
                 },
                 post: {
                     connect: {
-                        id: dto.postId,
+                        id: post.id,
                     },
                 },
             },
