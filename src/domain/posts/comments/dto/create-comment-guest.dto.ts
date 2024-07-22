@@ -11,7 +11,7 @@ export class CreateCommentGuestDto {
 
     @IsString()
     @IsNotEmpty()
-    nickname: string;
+    nickName: string;
 
     @IsEmail()
     @IsNotEmpty()

@@ -141,7 +141,7 @@ export class PostsController {
 
             // I. postLikeGuestId 생성
             if (!postLikeGuestId) {
-                postLikeGuestId = await this.usersService.createGuestUser();
+                postLikeGuestId = await this.usersService.createGuestLike();
 
                 // I. Http Only Cookie 를 사용해 토큰 전송
                 res.cookie('postLikeGuestId', postLikeGuestId, {

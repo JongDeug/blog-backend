@@ -284,7 +284,7 @@ describe('PostsController', () => {
         test('should create a postLike or delete a postLike successfully if guestUserId is undefined', async () => {
             // given
             req.cookies.guestUserId = undefined;
-            usersServiceMock.createGuestUser.mockResolvedValue('mockGuestUserId');
+            usersServiceMock.createGuestLike.mockResolvedValue('mockGuestUserId');
             // when
             await postsController.postLike(req, res, next);
             // then
@@ -299,12 +299,12 @@ describe('PostsController', () => {
         test('should handle error if usersService.createGuestUser throw errors', async () => {
             // given
             req.cookies.guestUserId = undefined;
-            usersServiceMock.createGuestUser.mockRejectedValue(new Error('데이터베이스: 게스트 생성 실패'));
+            usersServiceMock.createGuestLike.mockRejectedValue(new Error('데이터베이스: 게스트 생성 실패'));
             // when
             await postsController.postLike(req, res, next);
             // then
             expect(next).toHaveBeenCalledWith(new Error('데이터베이스: 게스트 생성 실패'));
-            expect(usersServiceMock.createGuestUser).toHaveBeenCalled();
+            expect(usersServiceMock.createGuestLike).toHaveBeenCalled();
             expect(res.cookies.guestUserId).toBeUndefined();
             expect(postsServiceMock.postLike).not.toHaveBeenCalled();
         });

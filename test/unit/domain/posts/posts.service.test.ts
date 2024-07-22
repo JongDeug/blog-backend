@@ -1,10 +1,8 @@
 import { PostsService } from '../../../../src/domain/posts/posts.service';
 import { prismaMock } from '../../../singleton';
-import { CreatePostDto, UpdatePostDto } from '../../../../src/domain/posts/dto';
 import { Image, Post, Prisma, User } from '@prisma';
 import { CustomError } from '@utils/customError';
 import { deleteImage } from '@utils/filesystem';
-import { PaginationType } from '@custom-type/customPagination';
 import { UsersService } from '../../../../src/domain/users/users.service';
 
 jest.mock('../../../../src/domain/users/users.service');
@@ -51,7 +49,6 @@ describe('PostsService Main Functions', () => {
                 return callback(prismaMock);
             });
             prismaMock.post.create.mockResolvedValue({ id: 'newPostId' } as Post);
-
             // when
             const result = await postsService.createPost(mockData.userId, mockData.createPostDto);
             // then
@@ -99,7 +96,7 @@ describe('PostsService Main Functions', () => {
             usersServiceMock.findUserById.mockResolvedValue({ id: mockData.userId } as User);
             prismaMock.$transaction.mockImplementation(async (callback) => {
                 try {
-                    await callback(prismaMock);
+                    return await callback(prismaMock);
                 } catch (error) {
                     throw error;
                 }
@@ -207,11 +204,10 @@ describe('PostsService Main Functions', () => {
         test('should rollback transaction on failure', async () => {
             // given
             usersServiceMock.findUserById.mockResolvedValue({ id: mockData.userId } as User);
-            mockData.returnedpost.authorId = 'mockUserId'; // 다시 맞는 아이디 주입
             (postsService.findPostById as jest.Mock).mockResolvedValue(mockData.returnedpost as PostIncludingImageType);
             prismaMock.$transaction.mockImplementation(async (callback) => {
                 try {
-                    await callback(prismaMock);
+                    return await callback(prismaMock);
                 } catch (error) {
                     throw error;
                 }
@@ -293,7 +289,6 @@ describe('PostsService Main Functions', () => {
 
         test('should throw error if images fail to delete', async () => {
             // given
-            mockData.returnedpost.authorId = 'mockUserId'; // 다시 맞는 아이디 주입
             (postsService.findPostById as jest.Mock).mockResolvedValue(mockData.returnedpost as PostIncludingImageType);
             (deleteImage as jest.Mock).mockRejectedValue(new Error('에러: 파일을 삭제하지 못했습니다'));
             // when

@@ -37,38 +37,36 @@ export class CommentsService {
     };
 
     async createCommentGuest(dto: CreateCommentGuestDto) {
-        // I. guest 생성
-        const hashedPwd = await bcrypt.hash(dto.password, Number(process.env.PASSWORD_SALT));
-        const guest = await database.guestComment.create({
-            data: {
-                nickName: dto.nickname,
-                email: dto.email,
-                password: hashedPwd,
-            },
-        });
-
         // I. post 확인
         const post = await this.postsService.findPostById(dto.postId);
 
-        // I. 단발성으로 구현 => nickname, email, password 가 같더라도 그냥 생성
-        // I. 댓글 생성
-        const newComment = await database.comment.create({
-            data: {
-                content: dto.content,
-                guest: {
-                    connect: {
-                        id: guest.id,
+        // I. 단발성으로 구현, nickname, email, password 가 같더라도 생성. guest 하나당 댓글 하나임.
+        const { newComment, guest } = await database.$transaction(async (database) => {
+            // I. guest 생성
+            const hashedPwd = await bcrypt.hash(dto.password, Number(process.env.PASSWORD_SALT));
+            const guest = await this.usersService.createGuestComment(dto.nickName, dto.email, hashedPwd);
+
+            // I. 댓글 생성
+            const newComment = await database.comment.create({
+                data: {
+                    content: dto.content,
+                    guest: {
+                        connect: {
+                            id: guest.id,
+                        },
+                    },
+                    post: {
+                        connect: {
+                            id: post.id,
+                        },
                     },
                 },
-                post: {
-                    connect: {
-                        id: post.id,
-                    },
-                },
-            },
+            });
+
+            return { newComment, guest };
         });
 
-        // I. 이메일 보내기
+        // I. 트랜잭션이 성공하면 이메일 보내기
         const mailOptions = {
             from: `${guest.email}`, // 발신자 이메일 주소
             to: process.env.MAIL_ID, // 수신자 이메일 주소
