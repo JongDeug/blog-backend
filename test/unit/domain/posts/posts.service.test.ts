@@ -321,7 +321,7 @@ describe('PostsService Main Functions', () => {
             // given
             prismaMock.post.findMany.mockResolvedValue(mockData.mockReturnedPosts);
             // when
-            const result = await postsService.getPosts(mockData.mockPagination,  mockData.mockSearchQuery, mockData.mockCategory);
+            const result = await postsService.getPosts(mockData.mockPagination, mockData.mockSearchQuery, mockData.mockCategory);
             // then
             expect(result.posts).toStrictEqual(mockData.mockReturnedPosts);
             expect(result.postCount).toBe(mockData.mockReturnedPosts.length);
@@ -331,7 +331,7 @@ describe('PostsService Main Functions', () => {
                         { title: { contains: mockData.mockSearchQuery } },
                         { content: { contains: mockData.mockSearchQuery } },
                     ],
-                    category: { name:  mockData.mockCategory  },
+                    category: { name: mockData.mockCategory },
                 },
                 select: {
                     id: true,
@@ -361,7 +361,7 @@ describe('PostsService Main Functions', () => {
                         { title: { contains: '' } }, // 만약 undefined 이라면
                         { content: { contains: '' } }, // 만약 undefined 이라면
                     ],
-                    category: { name:  mockData.mockCategory  },
+                    category: { name: mockData.mockCategory },
                 },
                 select: {
                     id: true,
@@ -381,7 +381,7 @@ describe('PostsService Main Functions', () => {
             // given
             prismaMock.post.findMany.mockResolvedValue(mockData.mockReturnedPosts);
             // when
-            const result = await postsService.getPosts(mockData.mockPagination,  mockData.mockSearchQuery, undefined);
+            const result = await postsService.getPosts(mockData.mockPagination, mockData.mockSearchQuery, undefined);
             // then
             expect(result.posts).toStrictEqual(mockData.mockReturnedPosts);
             expect(result.postCount).toBe(mockData.mockReturnedPosts.length);
@@ -435,7 +435,14 @@ describe('PostsService Main Functions', () => {
                         name: true,
                     },
                 },
-                comments: true, // R. comment 작성 후 고치기
+                comments: {
+                    where: {
+                        parentCommentId: null,
+                    },
+                    include: {
+                        childComments: true,
+                    },
+                },
             });
         });
 

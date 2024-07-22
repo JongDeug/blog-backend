@@ -10,7 +10,7 @@ import { UsersService } from '../users/users.service';
 import { CommentsController } from './comments/comments.controller';
 import { CommentsService } from './comments/comments.service';
 import { validateDto } from '@middleware/validateDto';
-import { CreateCommentDto, CreateCommentGuestDto } from './comments/dto';
+import { CreateChildCommentDto, CreateCommentDto, CreateCommentGuestDto } from './comments/dto';
 
 export class PostsController {
     path: string;
@@ -37,7 +37,8 @@ export class PostsController {
         this.router.post('/like', this.postLike);
         // =====================================================================================
         this.router.post('/comments', validateDto(CreateCommentDto), this.commentsController.createComment);
-        this.router.post('/comments-guest', validateDto(CreateCommentGuestDto), this.commentsController.createCommentGuest);
+        this.router.post('/comments/guest', validateDto(CreateCommentGuestDto), this.commentsController.createCommentGuest);
+        this.router.post('/child-comments', validateDto(CreateChildCommentDto), this.commentsController.createChildComment);
     }
 
     createPost = async (req: Request, res: Response, next: NextFunction) => {

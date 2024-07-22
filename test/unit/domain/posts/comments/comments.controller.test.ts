@@ -128,4 +128,47 @@ describe('CommentsController', () => {
         });
     });
     // ---
+
+    // --- CreateChildComment
+    describe('createChildComment', () => {
+        beforeEach(() => {
+            req.user = { id: 'mockUserId' } as User;
+            req.body = {
+                parentCommentId: 'mockParentCommentId',
+                content: 'mockContent',
+            };
+        });
+
+        test('should create a child comment successfully', async () => {
+            // given
+            commentsServiceMock.createChildComment.mockResolvedValue('newChildCommentId');
+            // when
+            await commentsController.createChildComment(req, res, next);
+            // then
+            expect(res.statusCode).toBe(201);
+            expect(res._getJSONData()).toStrictEqual({newChildCommentId: 'newChildCommentId'});
+            expect(res._isEndCalled()).toBeTruthy();
+            expect(commentsServiceMock.createChildComment).toHaveBeenCalledWith(req.user.id, req.body);
+        });
+
+        test('should handle error if user is not authenticated', async () => {
+            // given
+            req.user = undefined;
+            // when
+            await commentsController.createChildComment(req, res, next);
+            // then
+            expect(next).toHaveBeenCalledWith(new CustomError(401, 'Unauthorized', '로그인을 진행해주세요'));
+            expect(commentsServiceMock.createChildComment).not.toHaveBeenCalled();
+        });
+
+        test('should handle error if commentsService.createChildComment throws error', async () => {
+            // given
+            commentsServiceMock.createChildComment.mockRejectedValue(new Error('데이터베이스: 대댓글 생성 오류'));
+            // when
+            await commentsController.createChildComment(req, res, next);
+            // then
+            expect(next).toHaveBeenCalledWith(new Error('데이터베이스: 대댓글 생성 오류'));
+        });
+    });
+    // ---
 });
