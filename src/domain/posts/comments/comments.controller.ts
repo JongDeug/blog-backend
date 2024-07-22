@@ -42,4 +42,18 @@ export class CommentsController {
             next(err);
         }
     };
+
+    createChildComment = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            // I. JWT 인증 확인
+            if (!req.user) return next(new CustomError(401, 'Unauthorized', '로그인을 진행해주세요'));
+
+            // I. commentsService.createChildComment 호출
+            const newChildCommentId = await this.commentsService.createChildComment(req.user.id, req.body);
+
+            res.status(201).json({ newChildCommentId });
+        } catch (err) {
+            next(err);
+        }
+    };
 }

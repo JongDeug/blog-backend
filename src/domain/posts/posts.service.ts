@@ -242,7 +242,14 @@ export class PostsService {
                     name: true,
                 },
             },
-            comments: true, // R. comment 작성 후 고치기
+            comments: {
+                where: {
+                    parentCommentId: null,
+                },
+                include: {
+                    childComments: true,
+                },
+            },
         });
 
         // I. 게시글 좋아요 여부
