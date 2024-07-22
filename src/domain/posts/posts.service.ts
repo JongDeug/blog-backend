@@ -223,7 +223,7 @@ export class PostsService {
         return { posts, postCount: posts.length };
     }
 
-    async getPost(postId: string, guestUserId: string | undefined) {
+    async getPost(postId: string, postLikeGuestId: string | undefined) {
         // I. 게시글 상세 조회
         const post = await this.findPostById(postId, {
             tags: true,
@@ -246,7 +246,7 @@ export class PostsService {
         });
 
         // I. 게시글 좋아요 여부
-        const isLiked = post.postLikes.some(el => el.guestUserId === guestUserId);
+        const isLiked = post.postLikes.some(el => el.guestId === postLikeGuestId);
 
         return {
             post: {
@@ -257,14 +257,14 @@ export class PostsService {
 
     // 게시글 좋아요 ==========================================================================================
 
-    async postLike(guestUserId: string, dto: PostLikeDto) {
+    async postLike(postLikeGuestId: string, dto: PostLikeDto) {
         // I. 공통 로직(게시글 존재 여부, 게시글 좋아요 유무)
         const post = await this.findPostById(dto.postId);
         const isLiked = await database.postLike.findUnique({
             where: {
-                postId_guestUserId: {
+                postId_guestId: {
                     postId: post.id,
-                    guestUserId: guestUserId,
+                    guestId: postLikeGuestId,
                 },
             },
         });
@@ -274,7 +274,7 @@ export class PostsService {
             await database.postLike.create({
                 data: {
                     post: { connect: { id: post.id } },
-                    guestUser: { connect: { id: guestUserId } },
+                    guest: { connect: { id: postLikeGuestId } },
                 },
             });
 
@@ -284,20 +284,19 @@ export class PostsService {
         else if (!dto.tryToLike && isLiked) {
             await database.postLike.delete({
                 where: {
-                    postId_guestUserId: {
+                    postId_guestId: {
                         postId: post.id,
-                        guestUserId: guestUserId,
+                        guestId: postLikeGuestId,
                     },
                 },
             });
 
-            // I. 고아 게스트 삭제인데 목적성에 맞지 않은 것 같음 => 생략
-            // await database.guestUser.deleteMany({
-            //     where: {
-            //         postLikes: { none: {} },
-            //         comments: { none: {} },
-            //     },
-            // });
+            // I. 고아 게스트 삭제
+            await database.guestLike.deleteMany({
+                where: {
+                    postLikes: { none: {} },
+                },
+            });
 
             return;
         }

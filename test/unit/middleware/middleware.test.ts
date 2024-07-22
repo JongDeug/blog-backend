@@ -67,7 +67,7 @@ describe('Middleware', () => {
         test('should verify JWT access token successfully', async () => {
             // given
             authServiceMock.verifyToken.mockReturnValue(mockDecodedAccess);
-            usersServiceMock.findUserById.mockResolvedValue(mockReturnedUser);
+            usersServiceMock.findUserById = jest.fn().mockResolvedValue(mockReturnedUser);
             // when
             const middleware = jwtVerify(authServiceMock, usersServiceMock);
             await middleware(req, res, next);
@@ -103,7 +103,7 @@ describe('Middleware', () => {
 
         test('should throw error if token type is refresh', () => {
             // given
-            authServiceMock.verifyToken.mockReturnValue(mockDecodedRefresh);
+            authServiceMock.verifyToken = jest.fn().mockReturnValue(mockDecodedRefresh);
             // when
             const middleware = jwtVerify(authServiceMock, usersServiceMock);
             middleware(req, res, next);
@@ -115,7 +115,7 @@ describe('Middleware', () => {
         test('should handle error if authService.findUserById throw error', () => {
             // given
             authServiceMock.verifyToken.mockReturnValue(mockDecodedAccess);
-            usersServiceMock.findUserById.mockImplementation(() => {
+            usersServiceMock.findUserById = jest.fn().mockImplementation(() => {
                 throw new Error('findUserById 함수에서 던지는 오류');
             });
             // when

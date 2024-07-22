@@ -5,7 +5,8 @@ export class UsersService {
     /**
      * Utils
      * findUserById : userId 로 user 검색
-     * createGuestUser : guest 생성 및 id 반환
+     * createGuestLike : guestLike 생성 및 id 반환
+     * createGuestComment: guestComment 생성 및 반환
      */
     async findUserById(userId: string) {
         const user = await database.user.findUnique({ where: { id: userId } });
@@ -15,8 +16,14 @@ export class UsersService {
         return user;
     }
 
-    async createGuestUser() {
-        const guest = await database.guestUser.create({data:{}});
+    async createGuestLike() {
+        const guest = await database.guestLike.create({ data: {} });
         return guest.id;
+    }
+
+    async createGuestComment(nickName: string, email: string, password: string) {
+        return database.guestComment.create({
+            data: { nickName, email, password },
+        });
     }
 }

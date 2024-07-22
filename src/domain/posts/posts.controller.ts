@@ -10,7 +10,7 @@ import { UsersService } from '../users/users.service';
 import { CommentsController } from './comments/comments.controller';
 import { CommentsService } from './comments/comments.service';
 import { validateDto } from '@middleware/validateDto';
-import { CreateCommentDto } from './comments/dto';
+import { CreateCommentDto, CreateCommentGuestDto } from './comments/dto';
 
 export class PostsController {
     path: string;
@@ -37,6 +37,7 @@ export class PostsController {
         this.router.post('/like', this.postLike);
         // =====================================================================================
         this.router.post('/comments', validateDto(CreateCommentDto), this.commentsController.createComment);
+        this.router.post('/comments-guest', validateDto(CreateCommentGuestDto), this.commentsController.createCommentGuest);
     }
 
     createPost = async (req: Request, res: Response, next: NextFunction) => {
@@ -116,12 +117,12 @@ export class PostsController {
         try {
             // I. JWT 필요 X
 
-            // I. param 으로 postId 받기, cookies 에서 guestUserId 추출
+            // I. param 으로 postId 받기, cookies 에서 postLikeGuestId 추출
             const { id } = req.params;
-            const { guestUserId } = req.cookies;
+            const { postLikeGuestId } = req.cookies;
 
             // I. postsService.getPost 호출
-            const { post } = await this.postsService.getPost(id, guestUserId);
+            const { post } = await this.postsService.getPost(id, postLikeGuestId);
 
             res.status(200).json({ post });
         } catch (err) {
@@ -135,15 +136,15 @@ export class PostsController {
         try {
             // I. JWT 필요 X
 
-            // I. cookies 에서 guestUserId 추출
-            let { guestUserId } = req.cookies;
+            // I. cookies 에서 postLikeGuestId 추출
+            let { postLikeGuestId } = req.cookies;
 
-            // I. guestUserId 생성
-            if (!guestUserId) {
-                guestUserId = await this.usersService.createGuestUser();
+            // I. postLikeGuestId 생성
+            if (!postLikeGuestId) {
+                postLikeGuestId = await this.usersService.createGuestLike();
 
                 // I. Http Only Cookie 를 사용해 토큰 전송
-                res.cookie('guestUserId', guestUserId, {
+                res.cookie('postLikeGuestId', postLikeGuestId, {
                     httpOnly: true,
                     // sameSite: 'strict', // sameSite 속성 설정
                     // secure: true // HTTPS 연결에서만 쿠키가 전송되도록 설정
@@ -151,7 +152,7 @@ export class PostsController {
             }
 
             // I. postsService.postLike 호출
-            await this.postsService.postLike(guestUserId, req.body);
+            await this.postsService.postLike(postLikeGuestId, req.body);
 
             res.status(200).json({});
         } catch (err) {

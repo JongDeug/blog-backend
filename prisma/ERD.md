@@ -14,15 +14,18 @@ erDiagram
   String description "nullable"
   String refreshToken "nullable"
 }
-"GuestUser" {
+"GuestLike" {
   String id PK
-  String nickName "nullable"
-  String email "nullable"
-  String password "nullable"
+}
+"GuestComment" {
+  String id PK
+  String nickName
+  String email
+  String password
 }
 "PostLike" {
   String postId FK
-  String guestUserId FK
+  String guestId FK
 }
 "Post" {
   String id PK
@@ -54,10 +57,10 @@ erDiagram
   String parentCommentId FK "nullable"
   String postId FK
   String authorId FK "nullable"
-  String guestUserId FK "nullable"
+  String guestId FK "nullable"
 }
 "PostLike" }o--|| "Post" : post
-"PostLike" }o--|| "GuestUser" : guestUser
+"PostLike" }o--|| "GuestLike" : guest
 "Post" }o--|| "User" : author
 "Post" }o--|| "Category" : category
 "PostTag" }o--|| "Post" : post
@@ -66,7 +69,7 @@ erDiagram
 "Comment" }o--o| "Comment" : parentComment
 "Comment" }o--|| "Post" : post
 "Comment" }o--o| "User" : author
-"Comment" }o--o| "GuestUser" : guestUser
+"Comment" |o--o| "GuestComment" : guest
 ```
 
 ### `User`
@@ -80,10 +83,14 @@ erDiagram
   - `description`: 간단한 소개
   - `refreshToken`: refresh token
 
-### `GuestUser`
-비회원 테이블
+### `GuestLike`
+비회원 좋아요 테이블
 
-비회원도 게시글 좋아요, 댓글 기능을 사용할 수 있도록 하는 테이블이다.
+**Properties**
+  - `id`: Pirmary Key
+
+### `GuestComment`
+비회원 댓글 테이블
 
 **Properties**
   - `id`: Pirmary Key
@@ -92,17 +99,17 @@ erDiagram
   - `password`: 비밀번호
 
 ### `PostLike`
-비회원 <=> 게시글 다대다, 게시글 좋아요 테이블
+비회원 <=> 게시글 : 다대다, 게시글 좋아요 테이블
 
 **Properties**
   - `postId`
     > Foreign Key
     > 
     > 게시글 ID [Post.id](#Post)
-  - `guestUserId`
+  - `guestId`
     > Foreign Key
     > 
-    > 비회원 ID [GuestUser.id](#GuestUser)
+    > 비회원 ID [GuestLike.id](#GuestLike)
 
 ### `Post`
 게시글 테이블
@@ -176,7 +183,7 @@ erDiagram
     > Foreign Key
     > 
     > 작성자(회원) ID [User.id](#User)
-  - `guestUserId`
+  - `guestId`
     > Foreign Key
     > 
-    > 작성자(비회원) ID [GuestUser.id](#GuestUser)
+    > 작성자(비회원) ID [GuestComment.id](#GuestComment)
