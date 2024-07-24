@@ -40,13 +40,13 @@ describe('UsersService Util Functions', () => {
     });
     // ---
 
-    // --- CreateGuest
-    describe('createGuest', () => {
+    // --- createGuestForLike
+    describe('createGuestForLike', () => {
         beforeEach(() => {
             mockData.returnedGuest = { id: 'mockGuestId' };
         });
 
-        test('should create a guest', async () => {
+        test('should create a guest for like', async () => {
             // given
             prismaMock.guestLike.create.mockResolvedValue(mockData.returnedGuest);
             // when
@@ -54,6 +54,35 @@ describe('UsersService Util Functions', () => {
             // then
             expect(result).toStrictEqual(mockData.returnedGuest.id);
             expect(prismaMock.guestLike.create).toHaveBeenCalledWith({ data: {} });
+        });
+    });
+    // ---
+
+    // --- createGuestForComment
+    describe('createGuestForComment', () => {
+        beforeEach(() => {
+            mockData.returnedGuest = {
+                id: 'mockGuestId',
+                nickName: 'mockNickName',
+                email: 'mockEmail',
+                password: 'mockPassword',
+            };
+        });
+
+        test('should create a guest for comment', async () => {
+            // given
+            prismaMock.guestComment.create.mockResolvedValue(mockData.returnedGuest);
+            // when
+            const result = await usersService.createGuestForComment('mockNickName', 'mockEmail', 'mockPassword');
+            // then
+            expect(result).toStrictEqual(mockData.returnedGuest);
+            expect(prismaMock.guestComment.create).toHaveBeenCalledWith({
+                data: {
+                    nickName: mockData.returnedGuest.nickName,
+                    email: mockData.returnedGuest.email,
+                    password: mockData.returnedGuest.password,
+                },
+            });
         });
     });
     // ---
