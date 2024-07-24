@@ -312,7 +312,7 @@ export class PostsService {
     }
 
     /**
-     * Utils
+     * [Utils]
      * findPostById : 게시글 찾기, Prisma.PostInclude 로 type 해결 ㄷㄷ !
      */
     async findPostById(postId: string, includeOptions: Prisma.PostInclude = {}) {

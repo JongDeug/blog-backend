@@ -12,8 +12,10 @@ export const jwtVerify = function(authService: AuthService, usersService: UsersS
             if (req.url.startsWith('/posts') && req.method === 'GET') return next();
             // I. '/posts/like' 는 인증에서 제외한다.
             if (req.url === '/posts/like') return next();
-            // I. '/posts/comments-guest' 는 인증에서 제외한다.
+            // I. '/posts/comments/guest' 는 인증에서 제외한다.
             if (req.url === '/posts/comments/guest') return next();
+            // I. '/posts/child-comments/guest' 는 인증에서 제외한다.
+            if (req.url === '/posts/child-comments/guest') return next();
             // I. '/categories' 로 시작하는 GET 메소드 요청은 인증에서 제외한다.
             if (req.url.startsWith('/categories') && req.method === 'GET') return next();
 

@@ -16,12 +16,12 @@ export class UsersService {
         return user;
     }
 
-    async createGuestLike() {
+    async createGuestForLike() {
         const guest = await database.guestLike.create({ data: {} });
         return guest.id;
     }
 
-    async createGuestComment(nickName: string, email: string, password: string) {
+    async createGuestForComment(nickName: string, email: string, password: string) {
         return database.guestComment.create({
             data: { nickName, email, password },
         });
