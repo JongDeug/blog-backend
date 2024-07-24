@@ -50,7 +50,7 @@ describe('UsersService Util Functions', () => {
             // given
             prismaMock.guestLike.create.mockResolvedValue(mockData.returnedGuest);
             // when
-            const result = await usersService.createGuestLike();
+            const result = await usersService.createGuestForLike();
             // then
             expect(result).toStrictEqual(mockData.returnedGuest.id);
             expect(prismaMock.guestLike.create).toHaveBeenCalledWith({ data: {} });

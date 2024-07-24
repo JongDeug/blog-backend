@@ -10,7 +10,12 @@ import { UsersService } from '../users/users.service';
 import { CommentsController } from './comments/comments.controller';
 import { CommentsService } from './comments/comments.service';
 import { validateDto } from '@middleware/validateDto';
-import { CreateChildCommentDto, CreateCommentDto, CreateCommentGuestDto } from './comments/dto';
+import {
+    CreateChildCommentDto,
+    CreateChildCommentGuestDto,
+    CreateCommentDto,
+    CreateCommentGuestDto,
+} from './comments/dto';
 
 export class PostsController {
     path: string;
@@ -39,6 +44,7 @@ export class PostsController {
         this.router.post('/comments', validateDto(CreateCommentDto), this.commentsController.createComment);
         this.router.post('/comments/guest', validateDto(CreateCommentGuestDto), this.commentsController.createCommentGuest);
         this.router.post('/child-comments', validateDto(CreateChildCommentDto), this.commentsController.createChildComment);
+        this.router.post('/child-comments/guest', validateDto(CreateChildCommentGuestDto), this.commentsController.createChildCommentGuest);
     }
 
     createPost = async (req: Request, res: Response, next: NextFunction) => {
@@ -142,7 +148,7 @@ export class PostsController {
 
             // I. postLikeGuestId 생성
             if (!postLikeGuestId) {
-                postLikeGuestId = await this.usersService.createGuestLike();
+                postLikeGuestId = await this.usersService.createGuestForLike();
 
                 // I. Http Only Cookie 를 사용해 토큰 전송
                 res.cookie('postLikeGuestId', postLikeGuestId, {

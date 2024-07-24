@@ -146,7 +146,7 @@ describe('CommentsController', () => {
             await commentsController.createChildComment(req, res, next);
             // then
             expect(res.statusCode).toBe(201);
-            expect(res._getJSONData()).toStrictEqual({newChildCommentId: 'newChildCommentId'});
+            expect(res._getJSONData()).toStrictEqual({ newChildCommentId: 'newChildCommentId' });
             expect(res._isEndCalled()).toBeTruthy();
             expect(commentsServiceMock.createChildComment).toHaveBeenCalledWith(req.user.id, req.body);
         });
@@ -171,4 +171,66 @@ describe('CommentsController', () => {
         });
     });
     // ---
+
+    // --- CreateChildCommentGuest
+    describe('createChildCommentGuest', () => {
+        beforeEach(() => {
+            req.body = {
+                parentCommentId: 'mockParentCommentId',
+                content: 'mockContent',
+                nickName: 'mockNickname',
+                email: 'mockEmail',
+                password: 'mockPassword',
+            };
+        });
+
+        // I. 쿠키에 아무것도 없을 때
+        test('should create a guest child comment successfully req.cookies.postId is empty', async () => {
+            // given
+            commentsServiceMock.createChildCommentGuest.mockResolvedValue({
+                newChildCommentId: 'newChildCommentId',
+                guestId: 'mockGuestId',
+                postId: 'mockPostId',
+            });
+            // when
+            await commentsController.createChildCommentGuest(req, res, next);
+            // then
+            expect(res.statusCode).toBe(201);
+            expect(res._getJSONData()).toStrictEqual({ newChildCommentId: 'newChildCommentId' });
+            expect(res._isEndCalled()).toBeTruthy();
+            expect(res.cookies).toHaveProperty('mockPostId');
+            expect(res.cookies.mockPostId.value).toStrictEqual(JSON.stringify(['mockGuestId']));
+        });
+
+        // I. 쿠키에 값이 있을 때
+        test('should create a guest child comment successfully req.cookies.postId is filled', async () => {
+            // given
+            req.cookies.mockPostId = JSON.stringify(['mockGuestId']);
+            commentsServiceMock.createChildCommentGuest.mockResolvedValue({
+                newChildCommentId: 'newChildCommentId',
+                guestId: 'mockGuestId2',
+                postId: 'mockPostId',
+            });
+            // when
+            await commentsController.createChildCommentGuest(req, res, next);
+            // then
+            expect(res.statusCode).toBe(201);
+            expect(res._getJSONData()).toStrictEqual({ newChildCommentId: 'newChildCommentId' });
+            expect(res._isEndCalled()).toBeTruthy();
+            expect(res.cookies).toHaveProperty('mockPostId');
+            let parse = JSON.parse(req.cookies.mockPostId);
+            parse.push('mockGuestId2');
+            expect(res.cookies.mockPostId.value).toStrictEqual(JSON.stringify(parse));
+        });
+
+        test('should handle error if commentsService.createChildCommentGuest throws error', async () => {
+            // given
+            commentsServiceMock.createChildCommentGuest.mockRejectedValue(new Error('데이터베이스: 게스트 대댓글 생성 오류'));
+            // when
+            await commentsController.createChildCommentGuest(req, res, next);
+            // then
+            expect(next).toHaveBeenCalledWith(new Error('데이터베이스: 게스트 대댓글 생성 오류'));
+        });
+        // ---
+    });
 });
