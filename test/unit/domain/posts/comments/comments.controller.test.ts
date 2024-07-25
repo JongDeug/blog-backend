@@ -24,12 +24,13 @@ describe('CommentsController', () => {
         next = jest.fn();
         commentsServiceMock = jest.mocked(new CommentsService(new UsersService(), new PostsService(new UsersService()))) as jest.Mocked<CommentsService>;
         commentsController = new CommentsController(commentsServiceMock);
+        req.user = { id: 'mockUserId' } as User;
+        req.params.id = 'mockCommentId';
     });
 
     // --- CreateComment
     describe('createComment', () => {
         beforeEach(() => {
-            req.user = { id: 'mockUserId' } as User;
             req.body = {
                 postId: 'mockPostId',
                 content: 'mockContent',
@@ -233,4 +234,41 @@ describe('CommentsController', () => {
         });
         // ---
     });
+
+    // --- UpdateComment
+    describe('updateComment', () => {
+        beforeEach(() => {
+            req.body = { content: 'mockContent' };
+        });
+
+        test('should update a comment successfully', async () => {
+            // when
+            await commentsController.updateComment(req, res, next);
+            // then
+            expect(res.statusCode).toBe(200);
+            expect(res._getJSONData()).toStrictEqual({});
+            expect(res._isEndCalled()).toBeTruthy();
+            expect(commentsServiceMock.updateComment).toHaveBeenCalledWith(req.user.id, req.params.id, req.body);
+        });
+
+        test('should handle error if user is not authenticated', async () => {
+            // given
+            req.user = undefined;
+            // when
+            await commentsController.updateComment(req, res, next);
+            // then
+            expect(next).toHaveBeenCalledWith(new CustomError(401, 'Unauthorized', '로그인을 진행해주세요'));
+            expect(commentsServiceMock.updateComment).not.toHaveBeenCalled();
+        });
+
+        test('should handle error if commentsService.updateComment throws error', async () => {
+            // given
+            commentsServiceMock.updateComment.mockRejectedValue(new Error('데이터베이스: 게스트 대댓글 생성 오류'));
+            // when
+            await commentsController.updateComment(req, res, next);
+            // then
+            expect(next).toHaveBeenCalledWith(new Error('데이터베이스: 게스트 대댓글 생성 오류'));
+        });
+    });
+    // ---
 });

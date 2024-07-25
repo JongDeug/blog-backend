@@ -7,7 +7,6 @@ import { CustomError } from '@utils/customError';
 import bcrypt from 'bcrypt';
 import process from 'node:process';
 import transporter from '@utils/nodemailer';
-import { anyFunction } from 'jest-mock-extended';
 
 jest.mock('../../../../../src/domain/users/users.service');
 jest.mock('../../../../../src/domain/posts/posts.service');
@@ -30,6 +29,7 @@ describe('CommentsService Main Functions', () => {
         commentsService.sendMail = jest.fn();
         commentsService.findCommentById = jest.fn();
         mockData.userId = 'mockUserId';
+        mockData.commentId = 'mockCommentId';
         mockData.returnedParentComment = {
             postId: 'mockPostId',
             id: 'mockCommentId',
@@ -503,6 +503,75 @@ describe('CommentsService Main Functions', () => {
         });
     });
     // ---
+
+    // --- UpdateComment
+    describe('updateComment', () => {
+        beforeEach(() => {
+            mockData.updateCommentDto = { content: 'mockContent' };
+            mockData.returnedComment = { id: 'mockCommentId', authorId: 'mockUserId' };
+        });
+
+        test('should update a comment successfully', async () => {
+            // given
+            usersServiceMock.findUserById.mockResolvedValue({ id: 'mockUserId' } as User);
+            (commentsService.findCommentById as jest.Mock).mockResolvedValue(mockData.returnedComment);
+            // when
+            await commentsService.updateComment(mockData.userId, mockData.commentId, mockData.updateCommentDto);
+            // then
+            expect(usersServiceMock.findUserById).toHaveBeenCalledWith(mockData.userId);
+            expect(commentsService.findCommentById).toHaveBeenCalledWith(mockData.commentId);
+            expect(prismaMock.comment.update).toHaveBeenCalledWith({
+                where: {
+                    id: mockData.returnedComment.id,
+                },
+                data: {
+                    content: mockData.updateCommentDto.content,
+                },
+            });
+        });
+
+        test('should throw error if user is not found', async () => {
+            // given
+            usersServiceMock.findUserById.mockRejectedValue(
+                new CustomError(404, 'User Not Found', '유저를 찾을 수 없습니다'),
+            );
+            // when, then
+            await expect(commentsService.updateComment(mockData.userId, mockData.commentId, mockData.updateCommentDto)).rejects.toThrow(
+                new CustomError(404, 'User Not Found', '유저를 찾을 수 없습니다'),
+            );
+            expect(usersServiceMock.findUserById).toHaveBeenCalled();
+            expect(commentsService.findCommentById).not.toHaveBeenCalled();
+        });
+
+        test('should throw error if comment is not found', async () => {
+            // given
+            usersServiceMock.findUserById.mockResolvedValue({ id: 'mockUserId' } as User);
+            (commentsService.findCommentById as jest.Mock).mockRejectedValue(
+                new CustomError(404, 'Not Found', '댓글을 찾을 수 없습니다'),
+            );
+            // when, then
+            await expect(commentsService.updateComment(mockData.userId, mockData.commentId, mockData.updateCommentDto)).rejects.toThrow(
+                new CustomError(404, 'Not Found', '댓글을 찾을 수 없습니다'),
+            );
+            expect(usersServiceMock.findUserById).toHaveBeenCalled();
+            expect(commentsService.findCommentById).toHaveBeenCalled();
+            expect(prismaMock.comment.update).not.toHaveBeenCalled();
+        });
+
+        test('should throw error if user is not author of comment', async () => {
+            // given
+            usersServiceMock.findUserById.mockResolvedValue({ id: 'mockAnotherUser' } as User);
+            (commentsService.findCommentById as jest.Mock).mockResolvedValue(mockData.returnedComment);
+            // when, then
+            await expect(commentsService.updateComment(mockData.userId, mockData.commentId, mockData.updateCommentDto)).rejects.toThrow(
+                new CustomError(403, 'Forbidden', '권한이 없습니다'),
+            );
+            expect(usersServiceMock.findUserById).toHaveBeenCalled();
+            expect(commentsService.findCommentById).toHaveBeenCalled();
+            expect(prismaMock.comment.update).not.toHaveBeenCalled();
+        });
+    });
+    // ---
 });
 
 describe('CommentsService Util Functions', () => {
@@ -593,4 +662,6 @@ describe('CommentsService Util Functions', () => {
         });
     });
     // ---
+
+
 });

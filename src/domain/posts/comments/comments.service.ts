@@ -1,4 +1,10 @@
-import { CreateChildCommentDto, CreateChildCommentGuestDto, CreateCommentDto, CreateCommentGuestDto } from './dto';
+import {
+    CreateChildCommentDto,
+    CreateChildCommentGuestDto,
+    CreateCommentDto,
+    CreateCommentGuestDto,
+    UpdateCommentDto,
+} from './dto';
 import { UsersService } from '../../users/users.service';
 import { PostsService } from '../posts.service';
 import database from '@utils/database';
@@ -184,6 +190,28 @@ export class CommentsService {
         this.sendMail(mailList, { nickName: guest.nickName, postTitle: parentComment.post.title });
 
         return { newChildCommentId: newChildComment.id, guestId: guest.id, postId: parentComment.postId };
+    }
+
+    // ----
+
+    async updateComment(userId: string, commentId: string, dto: UpdateCommentDto) {
+        // I. user 검색
+        const user = await this.usersService.findUserById(userId);
+        // I. comment 검색
+        const comment = await this.findCommentById(commentId);
+
+        // I. 권한 인증 (comment.authorId <=> user)
+        if (comment.authorId !== user.id) throw new CustomError(403, 'Forbidden', '권한이 없습니다');
+
+        // I. 댓글 수정
+        await database.comment.update({
+            where: {
+                id: comment.id,
+            },
+            data: {
+                content: dto.content,
+            },
+        });
     }
 
     /**

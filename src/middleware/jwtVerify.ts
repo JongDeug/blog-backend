@@ -3,21 +3,26 @@ import { AuthService } from '../domain/auth/auth.service';
 import { CustomError } from '@utils/customError';
 import { UsersService } from '../domain/users/users.service';
 
+const excludedUrls = [
+    { path: '/auth', method: 'ALL' },
+    { path: '/posts', method: 'GET' },
+    { path: '/posts/like', method: 'ALL' },
+    { path: '/posts/comments/guest', method: 'ALL' },
+    { path: '/posts/child-comments/guest', method: 'ALL' },
+    { path: '/categories', method: 'GET' },
+];
+
 export const jwtVerify = function(authService: AuthService, usersService: UsersService): RequestHandler {
     return async function(req, res, next) {
         try {
-            // I. '/auth' 는 인증에서 제외한다
-            if (req.url.startsWith('/auth')) return next();
-            // I. '/posts' 로 시작하는 GET 메소드 요청은 인증에서 제외한다.
-            if (req.url.startsWith('/posts') && req.method === 'GET') return next();
-            // I. '/posts/like' 는 인증에서 제외한다.
-            if (req.url === '/posts/like') return next();
-            // I. '/posts/comments/guest' 는 인증에서 제외한다.
-            if (req.url === '/posts/comments/guest') return next();
-            // I. '/posts/child-comments/guest' 는 인증에서 제외한다.
-            if (req.url === '/posts/child-comments/guest') return next();
-            // I. '/categories' 로 시작하는 GET 메소드 요청은 인증에서 제외한다.
-            if (req.url.startsWith('/categories') && req.method === 'GET') return next();
+            const isExcludedUrl = excludedUrls.some(excludedUrl => {
+                // I. all 이면서 path 로 시작하면 통과
+                if (excludedUrl.method === 'ALL' && req.url.startsWith(excludedUrl.path)) return true;
+                // I. get 이면서 path 로 시작하면 통과
+                if (excludedUrl.method === req.method && req.url.startsWith(excludedUrl.path)) return true;
+                return false;
+            });
+            if (isExcludedUrl) return next();
 
             // I. cookie 에서 access token 추출, 만약 없으면 에러 반환
             const accessToken = req.cookies.accessToken;
