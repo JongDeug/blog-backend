@@ -216,13 +216,19 @@ export class CommentsService {
 
         // I. 비밀번호 권한 인증
         const isCorrect = await bcrypt.compare(dto.password, comment.guest!.password);
-        if (!isCorrect) throw new CustomError(400, 'Bad Request', '비밀번호를 잘못 입력하셨습니다');
+        if (!isCorrect) throw new CustomError(401, 'Unauthorized', '비밀번호를 잘못 입력하셨습니다');
 
         // I. 댓글 수정
         await database.comment.update({
             where: { id: comment.id },
             data: { content: dto.content },
         });
+    }
+
+    // ----
+
+    async deleteComment() {
+
     }
 
     /**

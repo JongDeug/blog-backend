@@ -625,7 +625,7 @@ describe('CommentsService Main Functions', () => {
             (bcrypt.compare as jest.Mock).mockResolvedValue(false);
             // when, then
             await expect(commentsService.updateCommentGuest(mockData.commentId, mockData.updateCommentGuestDto)).rejects.toThrow(
-                new CustomError(400, 'Bad Request', '비밀번호를 잘못 입력하셨습니다'),
+                new CustomError(401, 'Unauthorized', '비밀번호를 잘못 입력하셨습니다'),
             );
             expect(commentsService.findComment).toHaveBeenCalled();
             expect(bcrypt.compare).toHaveBeenCalled();

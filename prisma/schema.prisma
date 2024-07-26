@@ -46,6 +46,8 @@ model User {
   password     String
   /// 간단한 소개
   description  String? @db.VarChar(300)
+  /// 역할
+  role         Int     @default(300)
   /// refresh token
   refreshToken String? @db.VarChar(1024)
 
@@ -74,15 +76,15 @@ model GuestLike {
 /// @namespace Blog
 model GuestComment {
   /// Pirmary Key
-  id        String   @id @default(uuid())
+  id       String   @id @default(uuid())
   /// 닉네임
-  nickName  String   @db.VarChar(100)
+  nickName String   @db.VarChar(100)
   /// 이메일
-  email     String   @db.VarChar(200)
+  email    String   @db.VarChar(200)
   /// 비밀번호
-  password  String
+  password String
   /// 댓글
-  comment Comment?
+  comment  Comment?
 }
 
 /// 비회원 <=> 게시글 : 다대다, 게시글 좋아요 테이블
@@ -241,4 +243,3 @@ model Comment {
   guestId String?       @unique
   guest   GuestComment? @relation(fields: [guestId], references: [id])
 }
-

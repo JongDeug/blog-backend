@@ -21,7 +21,7 @@ import { UsersService } from './domain/users/users.service';
     app.use(express.json()); // JSON 형식
     app.use(express.urlencoded({ extended: true })); // HTML 폼
     app.use(cookieParser());
-    app.use(jwtVerify(new AuthService(), new UsersService()));
+    app.use(jwtVerify(new AuthService()));
     // 정적 파일 제공 설정
     // ---
 

@@ -51,7 +51,8 @@ export class AuthService {
         const isCorrect = await bcrypt.compare(dto.password, user.password);
 
         // I. 400 Client Error, 만약 비밀번호가 틀리면 에러 발생
-        if (!isCorrect) throw new CustomError(400, 'Bad Request', '비밀번호를 잘못 입력하셨습니다');
+        if (!isCorrect) throw new CustomError(401, 'Unauthorized', '비밀번호를 잘못 입력하셨습니다');
+
 
         // I. 인증이 완료되면 accessToken, refreshToken 발급
         const accessToken = this.signToken(user, false);

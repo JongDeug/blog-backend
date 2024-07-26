@@ -1,4 +1,4 @@
-import { User } from '../prisma/prisma-client';
+import { User } from '@prisma/client';
 import { PaginationType } from '../customPagination';
 
 // I. Express.Request 에 user 타입 추가

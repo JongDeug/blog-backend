@@ -131,7 +131,7 @@ describe('AuthService Main Function', () => {
             prismaMock.user.findUnique.mockResolvedValue(mockData.returnedUser);
             (bcrypt.compare as jest.Mock).mockResolvedValue(false);
             // when, then
-            await expect(authService.login(mockData.loginDto)).rejects.toThrow(new CustomError(400, 'Bad Request', '비밀번호를 잘못 입력하셨습니다'));
+            await expect(authService.login(mockData.loginDto)).rejects.toThrow(new CustomError(401, 'Unauthorized', '비밀번호를 잘못 입력하셨습니다'));
             // then
             expect(prismaMock.user.findUnique).toHaveBeenCalledWith({ where: { email: mockData.loginDto.email } });
             expect(bcrypt.compare).toHaveBeenCalledWith(mockData.loginDto.password, mockData.returnedUser.password);
