@@ -16,6 +16,9 @@ import {
     CreateCommentDto,
     CreateCommentGuestDto, UpdateCommentDto, UpdateCommentGuestDto,
 } from './comments/dto';
+import ROLES from '@utils/roles';
+import { verify } from 'jsonwebtoken';
+import { verifyRoles } from '@middleware/verifyRoles';
 
 export class PostsController {
     path: string;
@@ -33,9 +36,9 @@ export class PostsController {
     }
 
     init() {
-        this.router.post('/', upload.array('images', 12), validateDtoWithFiles(CreatePostDto), this.createPost);
-        this.router.patch('/:id', upload.array('images', 12), validateDtoWithFiles(UpdatePostDto), this.updatePost);
-        this.router.delete('/:id', this.deletePost);
+        this.router.post('/', verifyRoles(ROLES.admin), upload.array('images', 12), validateDtoWithFiles(CreatePostDto), this.createPost);
+        this.router.patch('/:id', verifyRoles(ROLES.admin), upload.array('images', 12), validateDtoWithFiles(UpdatePostDto), this.updatePost);
+        this.router.delete('/:id', verifyRoles(ROLES.admin), this.deletePost);
         this.router.get('/', pagination, this.getPosts);
         this.router.get('/:id', this.getPost);
         // =====================================================================================

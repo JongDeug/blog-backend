@@ -2,6 +2,7 @@ import { RequestHandler } from 'express';
 import { AuthService } from '../domain/auth/auth.service';
 import { CustomError } from '@utils/customError';
 import { UsersService } from '../domain/users/users.service';
+import database from '@utils/database';
 
 const excludedUrls = [
     { path: '/auth', method: 'ALL' },
@@ -12,8 +13,8 @@ const excludedUrls = [
     { path: '/categories', method: 'GET' },
 ];
 
-export const jwtVerify = function(authService: AuthService, usersService: UsersService): RequestHandler {
-    return async function(req, res, next) {
+export const jwtVerify = (authService: AuthService): RequestHandler => {
+    return async (req, res, next) => {
         try {
             const isExcludedUrl = excludedUrls.some(excludedUrl => {
                 // I. all 이면서 path 로 시작하면 통과
@@ -40,7 +41,16 @@ export const jwtVerify = function(authService: AuthService, usersService: UsersS
             }
 
             // I. 검증에 성공하면 decode 된 유저 정보를 가지고 유저가 있는지 확인
-            req.user = await usersService.findUserById(decoded.id);
+            req.user = await database.user.findUnique({
+                where: { id: decoded.id },
+                select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    description: true,
+                    role: true,
+                },
+            });
 
             // I. 에러 없이 미들웨어를 통과
             next();

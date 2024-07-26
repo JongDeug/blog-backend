@@ -3,6 +3,8 @@ import { CategoriesService } from './categories.service';
 import { CustomError } from '@utils/customError';
 import { validateDto } from '@middleware/validateDto';
 import { CreateCategoryDto, UpdateCategoryDto } from './dto';
+import { verifyRoles } from '@middleware/verifyRoles';
+import ROLES from '@utils/roles';
 
 export class CategoriesController {
     path: string;
@@ -15,9 +17,9 @@ export class CategoriesController {
     }
 
     init() {
-        this.router.post('/', validateDto(CreateCategoryDto), this.createCategory);
-        this.router.patch('/:name', validateDto(UpdateCategoryDto), this.updateCategory);
-        this.router.delete('/:name', this.deleteCategory);
+        this.router.post('/', verifyRoles(ROLES.admin), validateDto(CreateCategoryDto), this.createCategory);
+        this.router.patch('/:name', verifyRoles(ROLES.admin), validateDto(UpdateCategoryDto), this.updateCategory);
+        this.router.delete('/:name', verifyRoles(ROLES.admin), this.deleteCategory);
         this.router.get('/', this.getCategories);
     }
 

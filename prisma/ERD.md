@@ -12,6 +12,7 @@ erDiagram
   String email UK
   String password
   String description "nullable"
+  Int role
   String refreshToken "nullable"
 }
 "GuestLike" {
@@ -81,6 +82,7 @@ erDiagram
   - `email`: 이메일
   - `password`: 비밀번호
   - `description`: 간단한 소개
+  - `role`: 역할
   - `refreshToken`: refresh token
 
 ### `GuestLike`
