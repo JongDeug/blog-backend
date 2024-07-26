@@ -97,4 +97,17 @@ export class CommentsController {
         }
     };
 
+    updateCommentGuest = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            // I. JWT 인증 x
+
+            const { id } = req.params;
+            // I. commentsService.updateCommentGuest 호출
+            await this.commentsService.updateCommentGuest(id, req.body);
+
+            res.status(200).json({});
+        } catch (err) {
+            next(err);
+        }
+    };
 }

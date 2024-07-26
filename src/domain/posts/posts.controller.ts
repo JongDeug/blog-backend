@@ -14,7 +14,7 @@ import {
     CreateChildCommentDto,
     CreateChildCommentGuestDto,
     CreateCommentDto,
-    CreateCommentGuestDto, UpdateCommentDto,
+    CreateCommentGuestDto, UpdateCommentDto, UpdateCommentGuestDto,
 } from './comments/dto';
 
 export class PostsController {
@@ -46,6 +46,7 @@ export class PostsController {
         this.router.post('/child-comments', validateDto(CreateChildCommentDto), this.commentsController.createChildComment);
         this.router.post('/child-comments/guest', validateDto(CreateChildCommentGuestDto), this.commentsController.createChildCommentGuest);
         this.router.patch('/comments/:id', validateDto(UpdateCommentDto), this.commentsController.updateComment);
+        this.router.patch('/comments/guest/:id', validateDto(UpdateCommentGuestDto), this.commentsController.updateCommentGuest);
     }
 
     createPost = async (req: Request, res: Response, next: NextFunction) => {
