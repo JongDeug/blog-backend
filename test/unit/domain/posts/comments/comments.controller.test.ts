@@ -263,11 +263,42 @@ describe('CommentsController', () => {
 
         test('should handle error if commentsService.updateComment throws error', async () => {
             // given
-            commentsServiceMock.updateComment.mockRejectedValue(new Error('데이터베이스: 게스트 대댓글 생성 오류'));
+            commentsServiceMock.updateComment.mockRejectedValue(new Error('데이터베이스: 댓글 수정 오류'));
             // when
             await commentsController.updateComment(req, res, next);
             // then
-            expect(next).toHaveBeenCalledWith(new Error('데이터베이스: 게스트 대댓글 생성 오류'));
+            expect(next).toHaveBeenCalledWith(new Error('데이터베이스: 댓글 수정 오류'));
+        });
+    });
+    // ---
+
+    // --- UpdateCommentGuest
+    describe('updateCommentGuest', () => {
+        beforeEach(() => {
+            req.body = {
+                content: 'mockContent',
+                password: 'mockPassword',
+            };
+            req.params.id = 'mockCommentId';
+        });
+
+        test('should update a guest comment successfully', async () => {
+            // when
+            await commentsController.updateCommentGuest(req, res, next);
+            // then
+            expect(res.statusCode).toBe(200);
+            expect(res._getJSONData()).toStrictEqual({});
+            expect(res._isEndCalled()).toBeTruthy();
+            expect(commentsServiceMock.updateCommentGuest).toHaveBeenCalledWith(req.params.id, req.body);
+        });
+
+        test('should handle error if commentsService.updateCommentGuest throws error', async () => {
+            // given
+            commentsServiceMock.updateCommentGuest.mockRejectedValue(new Error('데이터베이스: 게스트 댓글 수정 오류'));
+            // when
+            await commentsController.updateCommentGuest(req, res, next);
+            // then
+            expect(next).toHaveBeenCalledWith(new Error('데이터베이스: 게스트 댓글 수정 오류'));
         });
     });
     // ---

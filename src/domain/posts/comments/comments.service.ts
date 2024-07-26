@@ -3,7 +3,7 @@ import {
     CreateChildCommentGuestDto,
     CreateCommentDto,
     CreateCommentGuestDto,
-    UpdateCommentDto,
+    UpdateCommentDto, UpdateCommentGuestDto,
 } from './dto';
 import { UsersService } from '../../users/users.service';
 import { PostsService } from '../posts.service';
@@ -95,7 +95,7 @@ export class CommentsService {
         const user = await this.usersService.findUserById(userId);
 
         // I. parent comment 찾기
-        const parentComment: ExtendedComment = await this.findCommentById(dto.parentCommentId, {
+        const parentComment: ExtendedComment = await this.findComment({ id: dto.parentCommentId }, {
             guest: true,
             post: {
                 select: {
@@ -139,7 +139,7 @@ export class CommentsService {
 
     async createChildCommentGuest(dto: CreateChildCommentGuestDto) {
         // I. parent comment 찾기
-        const parentComment: ExtendedComment = await this.findCommentById(dto.parentCommentId, {
+        const parentComment: ExtendedComment = await this.findComment({ id: dto.parentCommentId }, {
             guest: true,
             post: {
                 select: {
@@ -198,26 +198,37 @@ export class CommentsService {
         // I. user 검색
         const user = await this.usersService.findUserById(userId);
         // I. comment 검색
-        const comment = await this.findCommentById(commentId);
+        const comment = await this.findComment({ id: commentId });
 
         // I. 권한 인증 (comment.authorId <=> user)
         if (comment.authorId !== user.id) throw new CustomError(403, 'Forbidden', '권한이 없습니다');
 
         // I. 댓글 수정
         await database.comment.update({
-            where: {
-                id: comment.id,
-            },
-            data: {
-                content: dto.content,
-            },
+            where: { id: comment.id },
+            data: { content: dto.content },
+        });
+    }
+
+    async updateCommentGuest(commentId: string, dto: UpdateCommentGuestDto) {
+        // I. comment 검색
+        const comment: ExtendedComment = await this.findComment({ id: commentId, authorId: null }, { guest: true });
+
+        // I. 비밀번호 권한 인증
+        const isCorrect = await bcrypt.compare(dto.password, comment.guest!.password);
+        if (!isCorrect) throw new CustomError(400, 'Bad Request', '비밀번호를 잘못 입력하셨습니다');
+
+        // I. 댓글 수정
+        await database.comment.update({
+            where: { id: comment.id },
+            data: { content: dto.content },
         });
     }
 
     /**
      * [Utils]
      * sendMail : 댓글 알림 메일 보내는 함수
-     * findCommentById : 댓글 검색 함수
+     * findComment : 댓글 검색 함수
      */
     sendMail(to: string[], payload: { nickName: string, postTitle: string }) {
         if (to.length > 0) {
@@ -246,9 +257,9 @@ export class CommentsService {
         }
     }
 
-    async findCommentById(commentId: string, includeOptions: Prisma.CommentInclude = {}) {
+    async findComment(whereOptions: Prisma.CommentWhereUniqueInput, includeOptions: Prisma.CommentInclude = {}) {
         const comment = await database.comment.findUnique({
-            where: { id: commentId },
+            where: { ...whereOptions },
             include: { ...includeOptions },
         });
 
