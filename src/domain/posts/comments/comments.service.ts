@@ -2,7 +2,7 @@ import {
     CreateChildCommentDto,
     CreateChildCommentGuestDto,
     CreateCommentDto,
-    CreateCommentGuestDto,
+    CreateCommentGuestDto, DeleteCommentGuestDto,
     UpdateCommentDto, UpdateCommentGuestDto,
 } from './dto';
 import { UsersService } from '../../users/users.service';
@@ -215,7 +215,8 @@ export class CommentsService {
         const comment: ExtendedComment = await this.findComment({ id: commentId, authorId: null }, { guest: true });
 
         // I. 비밀번호 권한 인증
-        const isCorrect = await bcrypt.compare(dto.password, comment.guest!.password);
+        if (!comment.guest) throw new CustomError(500, 'Internal Server Error', '비회원 댓글 작성자를 찾고 있지 못하고 있음');
+        const isCorrect = await bcrypt.compare(dto.password, comment.guest.password);
         if (!isCorrect) throw new CustomError(401, 'Unauthorized', '비밀번호를 잘못 입력하셨습니다');
 
         // I. 댓글 수정
@@ -241,11 +242,48 @@ export class CommentsService {
                     id: comment.id,
                 },
             });
+
+            // I. 일단 추가해놨음, admin 이 비회원 댓글 삭제했을 수 있으니까!
+            // I. 참조가 없는 guest 삭제 => 대댓글이 포함되어 있는 댓글 삭제시, 그 guest 들도 삭제
+            await database.guestComment.deleteMany({
+                where: {
+                    comment: null,
+                },
+            });
         }
         // I. 권한 확인
         else {
             throw new CustomError(403, 'Forbidden', '권한이 없습니다');
         }
+    }
+
+    async deleteCommentGuest(commentId: string, dto: DeleteCommentGuestDto) {
+        // I. comment 찾기(유저가 작성한 comment 는 뺌)
+        const comment = await this.findComment({ id: commentId, authorId: null }, { guest: true });
+
+        // I. 권한 인증
+        if (!comment.guest) throw new CustomError(500, 'Internal Server Error', '비회원 댓글 작성자를 찾고 있지 못하고 있음');
+        const isCorrect = await bcrypt.compare(dto.password, comment.guest.password);
+        if (!isCorrect) throw new CustomError(401, 'Unauthorized', '비밀번호를 잘못 입력하셨습니다');
+
+        // I. 트랜잭션 으로 묶기
+        await database.$transaction(async (database) => {
+            // I. 댓글 삭제
+            await database.comment.delete({
+                where: {
+                    id: comment.id,
+                },
+            });
+
+            // I. 참조가 없는 guest 삭제 => 대댓글이 포함되어 있는 댓글 삭제시, 그 guest 들도 삭제
+            await database.guestComment.deleteMany({
+                where: {
+                    comment: null,
+                },
+            });
+        });
+
+        return { guestId: comment.guestId!, postId: comment.postId };
     }
 
     /**
