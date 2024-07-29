@@ -11,8 +11,8 @@ import database from '@utils/database';
 import bcrypt from 'bcrypt';
 import transporter from '@utils/nodemailer';
 import { CustomError } from '@utils/customError';
-import { GuestComment, Prisma, Comment } from '@prisma';
-import * as process from 'node:process';
+import { GuestComment, Prisma, Comment, User } from '@prisma';
+import ROLES from '@utils/roles';
 
 interface ExtendedComment extends Comment {
     guest: GuestComment | null;
@@ -227,8 +227,25 @@ export class CommentsService {
 
     // ----
 
-    async deleteComment() {
+    async deleteComment(user: User, commentId: string) {
+        // I. user 검색
+        const foundUser = await this.usersService.findUserById(user.id);
+        // I. comment 검색
+        const comment = await this.findComment({ id: commentId });
 
+        // I. 권한 확인 (user 가 admin 이면 모두 통과)
+        if (foundUser.role === ROLES.admin || foundUser.id === comment.authorId) {
+            // I. 댓글 삭제
+            await database.comment.delete({
+                where: {
+                    id: comment.id,
+                },
+            });
+        }
+        // I. 권한 확인
+        else {
+            throw new CustomError(403, 'Forbidden', '권한이 없습니다');
+        }
     }
 
     /**

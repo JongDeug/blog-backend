@@ -302,4 +302,42 @@ describe('CommentsController', () => {
         });
     });
     // ---
+
+    // --- DeleteComment
+    describe('deleteComment', () => {
+        beforeEach(() => {
+            req.params = { id: 'mockCommentId' };
+            req.user = { id: 'mockUserId' };
+        });
+
+        test('should delete a comment successfully', async () => {
+            // when
+            await commentsController.deleteComment(req, res, next);
+            // then
+            expect(res.statusCode).toBe(200);
+            expect(res._getJSONData()).toStrictEqual({});
+            expect(res._isEndCalled()).toBeTruthy();
+            expect(commentsServiceMock.deleteComment).toHaveBeenCalledWith(req.user, req.params.id);
+        });
+
+        test('should handle error if user is not authenticated', async () => {
+            // given
+            req.user = undefined;
+            // when
+            await commentsController.deleteComment(req, res, next);
+            // then
+            expect(next).toHaveBeenCalledWith(new CustomError(401, 'Unauthorized', '로그인을 진행해주세요'));
+            expect(commentsServiceMock.deleteComment).not.toHaveBeenCalled();
+        });
+
+        test('should handle error if commentsService.deleteComment throws error', async () => {
+            // given
+            commentsServiceMock.deleteComment.mockRejectedValue(new Error('데이터베이스: 댓글 삭제 오류'));
+            // when
+            await commentsController.deleteComment(req, res, next);
+            // then
+            expect(next).toHaveBeenCalledWith(new Error('데이터베이스: 댓글 삭제 오류'));
+        });
+    });
+    // ---
 });

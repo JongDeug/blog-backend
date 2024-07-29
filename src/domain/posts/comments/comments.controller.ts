@@ -110,4 +110,20 @@ export class CommentsController {
             next(err);
         }
     };
+
+    // ---
+    deleteComment = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            // I. JWT 인증 확인
+            if (!req.user) return next(new CustomError(401, 'Unauthorized', '로그인을 진행해주세요'));
+
+            const { id } = req.params;
+            // I. commentsService.deleteComment 호출
+            await this.commentsService.deleteComment(req.user, id);
+
+            res.status(200).json({});
+        } catch (err) {
+            next(err);
+        }
+    };
 }

@@ -1,7 +1,6 @@
 import { RequestHandler } from 'express';
 import { AuthService } from '../domain/auth/auth.service';
 import { CustomError } from '@utils/customError';
-import { UsersService } from '../domain/users/users.service';
 import database from '@utils/database';
 
 const excludedUrls = [
@@ -51,6 +50,10 @@ export const jwtVerify = (authService: AuthService): RequestHandler => {
                     role: true,
                 },
             });
+
+            if(!req.user) {
+                return next(new CustomError(404, 'Not Found', '유저를 찾을 수 없습니다'));
+            }
 
             // I. 에러 없이 미들웨어를 통과
             next();
