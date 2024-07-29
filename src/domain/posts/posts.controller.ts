@@ -50,6 +50,7 @@ export class PostsController {
         this.router.post('/child-comments/guest', validateDto(CreateChildCommentGuestDto), this.commentsController.createChildCommentGuest);
         this.router.patch('/comments/:id', validateDto(UpdateCommentDto), this.commentsController.updateComment);
         this.router.patch('/comments/guest/:id', validateDto(UpdateCommentGuestDto), this.commentsController.updateCommentGuest);
+        this.router.delete('/comments/:id', this.commentsController.deleteComment);
     }
 
     createPost = async (req: Request, res: Response, next: NextFunction) => {

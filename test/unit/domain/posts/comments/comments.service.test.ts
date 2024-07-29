@@ -633,6 +633,94 @@ describe('CommentsService Main Functions', () => {
         });
     });
     // ---
+
+    // --- DeleteComment
+    describe('deleteComment', () => {
+        beforeEach(() => {
+            mockData.foundUser = {
+                id: 'mockUserId',
+                role: 200,
+            };
+            mockData.returnedComment = { id: mockData.commentId, authorId: 'mockUserId' };
+        });
+
+        test('should delete a comment successfully if user is admin', async () => {
+            // given
+            mockData.foundUser.role = 500;
+            mockData.returnedComment.authorId = 'mockAnotherUserId';
+            usersServiceMock.findUserById.mockResolvedValue(mockData.foundUser);
+            (commentsService.findComment as jest.Mock).mockResolvedValue(mockData.returnedComment);
+            // when
+            await commentsService.deleteComment({ id: 'mockUserId' } as User, mockData.commentId);
+            // then
+            expect(usersServiceMock.findUserById).toHaveBeenCalledWith('mockUserId');
+            expect(commentsService.findComment).toHaveBeenCalledWith({ id: mockData.commentId });
+            expect(prismaMock.comment.delete).toHaveBeenCalledWith({
+                where: {
+                    id: mockData.returnedComment.id,
+                },
+            });
+        });
+
+        test('should delete a comment successfully if user is author of comment', async () => {
+            // given
+            usersServiceMock.findUserById.mockResolvedValue(mockData.foundUser);
+            (commentsService.findComment as jest.Mock).mockResolvedValue(mockData.returnedComment);
+            // when
+            await commentsService.deleteComment({ id: 'mockUserId' } as User, mockData.commentId);
+            // then
+            expect(usersServiceMock.findUserById).toHaveBeenCalledWith('mockUserId');
+            expect(commentsService.findComment).toHaveBeenCalledWith({ id: mockData.commentId });
+            expect(prismaMock.comment.delete).toHaveBeenCalledWith({
+                where: {
+                    id: mockData.returnedComment.id,
+                },
+            });
+        });
+
+        test('should throw error if user is not found', async () => {
+            // given
+            usersServiceMock.findUserById.mockRejectedValue(
+                new CustomError(404, 'User Not Found', '유저를 찾을 수 없습니다'),
+            );
+            // when, then
+            await expect(commentsService.deleteComment({ id: 'mockUserId' } as User, mockData.commentId)).rejects.toThrow(
+                new CustomError(404, 'User Not Found', '유저를 찾을 수 없습니다'),
+            );
+            expect(usersServiceMock.findUserById).toHaveBeenCalled();
+            expect(commentsService.findComment).not.toHaveBeenCalled();
+        });
+
+        test('should throw error if comment is not found', async () => {
+            // given
+            usersServiceMock.findUserById.mockResolvedValue(mockData.foundUser);
+            (commentsService.findComment as jest.Mock).mockRejectedValue(
+                new CustomError(404, 'Not Found', '댓글을 찾을 수 없습니다'),
+            );
+            // when, then
+            await expect(commentsService.deleteComment({ id: 'mockUserId' } as User, mockData.commentId)).rejects.toThrow(
+                new CustomError(404, 'Not Found', '댓글을 찾을 수 없습니다'),
+            );
+            expect(usersServiceMock.findUserById).toHaveBeenCalled();
+            expect(commentsService.findComment).toHaveBeenCalled();
+            expect(prismaMock.comment.delete).not.toHaveBeenCalled();
+        });
+
+        test('should throw error if user is not author of comment', async () => {
+            // given
+            mockData.returnedComment.authorId = 'mockAnotherUserId';
+            usersServiceMock.findUserById.mockResolvedValue(mockData.foundUser);
+            (commentsService.findComment as jest.Mock).mockResolvedValue(mockData.returnedComment);
+            // when, then
+            await expect(commentsService.deleteComment({ id: 'mockUserId' } as User, mockData.commentId)).rejects.toThrow(
+                new CustomError(403, 'Forbidden', '권한이 없습니다'),
+            );
+            expect(usersServiceMock.findUserById).toHaveBeenCalled();
+            expect(commentsService.findComment).toHaveBeenCalled();
+            expect(prismaMock.comment.delete).not.toHaveBeenCalled();
+        });
+    });
+    // ---
 });
 
 describe('CommentsService Util Functions', () => {
