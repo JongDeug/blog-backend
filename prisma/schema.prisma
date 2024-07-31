@@ -223,7 +223,7 @@ model Comment {
   /// 부모 댓글 ID {@link Comment.id}
   // [부모, "일"]
   parentCommentId String? // 외래키(ParentComment)
-  parentComment   Comment? @relation("ParentComment", fields: [parentCommentId], references: [id])
+  parentComment   Comment? @relation("ParentComment", fields: [parentCommentId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   /// Foreign Key
   ///

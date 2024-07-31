@@ -340,4 +340,52 @@ describe('CommentsController', () => {
         });
     });
     // ---
+
+    // --- DeleteCommentGuest
+    describe('deleteCommentGuest', () => {
+        beforeEach(() => {
+            req.params.id = 'mockCommentId';
+            req.body = {
+                password: 'mockPassword',
+            };
+        });
+
+        test('should delete a guest comment successfully if req.cookies.postId is filled', async () => {
+            // given
+            req.cookies['mockPostId'] = JSON.stringify(['mockGuestId', 'mock1', 'mock2', 'mock3']);
+            const mockData = { guestId: 'mockGuestId', postId: 'mockPostId' };
+            commentsServiceMock.deleteCommentGuest.mockResolvedValue(mockData);
+            // when
+            await commentsController.deleteCommentGuest(req, res, next);
+            // then
+            expect(res.statusCode).toBe(200);
+            expect(res._getJSONData()).toStrictEqual({});
+            expect(res._isEndCalled()).toBeTruthy();
+            expect(res.cookies).toHaveProperty('mockPostId');
+            expect(res.cookies['mockPostId'].value).toStrictEqual(JSON.stringify(['mock1', 'mock2', 'mock3']));
+        });
+
+        test('should delete a guest comment successfully if req.cookies.postId is empty', async () => {
+            // given
+            const mockData = { guestId: 'mockGuestId', postId: 'mockPostId' };
+            commentsServiceMock.deleteCommentGuest.mockResolvedValue(mockData);
+            // when
+            await commentsController.deleteCommentGuest(req, res, next);
+            // then
+            expect(res.statusCode).toBe(200);
+            expect(res._getJSONData()).toStrictEqual({});
+            expect(res._isEndCalled()).toBeTruthy();
+            expect(res.cookies).toStrictEqual({});
+        });
+
+        test('should handle error if commentsService.deleteCommentGuest throws error', async () => {
+            // given
+            commentsServiceMock.deleteCommentGuest.mockRejectedValue(new Error('데이터베이스: 게스트 댓글 삭제 오류'));
+            // when
+            await commentsController.deleteCommentGuest(req, res, next);
+            // then
+            expect(next).toHaveBeenCalledWith(new Error('데이터베이스: 게스트 댓글 삭제 오류'));
+        });
+    });
+    // ---
 });

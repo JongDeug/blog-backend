@@ -619,7 +619,18 @@ describe('CommentsService Main Functions', () => {
             expect(bcrypt.compare).not.toHaveBeenCalled();
         });
 
-        test('should throw error if password is not correct', async () => {
+        test('should throw error if comment.guest is null or undefined', async () => {
+            // given
+            (commentsService.findComment as jest.Mock).mockResolvedValue(null);
+            // when, then
+            await expect(commentsService.updateCommentGuest(mockData.commentId, mockData.updateCommentGuestDto)).rejects.toThrow(
+                new CustomError(500, 'Internal Server Error', '비회원 댓글 작성자를 찾고 있지 못하고 있음'),
+            );
+            expect(commentsService.findComment).toHaveBeenCalled();
+            expect(bcrypt.compare).not.toHaveBeenCalled();
+        });
+
+        test('should throw error if password is incorrect', async () => {
             // given
             (commentsService.findComment as jest.Mock).mockResolvedValue(mockData.returnedComment);
             (bcrypt.compare as jest.Mock).mockResolvedValue(false);
@@ -676,6 +687,11 @@ describe('CommentsService Main Functions', () => {
                     id: mockData.returnedComment.id,
                 },
             });
+            expect(prismaMock.guestComment.deleteMany).toHaveBeenCalledWith({
+                where: {
+                    comment: null,
+                },
+            });
         });
 
         test('should throw error if user is not found', async () => {
@@ -717,6 +733,86 @@ describe('CommentsService Main Functions', () => {
             );
             expect(usersServiceMock.findUserById).toHaveBeenCalled();
             expect(commentsService.findComment).toHaveBeenCalled();
+            expect(prismaMock.comment.delete).not.toHaveBeenCalled();
+        });
+    });
+    // ---
+
+    // --- DeleteCommentGuest
+    describe('deleteCommentGuest', () => {
+        beforeEach(() => {
+            mockData.deleteCommentGuestDto = {
+                password: 'mockPassword',
+            };
+            mockData.returnedComment = {
+                id: mockData.commentId,
+                guestId: 'mockGuestId',
+                postId: 'mockPostId',
+                guest: { password: 'hashedPassword' },
+            };
+        });
+
+        test('should delete a guest comment successfully', async () => {
+            // given
+            (commentsService.findComment as jest.Mock).mockResolvedValue(mockData.returnedComment);
+            (bcrypt.compare as jest.Mock).mockResolvedValue(true);
+            // when
+            const result = await commentsService.deleteCommentGuest(mockData.commentId, mockData.deleteCommentGuestDto);
+            // then
+            expect(result).toStrictEqual({
+                guestId: mockData.returnedComment.guestId,
+                postId: mockData.returnedComment.postId,
+            });
+            expect(commentsService.findComment).toHaveBeenCalledWith(
+                { id: mockData.commentId, authorId: null }, { guest: true },
+            );
+            expect(bcrypt.compare).toHaveBeenCalledWith(mockData.deleteCommentGuestDto.password, mockData.returnedComment.guest.password);
+            expect(prismaMock.comment.delete).toHaveBeenCalledWith({
+                where: {
+                    id: mockData.returnedComment.id,
+                },
+            });
+            expect(prismaMock.guestComment.deleteMany).toHaveBeenCalledWith({
+                where: {
+                    comment: null,
+                },
+            });
+        });
+
+        test('should throw error if comment is not found', async () => {
+            // given
+            (commentsService.findComment as jest.Mock).mockRejectedValue(
+                new CustomError(404, 'Not Found', '댓글을 찾을 수 없습니다'),
+            );
+            // when, then
+            await expect(commentsService.deleteCommentGuest(mockData.deleteCommentGuestDto.password, mockData.returnedComment.guest.password)).rejects.toThrow(
+                new CustomError(404, 'Not Found', '댓글을 찾을 수 없습니다'),
+            );
+            expect(commentsService.findComment).toHaveBeenCalled();
+            expect(bcrypt.compare).not.toHaveBeenCalled();
+        });
+
+        test('should throw error if comment.guest is null or undefined', async () => {
+            // given
+            (commentsService.findComment as jest.Mock).mockResolvedValue(null);
+            // when, then
+            await expect(commentsService.deleteCommentGuest(mockData.deleteCommentGuestDto.password, mockData.returnedComment.guest.password)).rejects.toThrow(
+                new CustomError(500, 'Internal Server Error', '비회원 댓글 작성자를 찾고 있지 못하고 있음'),
+            );
+            expect(commentsService.findComment).toHaveBeenCalled();
+            expect(bcrypt.compare).not.toHaveBeenCalled();
+        });
+
+        test('should throw error if password is incorrect', async () => {
+            // given
+            (commentsService.findComment as jest.Mock).mockResolvedValue(mockData.returnedComment);
+            (bcrypt.compare as jest.Mock).mockResolvedValue(false);
+            // when, then
+            await expect(commentsService.deleteCommentGuest(mockData.deleteCommentGuestDto.password, mockData.returnedComment.guest.password)).rejects.toThrow(
+                new CustomError(401, 'Unauthorized', '비밀번호를 잘못 입력하셨습니다'),
+            );
+            expect(commentsService.findComment).toHaveBeenCalled();
+            expect(bcrypt.compare).toHaveBeenCalled();
             expect(prismaMock.comment.delete).not.toHaveBeenCalled();
         });
     });

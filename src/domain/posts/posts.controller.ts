@@ -14,7 +14,7 @@ import {
     CreateChildCommentDto,
     CreateChildCommentGuestDto,
     CreateCommentDto,
-    CreateCommentGuestDto, UpdateCommentDto, UpdateCommentGuestDto,
+    CreateCommentGuestDto, DeleteCommentGuestDto, UpdateCommentDto, UpdateCommentGuestDto,
 } from './comments/dto';
 import ROLES from '@utils/roles';
 import { verify } from 'jsonwebtoken';
@@ -51,6 +51,7 @@ export class PostsController {
         this.router.patch('/comments/:id', validateDto(UpdateCommentDto), this.commentsController.updateComment);
         this.router.patch('/comments/guest/:id', validateDto(UpdateCommentGuestDto), this.commentsController.updateCommentGuest);
         this.router.delete('/comments/:id', this.commentsController.deleteComment);
+        this.router.delete('/comments/guest/:id', validateDto(DeleteCommentGuestDto), this.commentsController.deleteCommentGuest);
     }
 
     createPost = async (req: Request, res: Response, next: NextFunction) => {

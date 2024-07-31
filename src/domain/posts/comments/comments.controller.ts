@@ -126,4 +126,26 @@ export class CommentsController {
             next(err);
         }
     };
+
+    deleteCommentGuest = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            // I. JWT 인증 x
+
+            const { id } = req.params;
+            // I. commentsService.deleteCommentGuest 호출
+            const { guestId, postId } = await this.commentsService.deleteCommentGuest(id, req.body);
+
+            // I. 쿠키(postId) 에서 guestId 삭제 후 저장
+            const cookiePostId = req.cookies[`${postId}`];
+            if (cookiePostId) {
+                let parse = JSON.parse(cookiePostId);
+                parse = parse.filter((item: string) => item !== guestId);
+                res.cookie(postId, JSON.stringify(parse), {});
+            }
+
+            res.status(200).json({});
+        } catch (err) {
+            next(err);
+        }
+    };
 }
