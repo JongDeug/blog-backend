@@ -17,16 +17,41 @@ export class CategoriesController {
     }
 
     init() {
-        this.router.post('/', verifyRoles(ROLES.admin), validateDto(CreateCategoryDto), this.createCategory);
-        this.router.patch('/:name', verifyRoles(ROLES.admin), validateDto(UpdateCategoryDto), this.updateCategory);
-        this.router.delete('/:name', verifyRoles(ROLES.admin), this.deleteCategory);
+        this.router.post(
+            '/',
+            verifyRoles(ROLES.admin),
+            validateDto(CreateCategoryDto),
+            this.createCategory
+        );
+        this.router.patch(
+            '/:name',
+            verifyRoles(ROLES.admin),
+            validateDto(UpdateCategoryDto),
+            this.updateCategory
+        );
+        this.router.delete(
+            '/:name',
+            verifyRoles(ROLES.admin),
+            this.deleteCategory
+        );
         this.router.get('/', this.getCategories);
     }
 
-    createCategory = async (req: Request, res: Response, next: NextFunction) => {
+    createCategory = async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             // I. JWT 인증 확인
-            if (!req.user) return next(new CustomError(401, 'Unauthorized', '로그인을 진행해주세요'));
+            if (!req.user)
+                return next(
+                    new CustomError(
+                        401,
+                        'Unauthorized',
+                        '로그인을 진행해주세요'
+                    )
+                );
 
             // I. categoriesService.createCategory 호출
             await this.categoriesService.createCategory(req.body);
@@ -37,10 +62,21 @@ export class CategoriesController {
         }
     };
 
-    updateCategory = async (req: Request, res: Response, next: NextFunction) => {
+    updateCategory = async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             // I. JWT 인증 확인
-            if (!req.user) return next(new CustomError(401, 'Unauthorized', '로그인을 진행해주세요'));
+            if (!req.user)
+                return next(
+                    new CustomError(
+                        401,
+                        'Unauthorized',
+                        '로그인을 진행해주세요'
+                    )
+                );
 
             // I. param 가져오기
             const { name } = req.params;
@@ -54,10 +90,21 @@ export class CategoriesController {
         }
     };
 
-    deleteCategory = async (req: Request, res: Response, next: NextFunction) => {
+    deleteCategory = async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             // I. JWT 확인
-            if (!req.user) return next(new CustomError(401, 'Unauthorized', '로그인을 진행해주세요'));
+            if (!req.user)
+                return next(
+                    new CustomError(
+                        401,
+                        'Unauthorized',
+                        '로그인을 진행해주세요'
+                    )
+                );
 
             // I. param 가져오기
             const { name } = req.params;

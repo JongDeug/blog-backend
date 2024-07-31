@@ -7,8 +7,14 @@ export function pagination(req: Request, res: Response, next: NextFunction) {
     let { page, limit } = req.query;
 
     // I. 배열로 들어오면 에러 반환
-    if (typeof page === 'object') return next(new CustomError(400, 'Bad Request', 'page: 잘못된 형식입니다'));
-    if (typeof limit === 'object') return next(new CustomError(400, 'Bad Request', 'limit: 잘못된 형식입니다'));
+    if (typeof page === 'object')
+        return next(
+            new CustomError(400, 'Bad Request', 'page: 잘못된 형식입니다')
+        );
+    if (typeof limit === 'object')
+        return next(
+            new CustomError(400, 'Bad Request', 'limit: 잘못된 형식입니다')
+        );
 
     if (page === '') page = undefined;
     if (limit === '') limit = undefined;

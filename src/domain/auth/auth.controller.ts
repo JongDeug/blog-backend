@@ -25,7 +25,8 @@ export class AuthController {
     register = async (req: Request, res: Response, next: NextFunction) => {
         try {
             // I. authService.register 에 req.body 넘기기
-            const { accessToken, refreshToken } = await this.authService.register(req.body);
+            const { accessToken, refreshToken } =
+                await this.authService.register(req.body);
 
             // I. Http Only Cookie 를 사용해 토큰 전송
             res.cookie('accessToken', accessToken, {
@@ -51,7 +52,9 @@ export class AuthController {
     login = async (req: Request, res: Response, next: NextFunction) => {
         try {
             // I. authService.login 에 req.body 넣기
-            const { accessToken, refreshToken } = await this.authService.login(req.body);
+            const { accessToken, refreshToken } = await this.authService.login(
+                req.body
+            );
 
             // I. Http Only Cookie 를 사용해 토큰 전송
             res.cookie('accessToken', accessToken, {
@@ -78,10 +81,18 @@ export class AuthController {
         try {
             // I. refresh token 이 없으면 에러 발생
             const token = req.cookies.refreshToken;
-            if (!token) return next(new CustomError(401, 'Unauthorized', '토큰을 보내고 있지 않습니다'));
+            if (!token)
+                return next(
+                    new CustomError(
+                        401,
+                        'Unauthorized',
+                        '토큰을 보내고 있지 않습니다'
+                    )
+                );
 
             // I. cookie-parser 을 통해 refresh 토큰 추출
-            const { accessToken, refreshToken } = await this.authService.refresh(token);
+            const { accessToken, refreshToken } =
+                await this.authService.refresh(token);
 
             // I. Http Only Cookie 를 사용해 토큰 전송
             res.cookie('accessToken', accessToken, {
@@ -108,7 +119,14 @@ export class AuthController {
         try {
             // I. access token 이 없으면 에러 발생
             const token = req.cookies.accessToken;
-            if (!token) return next(new CustomError(401, 'Unauthorized', '토큰을 보내고 있지 않습니다'));
+            if (!token)
+                return next(
+                    new CustomError(
+                        401,
+                        'Unauthorized',
+                        '토큰을 보내고 있지 않습니다'
+                    )
+                );
 
             // I. authService logout 호출 => DB refresh 를 null 로 만듦
             await this.authService.logout(token); // req.cookies?. 이것도 분기문에 속함

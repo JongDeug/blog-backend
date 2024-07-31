@@ -10,15 +10,18 @@ export function validateDtoWithFiles(dtoClass: any) {
         const dto: any = plainToInstance(dtoClass, req.body);
         // I. 파일 탐기
         const files = req.files as Express.Multer.File[];
-        dto.images = files.map(file => ({ path: file.path }));
+        dto.images = files.map((file) => ({ path: file.path }));
         // I. dto 검증
         const errors = await validate(dto);
 
         if (errors.length > 0) {
-            const errorMessages = errors.map(error =>
-                // I. 앞글자 대문자 : 에러 메시지
-                `${error.property}: ${Object.values(error.constraints!).join(', ')}`,
-            ).join('\n ');
+            const errorMessages = errors
+                .map(
+                    (error) =>
+                        // I. 앞글자 대문자 : 에러 메시지
+                        `${error.property}: ${Object.values(error.constraints!).join(', ')}`
+                )
+                .join('\n ');
             // I. validation 실패 시 에러 넘기기
             next(new CustomError(400, 'Bad Request', errorMessages));
         }

@@ -2,8 +2,10 @@ import {
     CreateChildCommentDto,
     CreateChildCommentGuestDto,
     CreateCommentDto,
-    CreateCommentGuestDto, DeleteCommentGuestDto,
-    UpdateCommentDto, UpdateCommentGuestDto,
+    CreateCommentGuestDto,
+    DeleteCommentGuestDto,
+    UpdateCommentDto,
+    UpdateCommentGuestDto,
 } from './dto';
 import { UsersService } from '../../users/users.service';
 import { PostsService } from '../posts.service';
@@ -21,9 +23,10 @@ interface ExtendedComment extends Comment {
 }
 
 export class CommentsService {
-
-    constructor(private readonly usersService: UsersService, private readonly postsService: PostsService) {
-    }
+    constructor(
+        private readonly usersService: UsersService,
+        private readonly postsService: PostsService
+    ) {}
 
     // 회원
     async createComment(userId: string, dto: CreateCommentDto) {
@@ -50,7 +53,7 @@ export class CommentsService {
         });
 
         return newComment.id;
-    };
+    }
 
     async createCommentGuest(dto: CreateCommentGuestDto) {
         // I. post 확인
@@ -58,36 +61,48 @@ export class CommentsService {
 
         // I. Transaction
         // I. Guest 하나당 댓글 하나
-        const { newComment, guest } = await database.$transaction(async (database) => {
-            // I. guest 생성
-            const hashedPwd = await bcrypt.hash(dto.password, Number(process.env.PASSWORD_SALT));
-            const guest = await this.usersService.createGuestForComment(dto.nickName, dto.email, hashedPwd);
+        const { newComment, guest } = await database.$transaction(
+            async (database) => {
+                // I. guest 생성
+                const hashedPwd = await bcrypt.hash(
+                    dto.password,
+                    Number(process.env.PASSWORD_SALT)
+                );
+                const guest = await this.usersService.createGuestForComment(
+                    dto.nickName,
+                    dto.email,
+                    hashedPwd
+                );
 
-            // I. 댓글 생성
-            const newComment = await database.comment.create({
-                data: {
-                    content: dto.content,
-                    guest: {
-                        connect: {
-                            id: guest.id,
+                // I. 댓글 생성
+                const newComment = await database.comment.create({
+                    data: {
+                        content: dto.content,
+                        guest: {
+                            connect: {
+                                id: guest.id,
+                            },
+                        },
+                        post: {
+                            connect: {
+                                id: post.id,
+                            },
                         },
                     },
-                    post: {
-                        connect: {
-                            id: post.id,
-                        },
-                    },
-                },
-            });
+                });
 
-            return { newComment, guest };
-        });
+                return { newComment, guest };
+            }
+        );
 
         // I. 트랜잭션이 성공하면 블로그 주인에게 이메일 보내기
-        this.sendMail([process.env.MAIL_ID!], { nickName: guest.nickName, postTitle: post.title });
+        this.sendMail([process.env.MAIL_ID!], {
+            nickName: guest.nickName,
+            postTitle: post.title,
+        });
 
         return { newCommentId: newComment.id, guestId: guest.id };
-    };
+    }
 
     // 회원
     async createChildComment(userId: string, dto: CreateChildCommentDto) {
@@ -95,22 +110,25 @@ export class CommentsService {
         const user = await this.usersService.findUserById(userId);
 
         // I. parent comment 찾기
-        const parentComment: ExtendedComment = await this.findComment({ id: dto.parentCommentId }, {
-            guest: true,
-            post: {
-                select: {
-                    title: true,
+        const parentComment: ExtendedComment = await this.findComment(
+            { id: dto.parentCommentId },
+            {
+                guest: true,
+                post: {
+                    select: {
+                        title: true,
+                    },
                 },
-            },
-            childComments: {
-                where: {
-                    authorId: null, // I. guest 만 쭉 뽑기 => 이메일 보내야 함
+                childComments: {
+                    where: {
+                        authorId: null, // I. guest 만 쭉 뽑기 => 이메일 보내야 함
+                    },
+                    include: {
+                        guest: true,
+                    },
                 },
-                include: {
-                    guest: true,
-                },
-            },
-        });
+            }
+        );
 
         // I. 대댓글 생성
         const newChildComment = await database.comment.create({
@@ -130,78 +148,113 @@ export class CommentsService {
 
         // I. 메일 보내기(부모 댓글 작성자, 자식 댓글 작성자)
         let mailList: string[] = [];
-        if (parentComment.guest?.email) mailList.push(parentComment.guest.email); // 댓글 작성자가 회원이면 guest 존재하지 않으므로 처리
-        parentComment.childComments.forEach(childComment => mailList.push(childComment.guest!.email));
-        this.sendMail(mailList, { nickName: 'Jongdeug', postTitle: parentComment.post.title });
+        if (parentComment.guest?.email)
+            mailList.push(parentComment.guest.email); // 댓글 작성자가 회원이면 guest 존재하지 않으므로 처리
+        parentComment.childComments.forEach((childComment) =>
+            mailList.push(childComment.guest!.email)
+        );
+        this.sendMail(mailList, {
+            nickName: 'Jongdeug',
+            postTitle: parentComment.post.title,
+        });
 
         return newChildComment.id;
     }
 
     async createChildCommentGuest(dto: CreateChildCommentGuestDto) {
         // I. parent comment 찾기
-        const parentComment: ExtendedComment = await this.findComment({ id: dto.parentCommentId }, {
-            guest: true,
-            post: {
-                select: {
-                    title: true,
+        const parentComment: ExtendedComment = await this.findComment(
+            { id: dto.parentCommentId },
+            {
+                guest: true,
+                post: {
+                    select: {
+                        title: true,
+                    },
                 },
-            },
-            childComments: {
-                where: {
-                    authorId: null, // I. guest 만 쭉 뽑기 => 이메일 보내야 함
+                childComments: {
+                    where: {
+                        authorId: null, // I. guest 만 쭉 뽑기 => 이메일 보내야 함
+                    },
+                    include: {
+                        guest: true,
+                    },
                 },
-                include: {
-                    guest: true,
-                },
-            },
-        });
+            }
+        );
 
         // I. Transaction
-        const { newChildComment, guest } = await database.$transaction(async (database) => {
-            // I. guest 생성
-            const hashedPwd = await bcrypt.hash(dto.password, Number(process.env.PASSWORD_SALT));
-            const guest = await this.usersService.createGuestForComment(dto.nickName, dto.email, hashedPwd);
+        const { newChildComment, guest } = await database.$transaction(
+            async (database) => {
+                // I. guest 생성
+                const hashedPwd = await bcrypt.hash(
+                    dto.password,
+                    Number(process.env.PASSWORD_SALT)
+                );
+                const guest = await this.usersService.createGuestForComment(
+                    dto.nickName,
+                    dto.email,
+                    hashedPwd
+                );
 
-            // I. 대댓글 생성
-            const newChildComment = await database.comment.create({
-                data: {
-                    content: dto.content,
-                    guest: {
-                        connect: { id: guest.id },
+                // I. 대댓글 생성
+                const newChildComment = await database.comment.create({
+                    data: {
+                        content: dto.content,
+                        guest: {
+                            connect: { id: guest.id },
+                        },
+                        post: {
+                            connect: { id: parentComment.postId },
+                        },
+                        parentComment: {
+                            connect: { id: parentComment.id },
+                        },
                     },
-                    post: {
-                        connect: { id: parentComment.postId },
-                    },
-                    parentComment: {
-                        connect: { id: parentComment.id },
-                    },
-                },
-            });
+                });
 
-            return { newChildComment, guest };
-        });
+                return { newChildComment, guest };
+            }
+        );
 
         // I. 메일 보내기 (블로그 주인, 부모 댓글 작성자(내가 작성한거면 메일 x), 자식 댓글 작성자들(내가 작성한거면 메일 x))
         let mailList = [process.env.MAIL_ID!];
-        if (parentComment.guest?.email && parentComment.guest.email !== guest.email) mailList.push(parentComment.guest.email);
-        parentComment.childComments.forEach(childComment => {
-            if (childComment.guest!.email !== guest.email) mailList.push(childComment.guest!.email);
+        if (
+            parentComment.guest?.email &&
+            parentComment.guest.email !== guest.email
+        )
+            mailList.push(parentComment.guest.email);
+        parentComment.childComments.forEach((childComment) => {
+            if (childComment.guest!.email !== guest.email)
+                mailList.push(childComment.guest!.email);
         });
-        this.sendMail(mailList, { nickName: guest.nickName, postTitle: parentComment.post.title });
+        this.sendMail(mailList, {
+            nickName: guest.nickName,
+            postTitle: parentComment.post.title,
+        });
 
-        return { newChildCommentId: newChildComment.id, guestId: guest.id, postId: parentComment.postId };
+        return {
+            newChildCommentId: newChildComment.id,
+            guestId: guest.id,
+            postId: parentComment.postId,
+        };
     }
 
     // ----
 
-    async updateComment(userId: string, commentId: string, dto: UpdateCommentDto) {
+    async updateComment(
+        userId: string,
+        commentId: string,
+        dto: UpdateCommentDto
+    ) {
         // I. user 검색
         const user = await this.usersService.findUserById(userId);
         // I. comment 검색
         const comment = await this.findComment({ id: commentId });
 
         // I. 권한 인증 (comment.authorId <=> user)
-        if (comment.authorId !== user.id) throw new CustomError(403, 'Forbidden', '권한이 없습니다');
+        if (comment.authorId !== user.id)
+            throw new CustomError(403, 'Forbidden', '권한이 없습니다');
 
         // I. 댓글 수정
         await database.comment.update({
@@ -212,14 +265,30 @@ export class CommentsService {
 
     async updateCommentGuest(commentId: string, dto: UpdateCommentGuestDto) {
         // I. comment 검색
-        const comment: ExtendedComment = await this.findComment({ id: commentId, authorId: null }, { guest: true });
+        const comment: ExtendedComment = await this.findComment(
+            { id: commentId, authorId: null },
+            { guest: true }
+        );
 
         // I. 타입 체킹을 위해
-        if (!comment?.guest) throw new CustomError(500, 'Internal Server Error', '비회원 댓글 작성자를 찾고 있지 못하고 있음');
+        if (!comment?.guest)
+            throw new CustomError(
+                500,
+                'Internal Server Error',
+                '비회원 댓글 작성자를 찾고 있지 못하고 있음'
+            );
 
         // I. 비밀번호 권한 인증
-        const isCorrect = await bcrypt.compare(dto.password, comment.guest.password);
-        if (!isCorrect) throw new CustomError(401, 'Unauthorized', '비밀번호를 잘못 입력하셨습니다');
+        const isCorrect = await bcrypt.compare(
+            dto.password,
+            comment.guest.password
+        );
+        if (!isCorrect)
+            throw new CustomError(
+                401,
+                'Unauthorized',
+                '비밀번호를 잘못 입력하셨습니다'
+            );
 
         // I. 댓글 수정
         await database.comment.update({
@@ -237,7 +306,10 @@ export class CommentsService {
         const comment = await this.findComment({ id: commentId });
 
         // I. 권한 확인 (user 가 admin 이면 모두 통과)
-        if (foundUser.role === ROLES.admin || foundUser.id === comment.authorId) {
+        if (
+            foundUser.role === ROLES.admin ||
+            foundUser.id === comment.authorId
+        ) {
             // I. 댓글 삭제
             await database.comment.delete({
                 where: {
@@ -261,14 +333,30 @@ export class CommentsService {
 
     async deleteCommentGuest(commentId: string, dto: DeleteCommentGuestDto) {
         // I. comment 찾기(유저가 작성한 comment 는 뺌)
-        const comment = await this.findComment({ id: commentId, authorId: null }, { guest: true });
+        const comment = await this.findComment(
+            { id: commentId, authorId: null },
+            { guest: true }
+        );
 
         // I. 타입 체킹을 위해
-        if (!comment?.guest) throw new CustomError(500, 'Internal Server Error', '비회원 댓글 작성자를 찾고 있지 못하고 있음');
+        if (!comment?.guest)
+            throw new CustomError(
+                500,
+                'Internal Server Error',
+                '비회원 댓글 작성자를 찾고 있지 못하고 있음'
+            );
 
         // I. 권한 인증
-        const isCorrect = await bcrypt.compare(dto.password, comment.guest.password);
-        if (!isCorrect) throw new CustomError(401, 'Unauthorized', '비밀번호를 잘못 입력하셨습니다');
+        const isCorrect = await bcrypt.compare(
+            dto.password,
+            comment.guest.password
+        );
+        if (!isCorrect)
+            throw new CustomError(
+                401,
+                'Unauthorized',
+                '비밀번호를 잘못 입력하셨습니다'
+            );
 
         // I. 댓글 삭제
         await database.comment.delete({
@@ -292,7 +380,7 @@ export class CommentsService {
      * sendMail : 댓글 알림 메일 보내는 함수
      * findComment : 댓글 검색 함수
      */
-    sendMail(to: string[], payload: { nickName: string, postTitle: string }) {
+    sendMail(to: string[], payload: { nickName: string; postTitle: string }) {
         if (to.length > 0) {
             const mailOptions = {
                 from: process.env.MAIL_ID,
@@ -311,7 +399,11 @@ export class CommentsService {
 
             transporter.sendMail(mailOptions, (error, info) => {
                 if (error) {
-                    throw new CustomError(500, 'Internal Server Error', error.message);
+                    throw new CustomError(
+                        500,
+                        'Internal Server Error',
+                        error.message
+                    );
                 } else {
                     console.log('Email sent: ' + info.response);
                 }
@@ -319,13 +411,17 @@ export class CommentsService {
         }
     }
 
-    async findComment(whereOptions: Prisma.CommentWhereUniqueInput, includeOptions: Prisma.CommentInclude = {}) {
+    async findComment(
+        whereOptions: Prisma.CommentWhereUniqueInput,
+        includeOptions: Prisma.CommentInclude = {}
+    ) {
         const comment = await database.comment.findUnique({
             where: { ...whereOptions },
             include: { ...includeOptions },
         });
 
-        if (!comment) throw new CustomError(404, 'Not Found', '댓글을 찾을 수 없습니다');
+        if (!comment)
+            throw new CustomError(404, 'Not Found', '댓글을 찾을 수 없습니다');
 
         return comment;
     }

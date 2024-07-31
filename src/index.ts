@@ -8,7 +8,6 @@ import { jwtVerify } from '@middleware/jwtVerify';
 import database from '@utils/database';
 import * as path from 'node:path';
 import { AuthService } from './domain/auth/auth.service';
-import { UsersService } from './domain/users/users.service';
 
 // --- 즉시 실행 함수
 (async () => {
@@ -26,19 +25,22 @@ import { UsersService } from './domain/users/users.service';
     // ---
 
     // --- 라우터 등록
-    Router.forEach(el => {
+    Router.forEach((el) => {
         app.use(el.path, el.router);
     });
     //
 
     // --- 에러 핸들러
     const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
-        res.status(err.status || 500)
-            .json({ error: err.message || '서버에서 에러가 발생했습니다.' });
+        res.status(err.status || 500).json({
+            error: err.message || '서버에서 에러가 발생했습니다.',
+        });
     };
     app.use(errorHandler);
     // ---
 
-    app.listen(process.env.PORT, () => console.log('Server running on port 8000'));
+    app.listen(process.env.PORT, () =>
+        console.log('Server running on port 8000')
+    );
 })();
 // ---

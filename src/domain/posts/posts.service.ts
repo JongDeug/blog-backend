@@ -6,10 +6,8 @@ import { PaginationType } from '@custom-type/customPagination';
 import { Prisma } from '@prisma';
 import { UsersService } from '../users/users.service';
 
-
 export class PostsService {
-    constructor(private readonly usersService: UsersService) {
-    }
+    constructor(private readonly usersService: UsersService) {}
 
     async createPost(userId: string, dto: CreatePostDto) {
         // I. user 찾기, user 가 없다면 에러 반환
@@ -34,7 +32,9 @@ export class PostsService {
                     },
                     images: {
                         createMany: {
-                            data: dto.images.map(image => ({ url: image.path })),
+                            data: dto.images.map((image) => ({
+                                url: image.path,
+                            })),
                         },
                     },
                 },
@@ -79,7 +79,11 @@ export class PostsService {
 
         // I. user, post 본인 확인
         if (user.id !== post.authorId) {
-            throw new CustomError(403, 'Forbidden', '게시글에 대한 권한이 없습니다');
+            throw new CustomError(
+                403,
+                'Forbidden',
+                '게시글에 대한 권한이 없습니다'
+            );
         }
 
         // I. 게시글 업데이트 트랜젝션
@@ -130,7 +134,9 @@ export class PostsService {
                     },
                     images: {
                         createMany: {
-                            data: dto.images.map(image => ({ url: image.path })),
+                            data: dto.images.map((image) => ({
+                                url: image.path,
+                            })),
                         },
                     },
                     updatedAt: new Date().toISOString(),
@@ -167,7 +173,11 @@ export class PostsService {
 
         // I. user, post 비교해 권한 체크하기
         if (userId !== post.authorId) {
-            throw new CustomError(403, 'Forbidden', '게시글에 대한 권한이 없습니다');
+            throw new CustomError(
+                403,
+                'Forbidden',
+                '게시글에 대한 권한이 없습니다'
+            );
         }
 
         // I. 게시글 삭제하기
@@ -193,7 +203,11 @@ export class PostsService {
         }
     }
 
-    async getPosts(pagination: PaginationType, searchQuery: string | undefined, category: string | undefined) {
+    async getPosts(
+        pagination: PaginationType,
+        searchQuery: string | undefined,
+        category: string | undefined
+    ) {
         // I. 카테고리 옵션 설정, 있으면 { name : ... } , 없으면 {}
         let categoryOptions = category ? { name: category } : {};
 
@@ -253,11 +267,14 @@ export class PostsService {
         });
 
         // I. 게시글 좋아요 여부
-        const isLiked = post.postLikes.some(el => el.guestId === postLikeGuestId);
+        const isLiked = post.postLikes.some(
+            (el) => el.guestId === postLikeGuestId
+        );
 
         return {
             post: {
-                ...post, isLiked,
+                ...post,
+                isLiked,
             },
         };
     }
@@ -315,13 +332,21 @@ export class PostsService {
      * [Utils]
      * findPostById : 게시글 찾기, Prisma.PostInclude 로 type 해결 ㄷㄷ !
      */
-    async findPostById(postId: string, includeOptions: Prisma.PostInclude = {}) {
+    async findPostById(
+        postId: string,
+        includeOptions: Prisma.PostInclude = {}
+    ) {
         const post = await database.post.findUnique({
             where: { id: postId },
             include: { ...includeOptions },
         });
 
-        if (!post) throw new CustomError(404, 'Not Found', '게시글을 찾을 수 없습니다');
+        if (!post)
+            throw new CustomError(
+                404,
+                'Not Found',
+                '게시글을 찾을 수 없습니다'
+            );
 
         return post;
     }

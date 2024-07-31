@@ -14,7 +14,10 @@ import {
     CreateChildCommentDto,
     CreateChildCommentGuestDto,
     CreateCommentDto,
-    CreateCommentGuestDto, DeleteCommentGuestDto, UpdateCommentDto, UpdateCommentGuestDto,
+    CreateCommentGuestDto,
+    DeleteCommentGuestDto,
+    UpdateCommentDto,
+    UpdateCommentGuestDto,
 } from './comments/dto';
 import ROLES from '@utils/roles';
 import { verify } from 'jsonwebtoken';
@@ -25,44 +28,102 @@ export class PostsController {
     router: Router;
     commentsController: CommentsController;
 
-    constructor
-    (private readonly postsService: PostsService,
-     private readonly usersService: UsersService,
+    constructor(
+        private readonly postsService: PostsService,
+        private readonly usersService: UsersService
     ) {
         this.path = '/posts';
         this.router = Router();
-        this.commentsController = new CommentsController(new CommentsService(new UsersService(), new PostsService(new UsersService())));
+        this.commentsController = new CommentsController(
+            new CommentsService(
+                new UsersService(),
+                new PostsService(new UsersService())
+            )
+        );
         this.init();
     }
 
     init() {
-        this.router.post('/', verifyRoles(ROLES.admin), upload.array('images', 12), validateDtoWithFiles(CreatePostDto), this.createPost);
-        this.router.patch('/:id', verifyRoles(ROLES.admin), upload.array('images', 12), validateDtoWithFiles(UpdatePostDto), this.updatePost);
+        this.router.post(
+            '/',
+            verifyRoles(ROLES.admin),
+            upload.array('images', 12),
+            validateDtoWithFiles(CreatePostDto),
+            this.createPost
+        );
+        this.router.patch(
+            '/:id',
+            verifyRoles(ROLES.admin),
+            upload.array('images', 12),
+            validateDtoWithFiles(UpdatePostDto),
+            this.updatePost
+        );
         this.router.delete('/:id', verifyRoles(ROLES.admin), this.deletePost);
         this.router.get('/', pagination, this.getPosts);
         this.router.get('/:id', this.getPost);
         // =====================================================================================
         this.router.post('/like', this.postLike);
         // =====================================================================================
-        this.router.post('/comments', validateDto(CreateCommentDto), this.commentsController.createComment);
-        this.router.post('/comments/guest', validateDto(CreateCommentGuestDto), this.commentsController.createCommentGuest);
-        this.router.post('/child-comments', validateDto(CreateChildCommentDto), this.commentsController.createChildComment);
-        this.router.post('/child-comments/guest', validateDto(CreateChildCommentGuestDto), this.commentsController.createChildCommentGuest);
-        this.router.patch('/comments/:id', validateDto(UpdateCommentDto), this.commentsController.updateComment);
-        this.router.patch('/comments/guest/:id', validateDto(UpdateCommentGuestDto), this.commentsController.updateCommentGuest);
-        this.router.delete('/comments/:id', this.commentsController.deleteComment);
-        this.router.delete('/comments/guest/:id', validateDto(DeleteCommentGuestDto), this.commentsController.deleteCommentGuest);
+        this.router.post(
+            '/comments',
+            validateDto(CreateCommentDto),
+            this.commentsController.createComment
+        );
+        this.router.post(
+            '/comments/guest',
+            validateDto(CreateCommentGuestDto),
+            this.commentsController.createCommentGuest
+        );
+        this.router.post(
+            '/child-comments',
+            validateDto(CreateChildCommentDto),
+            this.commentsController.createChildComment
+        );
+        this.router.post(
+            '/child-comments/guest',
+            validateDto(CreateChildCommentGuestDto),
+            this.commentsController.createChildCommentGuest
+        );
+        this.router.patch(
+            '/comments/:id',
+            validateDto(UpdateCommentDto),
+            this.commentsController.updateComment
+        );
+        this.router.patch(
+            '/comments/guest/:id',
+            validateDto(UpdateCommentGuestDto),
+            this.commentsController.updateCommentGuest
+        );
+        this.router.delete(
+            '/comments/:id',
+            this.commentsController.deleteComment
+        );
+        this.router.delete(
+            '/comments/guest/:id',
+            validateDto(DeleteCommentGuestDto),
+            this.commentsController.deleteCommentGuest
+        );
     }
 
     createPost = async (req: Request, res: Response, next: NextFunction) => {
         try {
             // I. JWT 인증 확인
-            if (!req.user) return next(new CustomError(401, 'Unauthorized', '로그인을 진행해주세요'));
+            if (!req.user)
+                return next(
+                    new CustomError(
+                        401,
+                        'Unauthorized',
+                        '로그인을 진행해주세요'
+                    )
+                );
 
             // I. postsService.createPost 호출
             const files = req.files as Express.Multer.File[];
-            const images = files.map(file => ({ path: file.path }));
-            const postId = await this.postsService.createPost(req.user.id, { ...req.body, images });
+            const images = files.map((file) => ({ path: file.path }));
+            const postId = await this.postsService.createPost(req.user.id, {
+                ...req.body,
+                images,
+            });
 
             res.status(200).json({ id: postId });
         } catch (err) {
@@ -73,15 +134,25 @@ export class PostsController {
     updatePost = async (req: Request, res: Response, next: NextFunction) => {
         try {
             // I. JWT 인증 확인
-            if (!req.user) return next(new CustomError(401, 'Unauthorized', '로그인을 진행해주세요'));
+            if (!req.user)
+                return next(
+                    new CustomError(
+                        401,
+                        'Unauthorized',
+                        '로그인을 진행해주세요'
+                    )
+                );
 
             // I. 게시글 id 받기
             const { id } = req.params;
 
             // I. postsService.updatePost 호출
             const files = req.files as Express.Multer.File[];
-            const images = files.map(file => ({ path: file.path }));
-            await this.postsService.updatePost(req.user.id, id, { ...req.body, images });
+            const images = files.map((file) => ({ path: file.path }));
+            await this.postsService.updatePost(req.user.id, id, {
+                ...req.body,
+                images,
+            });
 
             res.status(200).json({});
         } catch (err) {
@@ -92,7 +163,14 @@ export class PostsController {
     deletePost = async (req: Request, res: Response, next: NextFunction) => {
         try {
             // I. JWT 인증 확인
-            if (!req.user) return next(new CustomError(401, 'Unauthorized', '로그인을 진행해주세요'));
+            if (!req.user)
+                return next(
+                    new CustomError(
+                        401,
+                        'Unauthorized',
+                        '로그인을 진행해주세요'
+                    )
+                );
 
             // I. 게시글 id 받기
             const { id } = req.params;
@@ -113,13 +191,31 @@ export class PostsController {
             // I. query 체킹
             const { searchQuery, category } = req.query;
             // I. query 타입 가드
-            if (typeof searchQuery === 'object') return next(new CustomError(400, 'Bad Request', 'searchQuery: 잘못된 형식입니다'));
-            if (typeof category === 'object') return next(new CustomError(400, 'Bad Request', 'category: 잘못된 형식입니다'));
+            if (typeof searchQuery === 'object')
+                return next(
+                    new CustomError(
+                        400,
+                        'Bad Request',
+                        'searchQuery: 잘못된 형식입니다'
+                    )
+                );
+            if (typeof category === 'object')
+                return next(
+                    new CustomError(
+                        400,
+                        'Bad Request',
+                        'category: 잘못된 형식입니다'
+                    )
+                );
 
             const pagination: PaginationType = req.pagination; // I. middleware pagination 참고
 
             // I. postsService.getPosts 호출
-            const { posts, postCount } = await this.postsService.getPosts(pagination, searchQuery, category);
+            const { posts, postCount } = await this.postsService.getPosts(
+                pagination,
+                searchQuery,
+                category
+            );
 
             res.status(200).json({ posts, postCount });
         } catch (err) {
@@ -136,7 +232,10 @@ export class PostsController {
             const { postLikeGuestId } = req.cookies;
 
             // I. postsService.getPost 호출
-            const { post } = await this.postsService.getPost(id, postLikeGuestId);
+            const { post } = await this.postsService.getPost(
+                id,
+                postLikeGuestId
+            );
 
             res.status(200).json({ post });
         } catch (err) {
@@ -177,5 +276,5 @@ export class PostsController {
 
 export default new PostsController(
     new PostsService(new UsersService()),
-    new UsersService(),
+    new UsersService()
 );

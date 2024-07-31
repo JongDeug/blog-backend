@@ -3,16 +3,25 @@ import { CommentsService } from './comments.service';
 import { CustomError } from '@utils/customError';
 
 export class CommentsController {
-    constructor(private readonly commentsService: CommentsService) {
-    }
+    constructor(private readonly commentsService: CommentsService) {}
 
     createComment = async (req: Request, res: Response, next: NextFunction) => {
         try {
             // I. JWT 인증 확인
-            if (!req.user) return next(new CustomError(401, 'Unauthorized', '로그인을 진행해주세요'));
+            if (!req.user)
+                return next(
+                    new CustomError(
+                        401,
+                        'Unauthorized',
+                        '로그인을 진행해주세요'
+                    )
+                );
 
             // I. commentsService.createComment 호출
-            const newCommentId = await this.commentsService.createComment(req.user.id, req.body);
+            const newCommentId = await this.commentsService.createComment(
+                req.user.id,
+                req.body
+            );
 
             res.status(201).json({ newCommentId });
         } catch (err) {
@@ -20,12 +29,17 @@ export class CommentsController {
         }
     };
 
-    createCommentGuest = async (req: Request, res: Response, next: NextFunction) => {
+    createCommentGuest = async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             // I. JWT 인증 x
 
             // I. commentsService.createCommentGuest 호출
-            const { newCommentId, guestId } = await this.commentsService.createCommentGuest(req.body);
+            const { newCommentId, guestId } =
+                await this.commentsService.createCommentGuest(req.body);
 
             // I. 쿠키에 배열로 저장
             const postId = req.cookies[`${req.body.postId}`];
@@ -43,13 +57,28 @@ export class CommentsController {
         }
     };
 
-    createChildComment = async (req: Request, res: Response, next: NextFunction) => {
+    createChildComment = async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             // I. JWT 인증 확인
-            if (!req.user) return next(new CustomError(401, 'Unauthorized', '로그인을 진행해주세요'));
+            if (!req.user)
+                return next(
+                    new CustomError(
+                        401,
+                        'Unauthorized',
+                        '로그인을 진행해주세요'
+                    )
+                );
 
             // I. commentsService.createChildComment 호출
-            const newChildCommentId = await this.commentsService.createChildComment(req.user.id, req.body);
+            const newChildCommentId =
+                await this.commentsService.createChildComment(
+                    req.user.id,
+                    req.body
+                );
 
             res.status(201).json({ newChildCommentId });
         } catch (err) {
@@ -57,12 +86,17 @@ export class CommentsController {
         }
     };
 
-    createChildCommentGuest = async (req: Request, res: Response, next: NextFunction) => {
+    createChildCommentGuest = async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             // I. JWT 인증 x
 
             // I. commentsService.createChildCommentGuest 호출
-            const { newChildCommentId, guestId, postId } = await this.commentsService.createChildCommentGuest(req.body);
+            const { newChildCommentId, guestId, postId } =
+                await this.commentsService.createChildCommentGuest(req.body);
 
             // I. 쿠키에 배열로 저장
             const cookiePostId = req.cookies[`${postId}`];
@@ -85,7 +119,14 @@ export class CommentsController {
     updateComment = async (req: Request, res: Response, next: NextFunction) => {
         try {
             // I. JWT 인증 확인
-            if (!req.user) return next(new CustomError(401, 'Unauthorized', '로그인을 진행해주세요'));
+            if (!req.user)
+                return next(
+                    new CustomError(
+                        401,
+                        'Unauthorized',
+                        '로그인을 진행해주세요'
+                    )
+                );
 
             const { id } = req.params;
             // I. commentsService.updateComment 호출
@@ -97,7 +138,11 @@ export class CommentsController {
         }
     };
 
-    updateCommentGuest = async (req: Request, res: Response, next: NextFunction) => {
+    updateCommentGuest = async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             // I. JWT 인증 x
 
@@ -115,7 +160,14 @@ export class CommentsController {
     deleteComment = async (req: Request, res: Response, next: NextFunction) => {
         try {
             // I. JWT 인증 확인
-            if (!req.user) return next(new CustomError(401, 'Unauthorized', '로그인을 진행해주세요'));
+            if (!req.user)
+                return next(
+                    new CustomError(
+                        401,
+                        'Unauthorized',
+                        '로그인을 진행해주세요'
+                    )
+                );
 
             const { id } = req.params;
             // I. commentsService.deleteComment 호출
@@ -127,13 +179,18 @@ export class CommentsController {
         }
     };
 
-    deleteCommentGuest = async (req: Request, res: Response, next: NextFunction) => {
+    deleteCommentGuest = async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+    ) => {
         try {
             // I. JWT 인증 x
 
             const { id } = req.params;
             // I. commentsService.deleteCommentGuest 호출
-            const { guestId, postId } = await this.commentsService.deleteCommentGuest(id, req.body);
+            const { guestId, postId } =
+                await this.commentsService.deleteCommentGuest(id, req.body);
 
             // I. 쿠키(postId) 에서 guestId 삭제 후 저장
             const cookiePostId = req.cookies[`${postId}`];
