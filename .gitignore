@@ -19,6 +19,7 @@
 dist
 coverage/
 uploads/
+nohup.out
 
 #DB
 mysql-data
