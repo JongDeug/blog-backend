@@ -1,0 +1,110 @@
+# /categories/
+/:
+  post:
+    tags:
+      - Categories
+    summary: 카테고리 생성
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: './openapi.yaml#/components/schemas/CreateCategoryDto'
+    responses:
+      '201':
+        $ref: './openapi.yaml#/components/responses/SuccessCreatedResponse'
+      '401':
+        $ref: './openapi.yaml#/components/responses/UnauthorizedError'
+      '409':
+        $ref: './openapi.yaml#/components/responses/ConflictCategoryError'
+      '403':
+        $ref: './openapi.yaml#/components/responses/ForbiddenError'
+      '500':
+        $ref: './openapi.yaml#/components/responses/InternalServerError'
+  get:
+    tags:
+      - Categories
+    summary: 카테고리 생성
+    responses:
+      '200':
+        description: 카테고리 리스트
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                categories:
+                  type: array
+                  items:
+                    type: string
+                    example: 운영체제
+            examples:
+              example1:
+                value:
+                  categories:
+                    - 운영체제
+                    - 알고리즘
+                    - CS
+      '500':
+        $ref: './openapi.yaml#/components/responses/InternalServerError'
+
+# /categories/{name}
+/{name}:
+  patch:
+    tags:
+      - Categories
+    summary: 카테고리 수정
+    parameters:
+      - name: name
+        in: path
+        required: true
+        description: 수정할 카테고리, target
+        schema:
+          type: string
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: './openapi.yaml#/components/schemas/UpdateCategoryDto'
+    responses:
+      '200':
+        $ref: './openapi.yaml#/components/responses/SuccessOkResponse'
+      '401':
+        $ref: './openapi.yaml#/components/responses/UnauthorizedError'
+      '404':
+        $ref: './openapi.yaml#/components/responses/NotFoundCategoryError'
+      '409':
+        $ref: './openapi.yaml#/components/responses/ConflictCategoryError'
+      '500':
+        $ref: './openapi.yaml#/components/responses/InternalServerError'
+  delete:
+    tags:
+      - Categories
+    summary: 카테고리 삭제
+    parameters:
+      - name: name
+        in: path
+        required: true
+        description: 삭제할 카테고리, target
+        schema:
+          type: string
+    responses:
+      '200':
+        $ref: './openapi.yaml#/components/responses/SuccessOkResponse'
+      '401':
+        $ref: './openapi.yaml#/components/responses/UnauthorizedError'
+      '404':
+        $ref: './openapi.yaml#/components/responses/NotFoundCategoryError'
+      '400':
+        description: Bad Request
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                error:
+                  type: string
+                  example: 카테고리를 참조하고 있는 Post가 존재합니다
+      '500':
+        $ref: './openapi.yaml#/components/responses/InternalServerError'

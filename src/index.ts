@@ -8,11 +8,18 @@ import { jwtVerify } from '@middleware/jwtVerify';
 import database from '@utils/database';
 import * as path from 'node:path';
 import { AuthService } from './domain/auth/auth.service';
+import swaggerUi from 'swagger-ui-express';
+import YAML from 'yamljs';
 
 // --- 즉시 실행 함수
 (async () => {
     const app = express();
     await database.$connect(); // connect db
+
+    // --- Swagger
+    const swaggerSpec = YAML.load(path.join(__dirname, './swagger/swagger.yaml'))
+    app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+    // ---
 
     // --- 미들웨어
     app.use('/uploads', express.static(path.join(__dirname, '../uploads'))); // src 폴더가 포함돼서 ../로 뺌
@@ -33,7 +40,7 @@ import { AuthService } from './domain/auth/auth.service';
     // --- 에러 핸들러
     const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
         res.status(err.status || 500).json({
-            error: err.message || '서버에서 에러가 발생했습니다.',
+            error: err.message || '서버에서 에러가 발생했습니다',
         });
     };
     app.use(errorHandler);

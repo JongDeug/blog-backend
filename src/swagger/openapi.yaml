@@ -1,0 +1,145 @@
+openapi: 3.0.0
+info:
+  version: ''
+  title: Blog API Docs
+  description: 블로그 API 명세서입니다.
+  license:
+    name: Jongdeug
+servers:
+  - url: http://localhost:8000/
+paths:
+  /auth/register:
+    $ref: './auth.yaml#/~1register'
+  /auth/login:
+    $ref: './auth.yaml#/~1login'
+  /auth/refresh:
+    $ref: './auth.yaml#/~1refresh'
+  /auth/logout:
+    $ref: './auth.yaml#/~1logout'
+  /categories:
+    $ref: './categories.yaml#/~1'
+  /categories/{name}:
+    $ref: './categories.yaml#/~1{name}'
+components:
+  # schema
+  schemas:
+    # registerDto
+    RegisterDto:
+      type: object
+      required:
+        - name
+        - email
+        - password
+      properties:
+        name:
+          type: string
+          description: 이름
+          example: 홍길동
+        email:
+          type: string
+          format: email
+          description: 이메일
+          example: user@example.com
+        password:
+          type: string
+          description: 비밀번호
+          example: password1234!
+        description:
+          type: string
+          description: 간단한 소개
+          example: 안녕하세요~ 홍길동입니다.
+    # loginDto
+    LoginDto:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          example: user@example.com
+        password:
+          type: string
+          example: password1234!
+    # loginDto
+    CreateCategoryDto:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          example: 알고리즘
+    UpdateCategoryDto:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          example: 운영체제
+  # responses
+  responses:
+    SuccessCreatedResponse:
+      description: Created
+      content:
+        application/json:
+          schema:
+            type: object
+    SuccessOkResponse:
+      description: OK
+      content:
+        application/json:
+          schema:
+            type: object
+    InternalServerError:
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: 서버에서 에러가 발생했습니다
+    ForbiddenError:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: 해당 API 를 사용할 권한이 없습니다
+    UnauthorizedError:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: 잘못된 토큰입니다 or 만료된 토큰입니다 or 토큰을 보내고 있지 않습니다 or 서비스 이용은 access 토큰으로만 가능합니다 or 로그인을 진행해주세요
+    ConflictCategoryError:
+      description: Conflict
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: 이미 존재하는 카테고리입니다
+    NotFoundCategoryError:
+      description: Not Found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: 카테고리를 찾을 수 없습니다
