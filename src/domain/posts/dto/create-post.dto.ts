@@ -21,4 +21,12 @@ export class CreatePostDto {
 
     @IsArray()
     images: ImagePath[];
+
+    static parseTag = (tags: any) => {
+        if (tags === '') tags = undefined;
+        else if (typeof tags === 'string') {
+            tags = tags.split(',').map((tag: string) => tag.trim());
+        }
+        return tags;
+    };
 }

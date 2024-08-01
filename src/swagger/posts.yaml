@@ -1,0 +1,33 @@
+# /posts/
+/:
+  post:
+    tags:
+      - Posts
+    summary: 게시글 생성
+    requestBody:
+      required: true
+      content:
+        multipart/form-data:
+          schema:
+            $ref: './openapi.yaml#/components/schemas/CreatePostDto'
+    responses:
+      '201':
+        description: OK
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  format: uuid
+                  description: 게시글 id
+                  example: "12345"
+      '401':
+        $ref: './openapi.yaml#/components/responses/UnauthorizedError'
+      '403':
+        $ref: './openapi.yaml#/components/responses/ForbiddenAPIError'
+      '404':
+        $ref: './openapi.yaml#/components/responses/NotFoundUserError'
+      '500':
+        $ref: './openapi.yaml#/components/responses/InternalServerError'

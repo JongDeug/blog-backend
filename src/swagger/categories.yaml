@@ -18,7 +18,7 @@
       '409':
         $ref: './openapi.yaml#/components/responses/ConflictCategoryError'
       '403':
-        $ref: './openapi.yaml#/components/responses/ForbiddenError'
+        $ref: './openapi.yaml#/components/responses/ForbiddenAPIError'
       '500':
         $ref: './openapi.yaml#/components/responses/InternalServerError'
   get:

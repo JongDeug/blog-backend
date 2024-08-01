@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   version: ''
-  title: Blog API Docs
+  title: Jongdeug's Blog API Docs
   description: 블로그 API 명세서입니다.
   license:
     name: Jongdeug
@@ -173,7 +173,7 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
-          $ref: '#/components/responses/ForbiddenError'
+          $ref: '#/components/responses/ForbiddenAPIError'
         '409':
           $ref: '#/components/responses/ConflictCategoryError'
         '500':
@@ -263,6 +263,38 @@ paths:
           $ref: '#/components/responses/NotFoundCategoryError'
         '500':
           $ref: '#/components/responses/InternalServerError'
+  /posts:
+    post:
+      tags:
+        - Posts
+      summary: 게시글 생성
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CreatePostDto'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                    description: 게시글 id
+                    example: '12345'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenAPIError'
+        '404':
+          $ref: '#/components/responses/NotFoundUserError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 components:
   schemas:
     RegisterDto:
@@ -318,6 +350,39 @@ components:
         name:
           type: string
           example: 운영체제
+    CreatePostDto:
+      type: object
+      properties:
+        title:
+          type: string
+          description: 제목
+          example: 첫번째 게시글
+        content:
+          type: string
+          description: 내용
+          example: 안녕하세요. 반갑습니다.
+        category:
+          type: string
+          description: 카테고리
+          example: 운영체제
+        tags:
+          type: array
+          items:
+            type: string
+          description: 태그
+          example:
+            - 커널
+            - 스케줄링
+        images:
+          type: array
+          items:
+            type: string
+            format: binary
+          description: 이미지 파일
+      required:
+        - title
+        - content
+        - category
   responses:
     SuccessCreatedResponse:
       description: Created
@@ -341,7 +406,7 @@ components:
               error:
                 type: string
                 example: 서버에서 에러가 발생했습니다
-    ForbiddenError:
+    ForbiddenAPIError:
       description: Forbidden
       content:
         application/json:
@@ -381,3 +446,13 @@ components:
               error:
                 type: string
                 example: 카테고리를 찾을 수 없습니다
+    NotFoundUserError:
+      description: Not Found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: 유저를 찾을 수 없습니다

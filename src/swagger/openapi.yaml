@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   version: ''
-  title: Blog API Docs
+  title: Jongdeug's Blog API Docs
   description: 블로그 API 명세서입니다.
   license:
     name: Jongdeug
@@ -20,6 +20,8 @@ paths:
     $ref: './categories.yaml#/~1'
   /categories/{name}:
     $ref: './categories.yaml#/~1{name}'
+  /posts:
+    $ref: './posts.yaml#/~1'
 components:
   # schema
   schemas:
@@ -71,6 +73,7 @@ components:
         name:
           type: string
           example: 알고리즘
+    # updateCategoryDto
     UpdateCategoryDto:
       type: object
       required:
@@ -79,6 +82,38 @@ components:
         name:
           type: string
           example: 운영체제
+    # createPostDto
+    CreatePostDto:
+      type: object
+      properties:
+        title:
+          type: string
+          description: 제목
+          example: 첫번째 게시글
+        content:
+          type: string
+          description: 내용
+          example: 안녕하세요. 반갑습니다.
+        category:
+          type: string
+          description: 카테고리
+          example: 운영체제
+        tags:
+          type: array
+          items:
+            type: string
+          description: 태그
+          example: [ "커널", "스케줄링" ]
+        images:
+          type: array
+          items:
+            type: string
+            format: binary
+          description: 이미지 파일
+      required:
+        - title
+        - content
+        - category
   # responses
   responses:
     SuccessCreatedResponse:
@@ -103,7 +138,7 @@ components:
               error:
                 type: string
                 example: 서버에서 에러가 발생했습니다
-    ForbiddenError:
+    ForbiddenAPIError:
       description: Forbidden
       content:
         application/json:
@@ -143,3 +178,13 @@ components:
               error:
                 type: string
                 example: 카테고리를 찾을 수 없습니다
+    NotFoundUserError:
+      description: Not Found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: 유저를 찾을 수 없습니다

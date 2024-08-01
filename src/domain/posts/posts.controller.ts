@@ -30,15 +30,15 @@ export class PostsController {
 
     constructor(
         private readonly postsService: PostsService,
-        private readonly usersService: UsersService
+        private readonly usersService: UsersService,
     ) {
         this.path = '/posts';
         this.router = Router();
         this.commentsController = new CommentsController(
             new CommentsService(
                 new UsersService(),
-                new PostsService(new UsersService())
-            )
+                new PostsService(new UsersService()),
+            ),
         );
         this.init();
     }
@@ -49,14 +49,14 @@ export class PostsController {
             verifyRoles(ROLES.admin),
             upload.array('images', 12),
             validateDtoWithFiles(CreatePostDto),
-            this.createPost
+            this.createPost,
         );
         this.router.patch(
             '/:id',
             verifyRoles(ROLES.admin),
             upload.array('images', 12),
             validateDtoWithFiles(UpdatePostDto),
-            this.updatePost
+            this.updatePost,
         );
         this.router.delete('/:id', verifyRoles(ROLES.admin), this.deletePost);
         this.router.get('/', pagination, this.getPosts);
@@ -67,41 +67,41 @@ export class PostsController {
         this.router.post(
             '/comments',
             validateDto(CreateCommentDto),
-            this.commentsController.createComment
+            this.commentsController.createComment,
         );
         this.router.post(
             '/comments/guest',
             validateDto(CreateCommentGuestDto),
-            this.commentsController.createCommentGuest
+            this.commentsController.createCommentGuest,
         );
         this.router.post(
             '/child-comments',
             validateDto(CreateChildCommentDto),
-            this.commentsController.createChildComment
+            this.commentsController.createChildComment,
         );
         this.router.post(
             '/child-comments/guest',
             validateDto(CreateChildCommentGuestDto),
-            this.commentsController.createChildCommentGuest
+            this.commentsController.createChildCommentGuest,
         );
         this.router.patch(
             '/comments/:id',
             validateDto(UpdateCommentDto),
-            this.commentsController.updateComment
+            this.commentsController.updateComment,
         );
         this.router.patch(
             '/comments/guest/:id',
             validateDto(UpdateCommentGuestDto),
-            this.commentsController.updateCommentGuest
+            this.commentsController.updateCommentGuest,
         );
         this.router.delete(
             '/comments/:id',
-            this.commentsController.deleteComment
+            this.commentsController.deleteComment,
         );
         this.router.delete(
             '/comments/guest/:id',
             validateDto(DeleteCommentGuestDto),
-            this.commentsController.deleteCommentGuest
+            this.commentsController.deleteCommentGuest,
         );
     }
 
@@ -113,19 +113,21 @@ export class PostsController {
                     new CustomError(
                         401,
                         'Unauthorized',
-                        '로그인을 진행해주세요'
-                    )
+                        '로그인을 진행해주세요',
+                    ),
                 );
 
             // I. postsService.createPost 호출
             const files = req.files as Express.Multer.File[];
             const images = files.map((file) => ({ path: file.path }));
+            const tags = CreatePostDto.parseTag(req.body?.tags);
             const postId = await this.postsService.createPost(req.user.id, {
                 ...req.body,
                 images,
+                tags,
             });
 
-            res.status(200).json({ id: postId });
+            res.status(201).json({ id: postId });
         } catch (err) {
             next(err);
         }
@@ -139,8 +141,8 @@ export class PostsController {
                     new CustomError(
                         401,
                         'Unauthorized',
-                        '로그인을 진행해주세요'
-                    )
+                        '로그인을 진행해주세요',
+                    ),
                 );
 
             // I. 게시글 id 받기
@@ -168,8 +170,8 @@ export class PostsController {
                     new CustomError(
                         401,
                         'Unauthorized',
-                        '로그인을 진행해주세요'
-                    )
+                        '로그인을 진행해주세요',
+                    ),
                 );
 
             // I. 게시글 id 받기
@@ -196,16 +198,16 @@ export class PostsController {
                     new CustomError(
                         400,
                         'Bad Request',
-                        'searchQuery: 잘못된 형식입니다'
-                    )
+                        'searchQuery: 잘못된 형식입니다',
+                    ),
                 );
             if (typeof category === 'object')
                 return next(
                     new CustomError(
                         400,
                         'Bad Request',
-                        'category: 잘못된 형식입니다'
-                    )
+                        'category: 잘못된 형식입니다',
+                    ),
                 );
 
             const pagination: PaginationType = req.pagination; // I. middleware pagination 참고
@@ -214,7 +216,7 @@ export class PostsController {
             const { posts, postCount } = await this.postsService.getPosts(
                 pagination,
                 searchQuery,
-                category
+                category,
             );
 
             res.status(200).json({ posts, postCount });
@@ -234,7 +236,7 @@ export class PostsController {
             // I. postsService.getPost 호출
             const { post } = await this.postsService.getPost(
                 id,
-                postLikeGuestId
+                postLikeGuestId,
             );
 
             res.status(200).json({ post });
@@ -276,5 +278,5 @@ export class PostsController {
 
 export default new PostsController(
     new PostsService(new UsersService()),
-    new UsersService()
+    new UsersService(),
 );
