@@ -295,6 +295,51 @@ paths:
           $ref: '#/components/responses/NotFoundUserError'
         '500':
           $ref: '#/components/responses/InternalServerError'
+  '/posts/{id}':
+    patch:
+      tags:
+        - Posts
+      summary: 게시글 수정
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: 수정할 게시글 id
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UpdatePostDto'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessOkResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: 해당 API 를 사용할 권한이 없습니다 or 게시글에 대한 권한이 없습니다
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: 유저를 찾을 수 없습니다 or 게시글을 찾을 수 없습니다
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 components:
   schemas:
     RegisterDto:
@@ -356,11 +401,11 @@ components:
         title:
           type: string
           description: 제목
-          example: 첫번째 게시글
+          example: 생성된 게시글
         content:
           type: string
           description: 내용
-          example: 안녕하세요. 반갑습니다.
+          example: 생성했습니다
         category:
           type: string
           description: 카테고리
@@ -373,6 +418,39 @@ components:
           example:
             - 커널
             - 스케줄링
+        images:
+          type: array
+          items:
+            type: string
+            format: binary
+          description: 이미지 파일
+      required:
+        - title
+        - content
+        - category
+    UpdatePostDto:
+      type: object
+      properties:
+        title:
+          type: string
+          description: 제목
+          example: 수정된 게시글
+        content:
+          type: string
+          description: 내용
+          example: 수정했습니다
+        category:
+          type: string
+          description: 카테고리
+          example: 알고리즘
+        tags:
+          type: array
+          items:
+            type: string
+          description: 태그
+          example:
+            - 리눅스
+            - 시간복잡도
         images:
           type: array
           items:

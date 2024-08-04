@@ -22,6 +22,8 @@ paths:
     $ref: './categories.yaml#/~1{name}'
   /posts:
     $ref: './posts.yaml#/~1'
+  /posts/{id}:
+    $ref: './posts.yaml#/~1{id}'
 components:
   # schema
   schemas:
@@ -89,11 +91,11 @@ components:
         title:
           type: string
           description: 제목
-          example: 첫번째 게시글
+          example: 생성된 게시글
         content:
           type: string
           description: 내용
-          example: 안녕하세요. 반갑습니다.
+          example: 생성했습니다
         category:
           type: string
           description: 카테고리
@@ -114,6 +116,40 @@ components:
         - title
         - content
         - category
+    # updatePostDto
+    UpdatePostDto:
+      type: object
+      properties:
+        title:
+          type: string
+          description: 제목
+          example: 수정된 게시글
+        content:
+          type: string
+          description: 내용
+          example: 수정했습니다
+        category:
+          type: string
+          description: 카테고리
+          example: 알고리즘
+        tags:
+          type: array
+          items:
+            type: string
+          description: 태그
+          example: [ "리눅스", "시간복잡도" ]
+        images:
+          type: array
+          items:
+            type: string
+            format: binary
+          description: 이미지 파일
+      required:
+        - title
+        - content
+        - category
+
+
   # responses
   responses:
     SuccessCreatedResponse:

@@ -118,14 +118,7 @@ export class PostsController {
                 );
 
             // I. postsService.createPost 호출
-            const files = req.files as Express.Multer.File[];
-            const images = files.map((file) => ({ path: file.path }));
-            const tags = CreatePostDto.parseTag(req.body?.tags);
-            const postId = await this.postsService.createPost(req.user.id, {
-                ...req.body,
-                images,
-                tags,
-            });
+            const postId = await this.postsService.createPost(req.user.id, req.body);
 
             res.status(201).json({ id: postId });
         } catch (err) {
@@ -149,12 +142,7 @@ export class PostsController {
             const { id } = req.params;
 
             // I. postsService.updatePost 호출
-            const files = req.files as Express.Multer.File[];
-            const images = files.map((file) => ({ path: file.path }));
-            await this.postsService.updatePost(req.user.id, id, {
-                ...req.body,
-                images,
-            });
+            await this.postsService.updatePost(req.user.id, id, req.body);
 
             res.status(200).json({});
         } catch (err) {

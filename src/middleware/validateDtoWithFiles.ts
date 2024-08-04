@@ -7,13 +7,13 @@ import { CreatePostDto } from '../domain/posts/dto';
 export function validateDtoWithFiles(dtoClass: any) {
     // I. Express 미들웨어 반환
     return async (req: Request, res: Response, next: NextFunction) => {
+        // I. req.body 변환 (이미지 파일, 태그)
+        req.body.images = CreatePostDto.parseFiles(req.files as Express.Multer.File[]);
+        req.body.tags = CreatePostDto.parseTags(req.body.tags);
+
         // I. plain -> dtoClass
         const dto: any = plainToInstance(dtoClass, req.body);
-        // I. 파일 담기
-        const files = req.files as Express.Multer.File[];
-        dto.images = files.map((file) => ({ path: file.path }));
-        // I. 태그 parse, '', '태그1, 태그2' 로 올 것을 염려
-        dto.tags = CreatePostDto.parseTag(dto.tags);
+
         // I. dto 검증
         const errors = await validate(dto);
 

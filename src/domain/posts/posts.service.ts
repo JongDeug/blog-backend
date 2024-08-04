@@ -7,7 +7,8 @@ import { Prisma } from '@prisma';
 import { UsersService } from '../users/users.service';
 
 export class PostsService {
-    constructor(private readonly usersService: UsersService) {}
+    constructor(private readonly usersService: UsersService) {
+    }
 
     async createPost(userId: string, dto: CreatePostDto) {
         // I. user 찾기, user 가 없다면 에러 반환
@@ -82,7 +83,7 @@ export class PostsService {
             throw new CustomError(
                 403,
                 'Forbidden',
-                '게시글에 대한 권한이 없습니다'
+                '게시글에 대한 권한이 없습니다',
             );
         }
 
@@ -160,7 +161,7 @@ export class PostsService {
                 const result = await deleteImage(post.images);
                 console.log(result);
             } catch (err) {
-                console.log(`이미지 파일 삭제 오류: ${err}`);
+                throw new CustomError(500, 'Internal Server Error', `이미지 파일 삭제 오류: ${err}`);
             }
         }
 
@@ -176,7 +177,7 @@ export class PostsService {
             throw new CustomError(
                 403,
                 'Forbidden',
-                '게시글에 대한 권한이 없습니다'
+                '게시글에 대한 권한이 없습니다',
             );
         }
 
@@ -206,7 +207,7 @@ export class PostsService {
     async getPosts(
         pagination: PaginationType,
         searchQuery: string | undefined,
-        category: string | undefined
+        category: string | undefined,
     ) {
         // I. 카테고리 옵션 설정, 있으면 { name : ... } , 없으면 {}
         let categoryOptions = category ? { name: category } : {};
@@ -268,7 +269,7 @@ export class PostsService {
 
         // I. 게시글 좋아요 여부
         const isLiked = post.postLikes.some(
-            (el) => el.guestId === postLikeGuestId
+            (el) => el.guestId === postLikeGuestId,
         );
 
         return {
@@ -334,7 +335,7 @@ export class PostsService {
      */
     async findPostById(
         postId: string,
-        includeOptions: Prisma.PostInclude = {}
+        includeOptions: Prisma.PostInclude = {},
     ) {
         const post = await database.post.findUnique({
             where: { id: postId },
@@ -345,7 +346,7 @@ export class PostsService {
             throw new CustomError(
                 404,
                 'Not Found',
-                '게시글을 찾을 수 없습니다'
+                '게시글을 찾을 수 없습니다',
             );
 
         return post;
