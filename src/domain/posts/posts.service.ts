@@ -320,11 +320,11 @@ export class PostsService {
             await database.postLike.create({
                 data: {
                     post: { connect: { id: post.id } },
-                    guest: { connect: { id: dto.postLikeGuestId } },
+                    guest: { connect: { id: dto.postLikeGuestId! } },
                 },
             });
 
-            return dto.postLikeGuestId;
+            return dto.postLikeGuestId!;
         }
         // I. 좋아요 삭제 시
         else if (!dto.tryToLike && isLiked) {

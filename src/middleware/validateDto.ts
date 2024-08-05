@@ -10,13 +10,14 @@ export function validateDto(dtoClass: any) {
         const dto = plainToInstance(dtoClass, req.body);
         // I. dto 검증
         const errors = await validate(dto);
+        console.log(dto)
 
         if (errors.length > 0) {
             const errorMessages = errors
                 .map(
                     (error) =>
                         // I. 앞글자 대문자 : 에러 메시지
-                        `${error.property}: ${Object.values(error.constraints!).join(', ')}`
+                        `${error.property}: ${Object.values(error.constraints!).join(', ')}`,
                 )
                 .join('\n ');
 

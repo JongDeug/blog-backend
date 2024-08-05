@@ -7,11 +7,9 @@ import { CreatePostDto } from '../domain/posts/dto';
 export function validateDtoWithFiles(dtoClass: any) {
     // I. Express 미들웨어 반환
     return async (req: Request, res: Response, next: NextFunction) => {
-        // I. req.body 변환 (이미지 파일, 태그)
-        req.body.images = CreatePostDto.parseFiles(
-            req.files as Express.Multer.File[]
-        );
-        req.body.tags = CreatePostDto.parseTags(req.body.tags);
+        // I. req.body 변환 (이미지 파일)
+        const files = req.files as Express.Multer.File[];
+        req.body.images = files.map((file) => ({ path: file.path }));
 
         // I. plain -> dtoClass
         const dto: any = plainToInstance(dtoClass, req.body);
@@ -24,7 +22,7 @@ export function validateDtoWithFiles(dtoClass: any) {
                 .map(
                     (error) =>
                         // I. 앞글자 대문자 : 에러 메시지
-                        `${error.property}: ${Object.values(error.constraints!).join(', ')}`
+                        `${error.property}: ${Object.values(error.constraints!).join(', ')}`,
                 )
                 .join('\n ');
             // I. validation 실패 시 에러 넘기기
@@ -32,6 +30,7 @@ export function validateDtoWithFiles(dtoClass: any) {
         }
 
         // I. validation 성공
+        req.body = { ...dto };
         next();
     };
 }

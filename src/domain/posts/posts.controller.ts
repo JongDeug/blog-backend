@@ -20,7 +20,6 @@ import {
     UpdateCommentGuestDto,
 } from './comments/dto';
 import ROLES from '@utils/roles';
-import { verify } from 'jsonwebtoken';
 import { verifyRoles } from '@middleware/verifyRoles';
 
 export class PostsController {
