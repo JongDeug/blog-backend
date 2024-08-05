@@ -11,5 +11,5 @@ export class PostLikeDto {
 
     @IsString()
     @IsOptional()
-    postLikeGuestId?: string;
+    guestLikeId?: string;
 }

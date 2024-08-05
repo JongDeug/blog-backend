@@ -138,7 +138,7 @@ describe('CommentsService Main Functions', () => {
             } as FindPostByIdType);
             prismaMock.$transaction.mockImplementation(async (callback) => callback(prismaMock));
             (bcrypt.hash as jest.Mock).mockResolvedValue('hashedPassword');
-            usersServiceMock.createGuestForComment.mockResolvedValue(mockData.returnedGuest);
+            usersServiceMock.createGuestComment.mockResolvedValue(mockData.returnedGuest);
             prismaMock.comment.create.mockResolvedValue({ id: 'newCommentId' } as CreateComment);
             // when
             const result = await commentsService.createCommentGuest(mockData.createCommentGuestDto);
@@ -146,7 +146,7 @@ describe('CommentsService Main Functions', () => {
             expect(result).toStrictEqual({ newCommentId: 'newCommentId', guestId: 'mockGuestId' });
             expect(postsServiceMock.findPostById).toHaveBeenCalledWith(mockData.createCommentGuestDto.postId);
             expect(bcrypt.hash).toHaveBeenCalledWith(mockData.createCommentGuestDto.password, Number(process.env.PASSWORD_SALT));
-            expect(usersServiceMock.createGuestForComment).toHaveBeenCalledWith(mockData.createCommentGuestDto.nickName, mockData.createCommentGuestDto.email, 'hashedPassword');
+            expect(usersServiceMock.createGuestComment).toHaveBeenCalledWith(mockData.createCommentGuestDto.nickName, mockData.createCommentGuestDto.email, 'hashedPassword');
             expect(prismaMock.comment.create).toHaveBeenCalledWith({
                 data: {
                     content: mockData.createCommentGuestDto.content,
@@ -191,14 +191,14 @@ describe('CommentsService Main Functions', () => {
                     throw err;
                 }
             });
-            usersServiceMock.createGuestForComment.mockRejectedValue(new Error('데이터베이스: 게스트 생성 오류'));
+            usersServiceMock.createGuestComment.mockRejectedValue(new Error('데이터베이스: 게스트 생성 오류'));
             // when, then
             await expect(commentsService.createCommentGuest(mockData.createCommentGuestDto)).rejects.toThrow(
                 new Error('데이터베이스: 게스트 생성 오류'),
             );
             expect(postsServiceMock.findPostById).toHaveBeenCalled();
             expect(prismaMock.$transaction).toHaveBeenCalled();
-            expect(usersServiceMock.createGuestForComment).toHaveBeenCalled();
+            expect(usersServiceMock.createGuestComment).toHaveBeenCalled();
             expect(prismaMock.comment.create).not.toHaveBeenCalled();
         });
 
@@ -207,7 +207,7 @@ describe('CommentsService Main Functions', () => {
             postsServiceMock.findPostById.mockResolvedValue({ id: mockData.createCommentGuestDto.postId } as FindPostByIdType);
             prismaMock.$transaction.mockImplementation(async (callback) => callback(prismaMock));
             (bcrypt.hash as jest.Mock).mockResolvedValue('hashedPassword');
-            usersServiceMock.createGuestForComment.mockResolvedValue(mockData.returnedGuest);
+            usersServiceMock.createGuestComment.mockResolvedValue(mockData.returnedGuest);
             prismaMock.comment.create.mockResolvedValue({ id: 'newCommentId' } as CreateComment);
             (commentsService.sendMail as jest.Mock).mockImplementation(() => {
                 throw new Error('이메일: 전송 에러');
@@ -218,7 +218,7 @@ describe('CommentsService Main Functions', () => {
             );
             expect(postsServiceMock.findPostById).toHaveBeenCalled();
             expect(bcrypt.hash).toHaveBeenCalled();
-            expect(usersServiceMock.createGuestForComment).toHaveBeenCalled();
+            expect(usersServiceMock.createGuestComment).toHaveBeenCalled();
             expect(prismaMock.comment.create).toHaveBeenCalled();
             expect(commentsService.sendMail).toHaveBeenCalled();
         });
@@ -371,7 +371,7 @@ describe('CommentsService Main Functions', () => {
             (commentsService.findComment as jest.Mock).mockResolvedValue(mockData.returnedParentComment);
             prismaMock.$transaction.mockImplementation(async (callback) => callback(prismaMock));
             (bcrypt.hash as jest.Mock).mockResolvedValue('hashedPassword');
-            usersServiceMock.createGuestForComment.mockResolvedValue(mockData.returnedGuest);
+            usersServiceMock.createGuestComment.mockResolvedValue(mockData.returnedGuest);
             prismaMock.comment.create.mockResolvedValue({ id: 'newChildCommentId' } as Comment);
             // when
             const result = await commentsService.createChildCommentGuest(mockData.createChildCommentGuestDto);
@@ -398,7 +398,7 @@ describe('CommentsService Main Functions', () => {
                 },
             });
             expect(bcrypt.hash).toHaveBeenCalledWith(mockData.createChildCommentGuestDto.password, Number(process.env.PASSWORD_SALT));
-            expect(usersServiceMock.createGuestForComment).toHaveBeenCalledWith(mockData.createChildCommentGuestDto.nickName, mockData.createChildCommentGuestDto.email, 'hashedPassword');
+            expect(usersServiceMock.createGuestComment).toHaveBeenCalledWith(mockData.createChildCommentGuestDto.nickName, mockData.createChildCommentGuestDto.email, 'hashedPassword');
             expect(prismaMock.comment.create).toHaveBeenCalledWith({
                 data: {
                     content: mockData.createChildCommentGuestDto.content,
@@ -426,7 +426,7 @@ describe('CommentsService Main Functions', () => {
             (commentsService.findComment as jest.Mock).mockResolvedValue(mockData.returnedParentComment);
             prismaMock.$transaction.mockImplementation(async (callback) => callback(prismaMock));
             (bcrypt.hash as jest.Mock).mockResolvedValue('hashedPassword');
-            usersServiceMock.createGuestForComment.mockResolvedValue(mockData.returnedGuest);
+            usersServiceMock.createGuestComment.mockResolvedValue(mockData.returnedGuest);
             prismaMock.comment.create.mockResolvedValue({ id: 'newChildCommentId' } as Comment);
             // when
             const result = await commentsService.createChildCommentGuest(mockData.createChildCommentGuestDto);
@@ -438,7 +438,7 @@ describe('CommentsService Main Functions', () => {
             });
             expect(commentsService.findComment).toHaveBeenCalled();
             expect(bcrypt.hash).toHaveBeenCalled();
-            expect(usersServiceMock.createGuestForComment).toHaveBeenCalled();
+            expect(usersServiceMock.createGuestComment).toHaveBeenCalled();
             expect(prismaMock.comment.create).toHaveBeenCalled();
             expect(commentsService.sendMail).toHaveBeenCalledWith([process.env.MAIL_ID, 'mockEmail2', 'mockEmail3'], {
                 nickName: mockData.returnedGuest.nickName,
@@ -469,7 +469,7 @@ describe('CommentsService Main Functions', () => {
                     throw err;
                 }
             });
-            usersServiceMock.createGuestForComment.mockRejectedValue(new Error('데이터베이스: 게스트 생성 오류'));
+            usersServiceMock.createGuestComment.mockRejectedValue(new Error('데이터베이스: 게스트 생성 오류'));
             // when, then
             await expect(commentsService.createChildCommentGuest(mockData.createChildCommentGuestDto)).rejects.toThrow(
                 new Error('데이터베이스: 게스트 생성 오류'),
@@ -477,7 +477,7 @@ describe('CommentsService Main Functions', () => {
             expect(commentsService.findComment).toHaveBeenCalled();
             expect(prismaMock.$transaction).toHaveBeenCalled();
             expect(bcrypt.hash).toHaveBeenCalled();
-            expect(usersServiceMock.createGuestForComment).toHaveBeenCalled();
+            expect(usersServiceMock.createGuestComment).toHaveBeenCalled();
             expect(prismaMock.comment.create).not.toHaveBeenCalled();
         });
 
@@ -485,7 +485,7 @@ describe('CommentsService Main Functions', () => {
             (commentsService.findComment as jest.Mock).mockResolvedValue(mockData.returnedParentComment);
             prismaMock.$transaction.mockImplementation(async (callback) => callback(prismaMock));
             (bcrypt.hash as jest.Mock).mockResolvedValue('hashedPassword');
-            usersServiceMock.createGuestForComment.mockResolvedValue(mockData.returnedGuest);
+            usersServiceMock.createGuestComment.mockResolvedValue(mockData.returnedGuest);
             prismaMock.comment.create.mockResolvedValue({ id: 'newChildCommentId' } as Comment);
             // given
             (commentsService.sendMail as jest.Mock).mockImplementation(() => {
@@ -497,7 +497,7 @@ describe('CommentsService Main Functions', () => {
             );
             expect(commentsService.findComment).toHaveBeenCalled();
             expect(bcrypt.hash).toHaveBeenCalled();
-            expect(usersServiceMock.createGuestForComment).toHaveBeenCalled();
+            expect(usersServiceMock.createGuestComment).toHaveBeenCalled();
             expect(prismaMock.comment.create).toHaveBeenCalled();
             expect(commentsService.sendMail).toHaveBeenCalled();
         });

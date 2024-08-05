@@ -329,15 +329,7 @@ paths:
                     type: string
                     example: 해당 API 를 사용할 권한이 없습니다 or 게시글에 대한 권한이 없습니다
         '404':
-          description: Not Found
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    example: 유저를 찾을 수 없습니다 or 게시글을 찾을 수 없습니다
+          $ref: '#/components/responses/NotFoundUserAndPostError'
         '500':
           $ref: '#/components/responses/InternalServerError'
     delete:
@@ -367,15 +359,7 @@ paths:
                     type: string
                     example: 해당 API 를 사용할 권한이 없습니다 or 게시글에 대한 권한이 없습니다
         '404':
-          description: Not Found
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    example: 게시글을 찾을 수 없습니다
+          $ref: '#/components/responses/NotFoundPostError'
         '500':
           $ref: '#/components/responses/InternalServerError'
   /posts/like:
@@ -400,8 +384,10 @@ paths:
                   postLikeGuestId:
                     oneOf:
                       - type: string
+                        description: 좋아요 생성 성공 시
                         example: 1234
                       - type: 'null'
+                        description: 좋아요 삭제 성공 시
                         example: null
         '400':
           $ref: '#/components/responses/BadRequest'
@@ -414,7 +400,37 @@ paths:
                 properties:
                   error:
                     type: string
-                    example: 게시글을 찾을 수 없습니다
+                    example: 게시글을 찾을 수 없습니다 or guestLikeId 를 찾을 수 없습니다
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /posts/comments:
+    post:
+      tags:
+        - Comments
+      summary: 부모 댓글 생성(회원)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCommentDto'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                    description: 부모 댓글 id
+                    example: '12345'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundUserAndPostError'
         '500':
           $ref: '#/components/responses/InternalServerError'
 components:
@@ -452,10 +468,10 @@ components:
         email:
           type: string
           format: email
-          example: user@example.com
+          example: test1@gmail.com
         password:
           type: string
-          example: password1234!
+          example: 1234
     CreateCategoryDto:
       type: object
       required:
@@ -474,6 +490,10 @@ components:
           example: 운영체제
     CreatePostDto:
       type: object
+      required:
+        - title
+        - content
+        - category
       properties:
         title:
           type: string
@@ -501,12 +521,12 @@ components:
             type: string
             format: binary
           description: 이미지 파일
+    UpdatePostDto:
+      type: object
       required:
         - title
         - content
         - category
-    UpdatePostDto:
-      type: object
       properties:
         title:
           type: string
@@ -534,29 +554,41 @@ components:
             type: string
             format: binary
           description: 이미지 파일
-      required:
-        - title
-        - content
-        - category
     PostLikeDto:
       type: object
+      required:
+        - postId
+        - tryToLike
       properties:
         postId:
           type: string
+          format: uuid
           description: 게시글 id
           example: 1234
         tryToLike:
           type: boolean
           description: 좋아요 생성 or 삭제
           example: true
-        postLikeGuestId:
-          oneOf:
-            - type: string
-              description: 좋아요 식별 id
-              example: 1234
-            - type: 'null'
-              description: 빈 값
-              example: null
+        guestLikeId:
+          type: string
+          format: uuid
+          description: 게시글 좋아요 id
+          example: 5678
+    CreateCommentDto:
+      type: object
+      required:
+        - postId
+        - content
+      properties:
+        postId:
+          type: string
+          format: uuid
+          description: 게시글 id
+          example: 1234
+        content:
+          type: string
+          description: 부모 댓글 내용(회원)
+          example: 부모 댓글입니다(회원)
   responses:
     SuccessCreatedResponse:
       description: Created
@@ -640,3 +672,23 @@ components:
               error:
                 type: string
                 example: 유저를 찾을 수 없습니다
+    NotFoundPostError:
+      description: Not Found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: 게시글을 찾을 수 없습니다
+    NotFoundUserAndPostError:
+      description: Not Found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: 유저를 찾을 수 없습니다 or 게시글을 찾을 수 없습니다

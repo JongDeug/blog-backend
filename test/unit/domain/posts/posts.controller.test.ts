@@ -258,18 +258,18 @@ describe('PostsController', () => {
             req.body = {
                 postId: 'mockPostId',
                 tryToLike: true,
-                postLikeGuestId: '',
+                guestLikeId: '',
             };
         });
 
         test('should create a postLike or delete a postLike successfully', async () => {
             // given
-            postsServiceMock.postLike.mockResolvedValue('mockPostLikeGuestId');
+            postsServiceMock.postLike.mockResolvedValue('mockGuestLikeId');
             // when
             await postsController.postLike(req, res, next);
             // then
             expect(res.statusCode).toBe(200);
-            expect(res._getJSONData()).toStrictEqual({ postLikeGuestId: 'mockPostLikeGuestId' });
+            expect(res._getJSONData()).toStrictEqual({ guestLikeId: 'mockGuestLikeId' });
             expect(res._isEndCalled()).toBeTruthy();
             expect(postsServiceMock.postLike).toHaveBeenCalledWith(req.body);
         });

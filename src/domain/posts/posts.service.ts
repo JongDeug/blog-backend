@@ -7,8 +7,7 @@ import { Prisma } from '@prisma';
 import { UsersService } from '../users/users.service';
 
 export class PostsService {
-    constructor(private readonly usersService: UsersService) {
-    }
+    constructor(private readonly usersService: UsersService) {}
 
     async createPost(userId: string, dto: CreatePostDto) {
         // I. user 찾기, user 가 없다면 에러 반환
@@ -83,7 +82,7 @@ export class PostsService {
             throw new CustomError(
                 403,
                 'Forbidden',
-                '게시글에 대한 권한이 없습니다',
+                '게시글에 대한 권한이 없습니다'
             );
         }
 
@@ -160,11 +159,7 @@ export class PostsService {
             try {
                 await deleteImage(post.images);
             } catch (err) {
-                throw new CustomError(
-                    500,
-                    'Internal Server Error',
-                    `${err}`,
-                );
+                throw new CustomError(500, 'Internal Server Error', `${err}`);
             }
         }
 
@@ -180,7 +175,7 @@ export class PostsService {
             throw new CustomError(
                 403,
                 'Forbidden',
-                '게시글에 대한 권한이 없습니다',
+                '게시글에 대한 권한이 없습니다'
             );
         }
 
@@ -201,11 +196,7 @@ export class PostsService {
             try {
                 await deleteImage(post.images);
             } catch (err) {
-                throw new CustomError(
-                    500,
-                    'Internal Server Error',
-                    `${err}`,
-                );
+                throw new CustomError(500, 'Internal Server Error', `${err}`);
             }
         }
     }
@@ -213,7 +204,7 @@ export class PostsService {
     async getPosts(
         pagination: PaginationType,
         searchQuery: string | undefined,
-        category: string | undefined,
+        category: string | undefined
     ) {
         // I. 카테고리 옵션 설정, 있으면 { name : ... } , 없으면 {}
         let categoryOptions = category ? { name: category } : {};
@@ -275,7 +266,7 @@ export class PostsService {
 
         // I. 게시글 좋아요 여부
         const isLiked = post.postLikes.some(
-            (el) => el.guestId === postLikeGuestId,
+            (el) => el.guestId === postLikeGuestId
         );
 
         return {
@@ -289,19 +280,19 @@ export class PostsService {
     // 게시글 좋아요 ==========================================================================================
 
     async postLike(dto: PostLikeDto) {
-        // [postLikeGuest, tryToLike]
-        // falsy, false O => 잘못된 요청
-        // falsy, true O => 좋아요 생성(isLiked === null)
+        // [guestLikeId, tryToLike]
+        // falsy, false => 잘못된 요청
+        // falsy, true => 좋아요 생성(isLiked === null)
         // truthy, true => 좋아요 생성(isLiked === null)
-        // truthy, false O => 좋아요 삭제(isLiked !== null)
+        // truthy, false => 좋아요 삭제(isLiked !== null)
 
         // I. falsy, false
-        if (!dto.postLikeGuestId && !dto.tryToLike) {
+        if (!dto.guestLikeId && !dto.tryToLike) {
             throw new CustomError(400, 'Bad Request', '잘못된 요청입니다');
         }
         // I. falsy, true
-        else if (!dto.postLikeGuestId && dto.tryToLike) {
-            dto.postLikeGuestId = await this.usersService.createGuestForLike();
+        else if (!dto.guestLikeId && dto.tryToLike) {
+            dto.guestLikeId = await this.usersService.createGuestLike();
         }
 
         // I. 공통 로직(게시글 존재 여부, 게시글 좋아요 유무)
@@ -310,21 +301,26 @@ export class PostsService {
             where: {
                 postId_guestId: {
                     postId: post.id,
-                    guestId: dto.postLikeGuestId!,
+                    guestId: dto.guestLikeId!,
                 },
             },
         });
 
         // I. 좋아요 생성 시, 백엔드에서도 한 번 더 체킹
         if (dto.tryToLike && !isLiked) {
+            // I. GuestLike 가 없으면 에러 발생함
+            const guest = await this.usersService.findGuestLikeById(
+                dto.guestLikeId!
+            );
+
             await database.postLike.create({
                 data: {
                     post: { connect: { id: post.id } },
-                    guest: { connect: { id: dto.postLikeGuestId! } },
+                    guest: { connect: { id: guest.id } },
                 },
             });
 
-            return dto.postLikeGuestId!;
+            return guest.id;
         }
         // I. 좋아요 삭제 시
         else if (!dto.tryToLike && isLiked) {
@@ -332,7 +328,7 @@ export class PostsService {
                 where: {
                     postId_guestId: {
                         postId: post.id,
-                        guestId: dto.postLikeGuestId!,
+                        guestId: dto.guestLikeId!,
                     },
                 },
             });
@@ -356,7 +352,7 @@ export class PostsService {
      */
     async findPostById(
         postId: string,
-        includeOptions: Prisma.PostInclude = {},
+        includeOptions: Prisma.PostInclude = {}
     ) {
         const post = await database.post.findUnique({
             where: { id: postId },
@@ -367,7 +363,7 @@ export class PostsService {
             throw new CustomError(
                 404,
                 'Not Found',
-                '게시글을 찾을 수 없습니다',
+                '게시글을 찾을 수 없습니다'
             );
 
         return post;

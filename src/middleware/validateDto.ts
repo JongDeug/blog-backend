@@ -10,7 +10,6 @@ export function validateDto(dtoClass: any) {
         const dto = plainToInstance(dtoClass, req.body);
         // I. dto 검증
         const errors = await validate(dto);
-        console.log(dto)
 
         if (errors.length > 0) {
             const errorMessages = errors

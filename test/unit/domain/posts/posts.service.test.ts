@@ -465,35 +465,38 @@ describe('PostsService Main Functions', () => {
             mockData.postLikeDto = {
                 postId: 'mockPostId',
                 tryToLike: true,
-                postLikeGuestId: 'mockPostLikeGuestId',
+                guestLikeId: 'mockGuestLikeId',
             };
+            mockData.returnedGuestLike = { id: 'mockGuestLikeId' };
         });
 
         // I. falsy, true => 좋아요 생성(isLiked === null), postLikeGuestId 생성 O
         test('should create a postLike if tryToLike is true and postLikeGuestId is falsy value', async () => {
             // given
             mockData.postLikeDto.tryToLike = true;
-            mockData.postLikeDto.postLikeGuestId = undefined;
-            usersServiceMock.createGuestForLike.mockResolvedValue('mockPostLikeGuestId');
+            mockData.postLikeDto.guestLikeId = undefined;
+            usersServiceMock.createGuestLike.mockResolvedValue('mockGuestLikeId');
             (postsService.findPostById as jest.Mock).mockResolvedValue(mockData.returnedpost);
             prismaMock.postLike.findUnique.mockResolvedValue(null);
+            usersServiceMock.findGuestLikeById.mockResolvedValue(mockData.returnedGuestLike);
             // when
             const result = await postsService.postLike(mockData.postLikeDto);
             // then
-            expect(result).toStrictEqual('mockPostLikeGuestId');
+            expect(result).toStrictEqual('mockGuestLikeId');
             expect(postsService.findPostById as jest.Mock).toHaveBeenCalledWith(mockData.postLikeDto.postId);
             expect(prismaMock.postLike.findUnique).toHaveBeenCalledWith({
                 where: {
                     postId_guestId: {
                         postId: mockData.returnedpost.id,
-                        guestId: mockData.postLikeDto.postLikeGuestId,
+                        guestId: mockData.postLikeDto.guestLikeId,
                     },
                 },
             });
+            expect(usersServiceMock.findGuestLikeById).toHaveBeenCalledWith(mockData.postLikeDto.guestLikeId);
             expect(prismaMock.postLike.create).toHaveBeenCalledWith({
                 data: {
                     post: { connect: { id: mockData.returnedpost.id } },
-                    guest: { connect: { id: mockData.postLikeDto.postLikeGuestId } },
+                    guest: { connect: { id: mockData.returnedGuestLike.id } },
                 },
             });
             expect(prismaMock.postLike.delete).not.toHaveBeenCalled();
@@ -503,15 +506,17 @@ describe('PostsService Main Functions', () => {
         test('should create a postLike if tryToLike is true and postLike is truthy value', async () => {
             // given
             mockData.postLikeDto.tryToLike = true;
-            mockData.postLikeDto.postLikeGuestId = 'mockPostLikeGuestId';
+            mockData.postLikeDto.guestLikeId = 'mockGuestLikeId';
             (postsService.findPostById as jest.Mock).mockResolvedValue(mockData.returnedpost);
             prismaMock.postLike.findUnique.mockResolvedValue(null);
+            usersServiceMock.findGuestLikeById.mockResolvedValue(mockData.returnedGuestLike);
             // when
             const result = await postsService.postLike(mockData.postLikeDto);
             // then
-            expect(result).toStrictEqual('mockPostLikeGuestId');
+            expect(result).toStrictEqual('mockGuestLikeId');
             expect(postsService.findPostById as jest.Mock).toHaveBeenCalled();
             expect(prismaMock.postLike.findUnique).toHaveBeenCalled();
+            expect(usersServiceMock.findGuestLikeById).toHaveBeenCalled();
             expect(prismaMock.postLike.create).toHaveBeenCalled();
             expect(prismaMock.postLike.delete).not.toHaveBeenCalled();
         });
@@ -519,7 +524,7 @@ describe('PostsService Main Functions', () => {
         // I. truthy, false => 좋아요 삭제(isLiked !== null)
         test('should delete a postLike if tryToLike is false and postLike is truthy value', async () => {
             // given
-            mockData.postLikeDto.postLikeGuestId = 'mockPostLikeGuestId';
+            mockData.postLikeDto.guestLikeId = 'mockGuestLikeId';
             mockData.postLikeDto.tryToLike = false;
             (postsService.findPostById as jest.Mock).mockResolvedValue(mockData.returnedpost);
             prismaMock.postLike.findUnique.mockResolvedValue({ postId: 'mockPostId', guestId: mockData.guestId });
@@ -532,7 +537,7 @@ describe('PostsService Main Functions', () => {
                 where: {
                     postId_guestId: {
                         postId: mockData.returnedpost.id,
-                        guestId: mockData.postLikeDto.postLikeGuestId,
+                        guestId: mockData.postLikeDto.guestLikeId,
                     },
                 },
             });
@@ -546,7 +551,7 @@ describe('PostsService Main Functions', () => {
         // I. falsy, false => 잘못된 요청
         test('1: should throw error if client sends an invalid request', async () => {
             // given
-            mockData.postLikeDto.postLikeGuestId = '';
+            mockData.postLikeDto.guestLikeId = '';
             mockData.postLikeDto.tryToLike = false;
             // when, then
             await expect(postsService.postLike(mockData.postLikeDto)).rejects.toThrow(
@@ -558,7 +563,7 @@ describe('PostsService Main Functions', () => {
         // I. 그 외 잘못된 요청
         test('2: should throw error if client sends an invalid request', async () => {
             // given
-            mockData.postLikeDto.postLikeGuestId = 'mockPostLikeGuestId';
+            mockData.postLikeDto.guestLikeId = 'mockPostLikeGuestId';
             mockData.postLikeDto.tryToLike = false;
             (postsService.findPostById as jest.Mock).mockResolvedValue(mockData.returnedpost);
             prismaMock.postLike.findUnique.mockResolvedValue(null);
@@ -583,6 +588,23 @@ describe('PostsService Main Functions', () => {
             );
             expect(postsService.findPostById).toHaveBeenCalled();
             expect(prismaMock.postLike.findUnique).not.toHaveBeenCalled();
+        });
+
+        test('should throw error if guest is not found', async () => {
+            // given
+            (postsService.findPostById as jest.Mock).mockResolvedValue(mockData.returnedpost);
+            prismaMock.postLike.findUnique.mockResolvedValue(null);
+            (usersServiceMock.findGuestLikeById as jest.Mock).mockRejectedValue(
+                new CustomError(404, 'Not Found', 'guestLikeId 를 찾을 수 없습니다'),
+            );
+            // when, then
+            await expect(postsService.postLike(mockData.postLikeDto)).rejects.toThrow(
+                new CustomError(404, 'Not Found', 'guestLikeId 를 찾을 수 없습니다'),
+            );
+            expect(postsService.findPostById).toHaveBeenCalled();
+            expect(prismaMock.postLike.findUnique).toHaveBeenCalled();
+            expect(usersServiceMock.findGuestLikeById).toHaveBeenCalled();
+            expect(prismaMock.postLike.create).not.toHaveBeenCalled();
         });
     });
     // ---

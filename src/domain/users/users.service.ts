@@ -5,6 +5,7 @@ export class UsersService {
     /**
      * Utils
      * findUserById : userId 로 user 검색
+     * findGuestLikeById : guestLikeId 로 guestLike 검색
      * createGuestLike : guestLike 생성 및 id 반환
      * createGuestComment: guestComment 생성 및 반환
      */
@@ -17,12 +18,27 @@ export class UsersService {
         return user;
     }
 
-    async createGuestForLike() {
+    async findGuestLikeById(guestLikeId: string) {
+        const guest = await database.guestLike.findUnique({
+            where: { id: guestLikeId },
+        });
+
+        if (!guest)
+            throw new CustomError(
+                404,
+                'Not Found',
+                'guestLikeId 를 찾을 수 없습니다'
+            );
+
+        return guest;
+    }
+
+    async createGuestLike() {
         const guest = await database.guestLike.create({ data: {} });
         return guest.id;
     }
 
-    async createGuestForComment(
+    async createGuestComment(
         nickName: string,
         email: string,
         password: string

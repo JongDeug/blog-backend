@@ -1,0 +1,44 @@
+# /posts/comments/
+/:
+  post:
+    tags:
+      - Comments
+    summary: 부모 댓글 생성(회원)
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: './openapi.yaml#/components/schemas/CreateCommentDto'
+    responses:
+      '201':
+        description: OK
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  format: uuid
+                  description: 부모 댓글 id
+                  example: "12345"
+      '401':
+        $ref: './openapi.yaml#/components/responses/UnauthorizedError'
+      '404':
+        $ref: './openapi.yaml#/components/responses/NotFoundUserAndPostError'
+      '500':
+        $ref: './openapi.yaml#/components/responses/InternalServerError'
+
+# /posts/comments/guest
+/guest:
+  post:
+    tags:
+      - Comments
+    summary: 부모 댓글 생성(비회원)
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: './openapi.yaml#/components/schemas/CreateCommentGuestDto'

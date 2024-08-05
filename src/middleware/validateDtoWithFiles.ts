@@ -22,7 +22,7 @@ export function validateDtoWithFiles(dtoClass: any) {
                 .map(
                     (error) =>
                         // I. 앞글자 대문자 : 에러 메시지
-                        `${error.property}: ${Object.values(error.constraints!).join(', ')}`,
+                        `${error.property}: ${Object.values(error.constraints!).join(', ')}`
                 )
                 .join('\n ');
             // I. validation 실패 시 에러 넘기기

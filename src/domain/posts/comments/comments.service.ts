@@ -68,7 +68,7 @@ export class CommentsService {
                     dto.password,
                     Number(process.env.PASSWORD_SALT)
                 );
-                const guest = await this.usersService.createGuestForComment(
+                const guest = await this.usersService.createGuestComment(
                     dto.nickName,
                     dto.email,
                     hashedPwd
@@ -191,7 +191,7 @@ export class CommentsService {
                     dto.password,
                     Number(process.env.PASSWORD_SALT)
                 );
-                const guest = await this.usersService.createGuestForComment(
+                const guest = await this.usersService.createGuestComment(
                     dto.nickName,
                     dto.email,
                     hashedPwd

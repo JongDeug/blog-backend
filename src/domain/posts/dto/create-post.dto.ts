@@ -15,10 +15,16 @@ export class CreatePostDto {
     @IsNotEmpty()
     category: string;
 
-    @IsArray({ message: '배열을 또는 구분자(,)를 사용하여 태그를 입력해주세요' })
+    @IsArray({
+        message: '배열을 또는 구분자(,)를 사용하여 태그를 입력해주세요',
+    })
     @IsString({ each: true })
     @IsOptional()
-    @Transform(({ value }) => (typeof value === 'string' && value !== '' ? value.split(',').map((tag: string) => tag.trim()) : value))
+    @Transform(({ value }) =>
+        typeof value === 'string' && value !== ''
+            ? value.split(',').map((tag: string) => tag.trim())
+            : value
+    )
     tags?: string[];
 
     @IsArray()

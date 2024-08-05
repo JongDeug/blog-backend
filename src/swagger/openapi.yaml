@@ -26,6 +26,10 @@ paths:
     $ref: './posts.yaml#/~1{id}'
   /posts/like:
     $ref: './posts.yaml#/~1like'
+  /posts/comments:
+    $ref: './comments.yaml#/~1'
+  /posts/comments/guest:
+    $ref: './comments.yaml#/~1guest'
 components:
   # schema
   schemas:
@@ -64,10 +68,10 @@ components:
         email:
           type: string
           format: email
-          example: user@example.com
+          example: test1@gmail.com
         password:
           type: string
-          example: password1234!
+          example: 1234
     # loginDto
     CreateCategoryDto:
       type: object
@@ -89,6 +93,10 @@ components:
     # createPostDto
     CreatePostDto:
       type: object
+      required:
+        - title
+        - content
+        - category
       properties:
         title:
           type: string
@@ -114,13 +122,13 @@ components:
             type: string
             format: binary
           description: 이미지 파일
+    # updatePostDto
+    UpdatePostDto:
+      type: object
       required:
         - title
         - content
         - category
-    # updatePostDto
-    UpdatePostDto:
-      type: object
       properties:
         title:
           type: string
@@ -146,30 +154,76 @@ components:
             type: string
             format: binary
           description: 이미지 파일
-      required:
-        - title
-        - content
-        - category
     # postLikeDto
     PostLikeDto:
       type: object
+      required:
+        - postId
+        - tryToLike
       properties:
         postId:
           type: string
+          format: uuid
           description: 게시글 id
           example: 1234
         tryToLike:
           type: boolean
           description: 좋아요 생성 or 삭제
           example: true
-        postLikeGuestId:
-          oneOf:
-            - type: string
-              description: 좋아요 식별 id
-              example: 1234
-            - type: 'null'
-              description: 빈 값
-              example: null
+        guestLikeId:
+          type: string
+          format: uuid
+          description: 게시글 좋아요 id
+          example: 5678
+    # createCommentDto
+    CreateCommentDto:
+      type: object
+      required:
+        - postId
+        - content
+      properties:
+        postId:
+          type: string
+          format: uuid
+          description: 게시글 id
+          example: 1234
+        content:
+          type: string
+          description: 부모 댓글 내용(회원)
+          example: 부모 댓글입니다(회원)
+    # createCommentGuestDto
+    CreateCommentGuestDto:
+      type: object
+      required:
+        - postId
+        - content
+        - nickName
+        - email
+        - password
+      properties:
+        postId:
+          type: string
+          format: uuid
+          description: 게시글 id
+          example: 1234
+        content:
+          type: string
+          description: 부모 댓글 내용(비회원)
+          example: 부모 댓글입니다(비회원)
+        nickName:
+          type: string
+          description: 닉네임
+          example: 익명123
+        email:
+          type: string
+          description: 이메일
+          format: email
+          example: guest@example.com
+        password:
+          type: string
+          description: 비밀번호
+          example: password123
+
 
   # responses
   responses:
@@ -255,3 +309,23 @@ components:
               error:
                 type: string
                 example: 유저를 찾을 수 없습니다
+    NotFoundPostError:
+      description: Not Found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: 게시글을 찾을 수 없습니다
+    NotFoundUserAndPostError:
+      description: Not Found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: 유저를 찾을 수 없습니다 or 게시글을 찾을 수 없습니다
