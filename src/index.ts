@@ -17,7 +17,9 @@ import YAML from 'yamljs';
     await database.$connect(); // connect db
 
     // --- Swagger
-    const swaggerSpec = YAML.load(path.join(__dirname, './swagger/swagger.yaml'))
+    const swaggerSpec = YAML.load(
+        path.join(__dirname, './swagger/swagger.yaml')
+    );
     app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
     // ---
 

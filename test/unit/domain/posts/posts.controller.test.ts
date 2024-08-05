@@ -2,8 +2,7 @@ import httpMocks from 'node-mocks-http';
 import { NextFunction, Request, Response } from 'express';
 import { PostsController } from '../../../../src/domain/posts/posts.controller';
 import { PostsService } from '../../../../src/domain/posts/posts.service';
-import { AuthService } from '../../../../src/domain/auth/auth.service';
-import { Prisma, Post, User } from '@prisma';
+import { Prisma, User } from '@prisma';
 import { CustomError } from '@utils/customError';
 import { UsersService } from '../../../../src/domain/users/users.service';
 
@@ -25,7 +24,7 @@ describe('PostsController', () => {
         next = jest.fn();
         postsServiceMock = jest.mocked(new PostsService(new UsersService())) as jest.Mocked<PostsService>;
         usersServiceMock = jest.mocked(new UsersService()) as jest.Mocked<UsersService>;
-        postsController = new PostsController(postsServiceMock, usersServiceMock);
+        postsController = new PostsController(postsServiceMock);
     });
 
     // --- CreatePost

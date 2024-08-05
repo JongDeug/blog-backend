@@ -340,6 +340,83 @@ paths:
                     example: 유저를 찾을 수 없습니다 or 게시글을 찾을 수 없습니다
         '500':
           $ref: '#/components/responses/InternalServerError'
+    delete:
+      tags:
+        - Posts
+      summary: 게시글 삭제
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: 삭제할 게시글 id
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessOkResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: 해당 API 를 사용할 권한이 없습니다 or 게시글에 대한 권한이 없습니다
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: 게시글을 찾을 수 없습니다
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /posts/like:
+    post:
+      tags:
+        - Posts
+      summary: 게시글 좋아요
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostLikeDto'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  postLikeGuestId:
+                    oneOf:
+                      - type: string
+                        example: 1234
+                      - type: 'null'
+                        example: null
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: 게시글을 찾을 수 없습니다
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 components:
   schemas:
     RegisterDto:
@@ -461,6 +538,25 @@ components:
         - title
         - content
         - category
+    PostLikeDto:
+      type: object
+      properties:
+        postId:
+          type: string
+          description: 게시글 id
+          example: 1234
+        tryToLike:
+          type: boolean
+          description: 좋아요 생성 or 삭제
+          example: true
+        postLikeGuestId:
+          oneOf:
+            - type: string
+              description: 좋아요 식별 id
+              example: 1234
+            - type: 'null'
+              description: 빈 값
+              example: null
   responses:
     SuccessCreatedResponse:
       description: Created
@@ -474,6 +570,16 @@ components:
         application/json:
           schema:
             type: object
+    BadRequest:
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: 잘못된 요청입니다
     InternalServerError:
       description: Internal Server Error
       content:

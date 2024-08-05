@@ -24,11 +24,12 @@ export class CreatePostDto {
 
     static parseTags = (tags: any) => {
         if (tags === '') return undefined;
-        else if (typeof tags === 'string') return tags.split(',').map((tag: string) => tag.trim());
+        else if (typeof tags === 'string')
+            return tags.split(',').map((tag: string) => tag.trim());
         return tags;
     };
 
     static parseFiles = (files: Express.Multer.File[]) => {
-        return files.map(file => ({ path: file.path }));
+        return files.map((file) => ({ path: file.path }));
     };
 }

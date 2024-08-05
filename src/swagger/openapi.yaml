@@ -24,6 +24,8 @@ paths:
     $ref: './posts.yaml#/~1'
   /posts/{id}:
     $ref: './posts.yaml#/~1{id}'
+  /posts/like:
+    $ref: './posts.yaml#/~1like'
 components:
   # schema
   schemas:
@@ -148,7 +150,26 @@ components:
         - title
         - content
         - category
-
+    # postLikeDto
+    PostLikeDto:
+      type: object
+      properties:
+        postId:
+          type: string
+          description: 게시글 id
+          example: 1234
+        tryToLike:
+          type: boolean
+          description: 좋아요 생성 or 삭제
+          example: true
+        postLikeGuestId:
+          oneOf:
+            - type: string
+              description: 좋아요 식별 id
+              example: 1234
+            - type: 'null'
+              description: 빈 값
+              example: null
 
   # responses
   responses:
@@ -164,6 +185,16 @@ components:
         application/json:
           schema:
             type: object
+    BadRequest:
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: 잘못된 요청입니다
     InternalServerError:
       description: Internal Server Error
       content:
