@@ -126,13 +126,14 @@
             schema:
               type: object
               properties:
-                postLikeGuestId:
+                guestLikeId:
                   oneOf:
                     - type: string
-                      description: 좋아요 생성 성공 시
+                      format: uuid
+                      description: 게스트 좋아요 id, 좋아요 생성 성공 시
                       example: 1234
                     - type: 'null'
-                      description: 좋아요 삭제 성공 시
+                      description: null, 좋아요 삭제 성공 시
                       example: null
       '400':
         $ref: './openapi.yaml#/components/responses/BadRequest'

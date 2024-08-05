@@ -143,7 +143,7 @@ describe('CommentsService Main Functions', () => {
             // when
             const result = await commentsService.createCommentGuest(mockData.createCommentGuestDto);
             // then
-            expect(result).toStrictEqual({ newCommentId: 'newCommentId', guestId: 'mockGuestId' });
+            expect(result).toStrictEqual({ newCommentId: 'newCommentId', guestCommentId: 'mockGuestId' });
             expect(postsServiceMock.findPostById).toHaveBeenCalledWith(mockData.createCommentGuestDto.postId);
             expect(bcrypt.hash).toHaveBeenCalledWith(mockData.createCommentGuestDto.password, Number(process.env.PASSWORD_SALT));
             expect(usersServiceMock.createGuestComment).toHaveBeenCalledWith(mockData.createCommentGuestDto.nickName, mockData.createCommentGuestDto.email, 'hashedPassword');
@@ -841,7 +841,7 @@ describe('CommentsService Util Functions', () => {
         test('should send mails successfully if to.length more than 1', () => {
             // given
             (transporter.sendMail as jest.Mock).mockImplementation((mailOptions, callback) => {
-                callback(null, { response: 'test' });
+                callback(null, { response: 'OK' });
             });
             // when
             commentsService.sendMail(mockData.to, mockData.payload);

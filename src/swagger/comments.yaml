@@ -18,7 +18,7 @@
             schema:
               type: object
               properties:
-                id:
+                newCommentId:
                   type: string
                   format: uuid
                   description: 부모 댓글 id
@@ -42,3 +42,25 @@
         application/json:
           schema:
             $ref: './openapi.yaml#/components/schemas/CreateCommentGuestDto'
+    responses:
+      '201':
+        description: OK
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                newCommentId:
+                  type: string
+                  format: uuid
+                  description: 부모 댓글 id
+                  example: "12345"
+                guestCommentId:
+                  type: string
+                  format: uuid
+                  description: 게스트 댓글 id
+                  example: "56789"
+      '404':
+        $ref: './openapi.yaml#/components/responses/NotFoundPostError'
+      '500':
+        $ref: './openapi.yaml#/components/responses/InternalServerError'

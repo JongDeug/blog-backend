@@ -25,8 +25,9 @@ interface ExtendedComment extends Comment {
 export class CommentsService {
     constructor(
         private readonly usersService: UsersService,
-        private readonly postsService: PostsService
-    ) {}
+        private readonly postsService: PostsService,
+    ) {
+    }
 
     // 회원
     async createComment(userId: string, dto: CreateCommentDto) {
@@ -66,12 +67,12 @@ export class CommentsService {
                 // I. guest 생성
                 const hashedPwd = await bcrypt.hash(
                     dto.password,
-                    Number(process.env.PASSWORD_SALT)
+                    Number(process.env.PASSWORD_SALT),
                 );
                 const guest = await this.usersService.createGuestComment(
                     dto.nickName,
                     dto.email,
-                    hashedPwd
+                    hashedPwd,
                 );
 
                 // I. 댓글 생성
@@ -92,7 +93,7 @@ export class CommentsService {
                 });
 
                 return { newComment, guest };
-            }
+            },
         );
 
         // I. 트랜잭션이 성공하면 블로그 주인에게 이메일 보내기
@@ -101,7 +102,7 @@ export class CommentsService {
             postTitle: post.title,
         });
 
-        return { newCommentId: newComment.id, guestId: guest.id };
+        return { newCommentId: newComment.id, guestCommentId: guest.id };
     }
 
     // 회원
@@ -127,7 +128,7 @@ export class CommentsService {
                         guest: true,
                     },
                 },
-            }
+            },
         );
 
         // I. 대댓글 생성
@@ -151,7 +152,7 @@ export class CommentsService {
         if (parentComment.guest?.email)
             mailList.push(parentComment.guest.email); // 댓글 작성자가 회원이면 guest 존재하지 않으므로 처리
         parentComment.childComments.forEach((childComment) =>
-            mailList.push(childComment.guest!.email)
+            mailList.push(childComment.guest!.email),
         );
         this.sendMail(mailList, {
             nickName: 'Jongdeug',
@@ -180,7 +181,7 @@ export class CommentsService {
                         guest: true,
                     },
                 },
-            }
+            },
         );
 
         // I. Transaction
@@ -189,12 +190,12 @@ export class CommentsService {
                 // I. guest 생성
                 const hashedPwd = await bcrypt.hash(
                     dto.password,
-                    Number(process.env.PASSWORD_SALT)
+                    Number(process.env.PASSWORD_SALT),
                 );
                 const guest = await this.usersService.createGuestComment(
                     dto.nickName,
                     dto.email,
-                    hashedPwd
+                    hashedPwd,
                 );
 
                 // I. 대댓글 생성
@@ -214,7 +215,7 @@ export class CommentsService {
                 });
 
                 return { newChildComment, guest };
-            }
+            },
         );
 
         // I. 메일 보내기 (블로그 주인, 부모 댓글 작성자(내가 작성한거면 메일 x), 자식 댓글 작성자들(내가 작성한거면 메일 x))
@@ -245,7 +246,7 @@ export class CommentsService {
     async updateComment(
         userId: string,
         commentId: string,
-        dto: UpdateCommentDto
+        dto: UpdateCommentDto,
     ) {
         // I. user 검색
         const user = await this.usersService.findUserById(userId);
@@ -267,7 +268,7 @@ export class CommentsService {
         // I. comment 검색
         const comment: ExtendedComment = await this.findComment(
             { id: commentId, authorId: null },
-            { guest: true }
+            { guest: true },
         );
 
         // I. 타입 체킹을 위해
@@ -275,19 +276,19 @@ export class CommentsService {
             throw new CustomError(
                 500,
                 'Internal Server Error',
-                '비회원 댓글 작성자를 찾고 있지 못하고 있음'
+                '비회원 댓글 작성자를 찾고 있지 못하고 있음',
             );
 
         // I. 비밀번호 권한 인증
         const isCorrect = await bcrypt.compare(
             dto.password,
-            comment.guest.password
+            comment.guest.password,
         );
         if (!isCorrect)
             throw new CustomError(
                 401,
                 'Unauthorized',
-                '비밀번호를 잘못 입력하셨습니다'
+                '비밀번호를 잘못 입력하셨습니다',
             );
 
         // I. 댓글 수정
@@ -335,7 +336,7 @@ export class CommentsService {
         // I. comment 찾기(유저가 작성한 comment 는 뺌)
         const comment = await this.findComment(
             { id: commentId, authorId: null },
-            { guest: true }
+            { guest: true },
         );
 
         // I. 타입 체킹을 위해
@@ -343,19 +344,19 @@ export class CommentsService {
             throw new CustomError(
                 500,
                 'Internal Server Error',
-                '비회원 댓글 작성자를 찾고 있지 못하고 있음'
+                '비회원 댓글 작성자를 찾고 있지 못하고 있음',
             );
 
         // I. 권한 인증
         const isCorrect = await bcrypt.compare(
             dto.password,
-            comment.guest.password
+            comment.guest.password,
         );
         if (!isCorrect)
             throw new CustomError(
                 401,
                 'Unauthorized',
-                '비밀번호를 잘못 입력하셨습니다'
+                '비밀번호를 잘못 입력하셨습니다',
             );
 
         // I. 댓글 삭제
@@ -402,10 +403,8 @@ export class CommentsService {
                     throw new CustomError(
                         500,
                         'Internal Server Error',
-                        error.message
+                        error.message,
                     );
-                } else {
-                    console.log('Email sent: ' + info.response);
                 }
             });
         }
@@ -413,7 +412,7 @@ export class CommentsService {
 
     async findComment(
         whereOptions: Prisma.CommentWhereUniqueInput,
-        includeOptions: Prisma.CommentInclude = {}
+        includeOptions: Prisma.CommentInclude = {},
     ) {
         const comment = await database.comment.findUnique({
             where: { ...whereOptions },

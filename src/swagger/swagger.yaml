@@ -381,13 +381,14 @@ paths:
               schema:
                 type: object
                 properties:
-                  postLikeGuestId:
+                  guestLikeId:
                     oneOf:
                       - type: string
-                        description: 좋아요 생성 성공 시
+                        format: uuid
+                        description: '게스트 좋아요 id, 좋아요 생성 성공 시'
                         example: 1234
                       - type: 'null'
-                        description: 좋아요 삭제 성공 시
+                        description: 'null, 좋아요 삭제 성공 시'
                         example: null
         '400':
           $ref: '#/components/responses/BadRequest'
@@ -422,7 +423,7 @@ paths:
               schema:
                 type: object
                 properties:
-                  id:
+                  newCommentId:
                     type: string
                     format: uuid
                     description: 부모 댓글 id
@@ -431,6 +432,39 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           $ref: '#/components/responses/NotFoundUserAndPostError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /posts/comments/guest:
+    post:
+      tags:
+        - Comments
+      summary: 부모 댓글 생성(비회원)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCommentGuestDto'
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  newCommentId:
+                    type: string
+                    format: uuid
+                    description: 부모 댓글 id
+                    example: '12345'
+                  guestCommentId:
+                    type: string
+                    format: uuid
+                    description: 게스트 댓글 id
+                    example: '56789'
+        '404':
+          $ref: '#/components/responses/NotFoundPostError'
         '500':
           $ref: '#/components/responses/InternalServerError'
 components:
@@ -589,6 +623,37 @@ components:
           type: string
           description: 부모 댓글 내용(회원)
           example: 부모 댓글입니다(회원)
+    CreateCommentGuestDto:
+      type: object
+      required:
+        - postId
+        - content
+        - nickName
+        - email
+        - password
+      properties:
+        postId:
+          type: string
+          format: uuid
+          description: 게시글 id
+          example: 1234
+        content:
+          type: string
+          description: 부모 댓글 내용(비회원)
+          example: 부모 댓글입니다(비회원)
+        nickName:
+          type: string
+          description: 닉네임
+          example: 익명123
+        email:
+          type: string
+          description: 이메일
+          format: email
+          example: guest@example.com
+        password:
+          type: string
+          description: 비밀번호
+          example: password123
   responses:
     SuccessCreatedResponse:
       description: Created
