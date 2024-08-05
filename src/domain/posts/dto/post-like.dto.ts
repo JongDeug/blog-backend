@@ -1,4 +1,4 @@
-import { IsBoolean, IsNotEmpty, IsString } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class PostLikeDto {
     @IsString()
@@ -10,5 +10,6 @@ export class PostLikeDto {
     tryToLike: boolean;
 
     @IsString()
+    @IsOptional()
     postLikeGuestId?: string;
 }

@@ -16,14 +16,12 @@ describe('PostsController', () => {
     let next: NextFunction;
     let postsController: PostsController;
     let postsServiceMock: jest.Mocked<PostsService>;
-    let usersServiceMock: jest.Mocked<UsersService>;
 
     beforeEach(() => {
         req = httpMocks.createRequest();
         res = httpMocks.createResponse();
         next = jest.fn();
         postsServiceMock = jest.mocked(new PostsService(new UsersService())) as jest.Mocked<PostsService>;
-        usersServiceMock = jest.mocked(new UsersService()) as jest.Mocked<UsersService>;
         postsController = new PostsController(postsServiceMock);
     });
 
@@ -49,13 +47,10 @@ describe('PostsController', () => {
             // when
             await postsController.createPost(req, res, next);
             // then
-            expect(res.statusCode).toBe(200);
+            expect(res.statusCode).toBe(201);
             expect(res._getJSONData()).toStrictEqual({ id: 'newPostId' });
             expect(res._isEndCalled()).toBeTruthy();
-            expect(postsServiceMock.createPost).toHaveBeenCalledWith(req.user.id, {
-                ...req.body,
-                images: [{ path: 'image1.jpg' }, { path: 'image2.jpg' }],
-            });
+            expect(postsServiceMock.createPost).toHaveBeenCalledWith(req.user.id, req.body);
         });
 
         test('should handle error if user is not authenticated', async () => {
@@ -103,10 +98,7 @@ describe('PostsController', () => {
             expect(res.statusCode).toBe(200);
             expect(res._getJSONData()).toStrictEqual({});
             expect(res._isEndCalled()).toBeTruthy();
-            expect(postsServiceMock.updatePost).toHaveBeenCalledWith(req.user.id, req.params.id, {
-                ...req.body,
-                images: [{ path: 'image1.jpg' }, { path: 'image2.jpg' }],
-            });
+            expect(postsServiceMock.updatePost).toHaveBeenCalledWith(req.user.id, req.params.id, req.body);
         });
 
         test('should handle error if user is not authenticated', async () => {
@@ -261,51 +253,25 @@ describe('PostsController', () => {
 
     // --- PostLike
     describe('postLike', () => {
-
         beforeEach(() => {
             req.cookies.guestUserId = 'mockGuestUserId';
             req.body = {
                 postId: 'mockPostId',
                 tryToLike: true,
+                postLikeGuestId: '',
             };
         });
 
         test('should create a postLike or delete a postLike successfully', async () => {
+            // given
+            postsServiceMock.postLike.mockResolvedValue('mockPostLikeGuestId');
             // when
             await postsController.postLike(req, res, next);
             // then
             expect(res.statusCode).toBe(200);
-            expect(res._getJSONData()).toStrictEqual({});
+            expect(res._getJSONData()).toStrictEqual({ postLikeGuestId: 'mockPostLikeGuestId' });
             expect(res._isEndCalled()).toBeTruthy();
-            expect(postsServiceMock.postLike).toHaveBeenCalledWith(req.cookies.postLikeGuestId, req.body);
-        });
-
-        test('should create a postLike or delete a postLike successfully if guestUserId is undefined', async () => {
-            // given
-            req.cookies.guestUserId = undefined;
-            usersServiceMock.createGuestForLike.mockResolvedValue('mockGuestUserId');
-            // when
-            await postsController.postLike(req, res, next);
-            // then
-            expect(res.statusCode).toBe(200);
-            expect(res._getJSONData()).toStrictEqual({});
-            expect(res._isEndCalled()).toBeTruthy();
-            expect(res.cookies).toHaveProperty('postLikeGuestId');
-            expect(res.cookies.postLikeGuestId.value).toEqual('mockGuestUserId');
-            expect(postsServiceMock.postLike).toHaveBeenCalledWith('mockGuestUserId', req.body);
-        });
-
-        test('should handle error if usersService.createGuestUser throw errors', async () => {
-            // given
-            req.cookies.guestUserId = undefined;
-            usersServiceMock.createGuestForLike.mockRejectedValue(new Error('데이터베이스: 게스트 생성 실패'));
-            // when
-            await postsController.postLike(req, res, next);
-            // then
-            expect(next).toHaveBeenCalledWith(new Error('데이터베이스: 게스트 생성 실패'));
-            expect(usersServiceMock.createGuestForLike).toHaveBeenCalled();
-            expect(res.cookies.guestUserId).toBeUndefined();
-            expect(postsServiceMock.postLike).not.toHaveBeenCalled();
+            expect(postsServiceMock.postLike).toHaveBeenCalledWith(req.body);
         });
 
         test('should handle error if postsService.postLike throw errors', async () => {

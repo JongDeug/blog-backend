@@ -1,8 +1,6 @@
 import { AuthService } from '../../../../src/domain/auth/auth.service';
 import { prismaMock } from '../../../singleton';
-import { LoginDto, RegisterDto } from '../../../../src/domain/auth/dto';
 import bcrypt from 'bcrypt';
-import { User } from '@prisma';
 import { CustomError } from '@utils/customError';
 import jwt, { Secret } from 'jsonwebtoken';
 
@@ -251,7 +249,6 @@ describe('AuthService Util Function', () => {
     beforeEach(() => {
         authService = new AuthService();
     });
-
 
     // --- SignToken
     describe('signToken', () => {

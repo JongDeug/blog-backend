@@ -102,11 +102,8 @@ describe('PostsService Main Functions', () => {
                 }
             });
             prismaMock.post.create.mockRejectedValue(new Error('데이터베이스: 게시글 생성 오류'));
-
             // when, then
             await expect(postsService.createPost(mockData.userId, mockData.createPostDto)).rejects.toEqual(new Error('데이터베이스: 게시글 생성 오류'));
-
-            // then
             expect(usersServiceMock.findUserById).toHaveBeenCalledWith(mockData.userId);
             expect(prismaMock.$transaction).toHaveBeenCalled();
             expect(prismaMock.post.create).toHaveBeenCalled();
@@ -134,7 +131,7 @@ describe('PostsService Main Functions', () => {
             prismaMock.$transaction.mockImplementation(async (callback) => {
                 return callback(prismaMock);
             });
-            (deleteImage as jest.Mock).mockResolvedValue(['파일 삭제 성공1', '파일 삭제 성공2']);
+            (deleteImage as jest.Mock).mockResolvedValue([]);
             // when
             await postsService.updatePost(mockData.userId, mockData.postId, mockData.updatePostDto);
             // then
@@ -231,10 +228,11 @@ describe('PostsService Main Functions', () => {
             prismaMock.$transaction.mockImplementation(async (callback) => {
                 return callback(prismaMock);
             });
-            (deleteImage as jest.Mock).mockRejectedValue(new Error('에러: 파일을 삭제하지 못했습니다'));
-            // when
-            await postsService.updatePost(mockData.userId, mockData.postId, mockData.updatePostDto);
-            // then
+            (deleteImage as jest.Mock).mockRejectedValue(new Error('파일을 삭제하지 못했습니다'));
+            // when, then
+            await expect(postsService.updatePost(mockData.userId, mockData.postId, mockData.updatePostDto)).rejects.toThrow(
+                new CustomError(500, 'Internal Server Error', `${new Error('파일을 삭제하지 못했습니다')}`),
+            );
             expect(usersServiceMock.findUserById).toHaveBeenCalled();
             expect(postsService.findPostById).toHaveBeenCalled();
             expect(prismaMock.$transaction).toHaveBeenCalled();
@@ -252,7 +250,7 @@ describe('PostsService Main Functions', () => {
         test('should delete a post successfully', async () => {
             // given
             (postsService.findPostById as jest.Mock).mockResolvedValue(mockData.returnedpost as PostIncludingImageType);
-            (deleteImage as jest.Mock).mockResolvedValue(['파일 삭제 성공1', '파일 삭제 성공2']);
+            (deleteImage as jest.Mock).mockResolvedValue([]);
             // when
             await postsService.deletePost(mockData.userId, mockData.postId);
             // then
@@ -290,10 +288,11 @@ describe('PostsService Main Functions', () => {
         test('should throw error if images fail to delete', async () => {
             // given
             (postsService.findPostById as jest.Mock).mockResolvedValue(mockData.returnedpost as PostIncludingImageType);
-            (deleteImage as jest.Mock).mockRejectedValue(new Error('에러: 파일을 삭제하지 못했습니다'));
-            // when
-            await postsService.deletePost(mockData.userId, mockData.postId);
-            // then
+            (deleteImage as jest.Mock).mockRejectedValue(new Error('파일을 삭제하지 못했습니다'));
+            // when, then
+            await expect(postsService.deletePost(mockData.userId, mockData.postId)).rejects.toThrow(
+                new CustomError(500, 'Internal Server Error', `${new Error('파일을 삭제하지 못했습니다')}`),
+            );
             expect(postsService.findPostById).toHaveBeenCalled();
             expect(prismaMock.post.delete).toHaveBeenCalled();
             expect(prismaMock.tag.deleteMany).toHaveBeenCalled();
@@ -466,46 +465,74 @@ describe('PostsService Main Functions', () => {
             mockData.postLikeDto = {
                 postId: 'mockPostId',
                 tryToLike: true,
+                postLikeGuestId: 'mockPostLikeGuestId',
             };
         });
-        // I. 좋아요 생성
-        test('should create a postLike if tryToLike is true and postLike does not exist', async () => {
+
+        // I. falsy, true => 좋아요 생성(isLiked === null), postLikeGuestId 생성 O
+        test('should create a postLike if tryToLike is true and postLikeGuestId is falsy value', async () => {
             // given
+            mockData.postLikeDto.tryToLike = true;
+            mockData.postLikeDto.postLikeGuestId = undefined;
+            usersServiceMock.createGuestForLike.mockResolvedValue('mockPostLikeGuestId');
             (postsService.findPostById as jest.Mock).mockResolvedValue(mockData.returnedpost);
             prismaMock.postLike.findUnique.mockResolvedValue(null);
-            // when, then
-            await expect(postsService.postLike(mockData.guestId, mockData.postLikeDto)).resolves.toBeUndefined();
+            // when
+            const result = await postsService.postLike(mockData.postLikeDto);
+            // then
+            expect(result).toStrictEqual('mockPostLikeGuestId');
             expect(postsService.findPostById as jest.Mock).toHaveBeenCalledWith(mockData.postLikeDto.postId);
             expect(prismaMock.postLike.findUnique).toHaveBeenCalledWith({
                 where: {
                     postId_guestId: {
                         postId: mockData.returnedpost.id,
-                        guestId: mockData.guestId,
+                        guestId: mockData.postLikeDto.postLikeGuestId,
                     },
                 },
             });
             expect(prismaMock.postLike.create).toHaveBeenCalledWith({
                 data: {
                     post: { connect: { id: mockData.returnedpost.id } },
-                    guest: { connect: { id: mockData.guestId } },
+                    guest: { connect: { id: mockData.postLikeDto.postLikeGuestId } },
                 },
             });
             expect(prismaMock.postLike.delete).not.toHaveBeenCalled();
         });
 
-        // I. 좋아요 삭제
-        test('should delete a postLike if tryToLike is false and postLike exits', async () => {
+        // I. truthy, true => 좋아요 생성(isLiked === null), postLikeGuestId 생성 X
+        test('should create a postLike if tryToLike is true and postLike is truthy value', async () => {
             // given
+            mockData.postLikeDto.tryToLike = true;
+            mockData.postLikeDto.postLikeGuestId = 'mockPostLikeGuestId';
+            (postsService.findPostById as jest.Mock).mockResolvedValue(mockData.returnedpost);
+            prismaMock.postLike.findUnique.mockResolvedValue(null);
+            // when
+            const result = await postsService.postLike(mockData.postLikeDto);
+            // then
+            expect(result).toStrictEqual('mockPostLikeGuestId');
+            expect(postsService.findPostById as jest.Mock).toHaveBeenCalled();
+            expect(prismaMock.postLike.findUnique).toHaveBeenCalled();
+            expect(prismaMock.postLike.create).toHaveBeenCalled();
+            expect(prismaMock.postLike.delete).not.toHaveBeenCalled();
+        });
+
+        // I. truthy, false => 좋아요 삭제(isLiked !== null)
+        test('should delete a postLike if tryToLike is false and postLike is truthy value', async () => {
+            // given
+            mockData.postLikeDto.postLikeGuestId = 'mockPostLikeGuestId';
             mockData.postLikeDto.tryToLike = false;
             (postsService.findPostById as jest.Mock).mockResolvedValue(mockData.returnedpost);
             prismaMock.postLike.findUnique.mockResolvedValue({ postId: 'mockPostId', guestId: mockData.guestId });
-            // when, then
-            await expect(postsService.postLike(mockData.guestId, mockData.postLikeDto)).resolves.toBeUndefined();
+            // when
+            const result = await postsService.postLike(mockData.postLikeDto);
+            // then
+            expect(result).toBeNull();
+            expect(prismaMock.postLike.create).not.toHaveBeenCalled();
             expect(prismaMock.postLike.delete).toHaveBeenCalledWith({
                 where: {
                     postId_guestId: {
                         postId: mockData.returnedpost.id,
-                        guestId: mockData.guestId,
+                        guestId: mockData.postLikeDto.postLikeGuestId,
                     },
                 },
             });
@@ -514,16 +541,29 @@ describe('PostsService Main Functions', () => {
                     postLikes: { none: {} },
                 },
             });
-            expect(prismaMock.postLike.create).not.toHaveBeenCalled();
         });
 
-        test('should throw error if client sends an invalid request', async () => {
+        // I. falsy, false => 잘못된 요청
+        test('1: should throw error if client sends an invalid request', async () => {
             // given
+            mockData.postLikeDto.postLikeGuestId = '';
+            mockData.postLikeDto.tryToLike = false;
+            // when, then
+            await expect(postsService.postLike(mockData.postLikeDto)).rejects.toThrow(
+                new CustomError(400, 'Bad Request', '잘못된 요청입니다'),
+            );
+            expect(postsService.findPostById).not.toHaveBeenCalled();
+        });
+
+        // I. 그 외 잘못된 요청
+        test('2: should throw error if client sends an invalid request', async () => {
+            // given
+            mockData.postLikeDto.postLikeGuestId = 'mockPostLikeGuestId';
             mockData.postLikeDto.tryToLike = false;
             (postsService.findPostById as jest.Mock).mockResolvedValue(mockData.returnedpost);
             prismaMock.postLike.findUnique.mockResolvedValue(null);
             // when, then
-            await expect(postsService.postLike(mockData.guestId, mockData.postLikeDto)).rejects.toThrow(
+            await expect(postsService.postLike(mockData.postLikeDto)).rejects.toThrow(
                 new CustomError(400, 'Bad Request', '잘못된 요청입니다'),
             );
             expect(postsService.findPostById).toHaveBeenCalled();
@@ -538,7 +578,7 @@ describe('PostsService Main Functions', () => {
                 new CustomError(404, 'Not Found', '게시글을 찾을 수 없습니다'),
             );
             // when, then
-            await expect(postsService.postLike(mockData.guestId, mockData.postLikeDto)).rejects.toThrow(
+            await expect(postsService.postLike(mockData.postLikeDto)).rejects.toThrow(
                 new CustomError(404, 'Not Found', '게시글을 찾을 수 없습니다'),
             );
             expect(postsService.findPostById).toHaveBeenCalled();
