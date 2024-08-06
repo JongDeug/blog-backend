@@ -1,11 +1,9 @@
 import { Request, Response, NextFunction, Router } from 'express';
 import { PostsService } from './posts.service';
-import { CreatePostDto, PostLikeDto, UpdatePostDto } from './dto';
+import { CreatePostDto, GetPostsQueryDto, PostLikeDto, UpdatePostDto } from './dto';
 import { validateDtoWithFiles } from '@middleware/validateDtoWithFiles';
 import { upload } from '@middleware/multer';
 import { CustomError } from '@utils/customError';
-import { pagination } from '@middleware/pagination';
-import { PaginationType } from '@custom-type/customPagination';
 import { UsersService } from '../users/users.service';
 import { CommentsController } from './comments/comments.controller';
 import { CommentsService } from './comments/comments.service';
@@ -21,6 +19,7 @@ import {
 } from './comments/dto';
 import ROLES from '@utils/roles';
 import { verifyRoles } from '@middleware/verifyRoles';
+import { validateQueryDtoWithPagination } from '@middleware/validateQueryDtoWithPagination';
 
 export class PostsController {
     path: string;
@@ -33,8 +32,8 @@ export class PostsController {
         this.commentsController = new CommentsController(
             new CommentsService(
                 new UsersService(),
-                new PostsService(new UsersService())
-            )
+                new PostsService(new UsersService()),
+            ),
         );
         this.init();
     }
@@ -45,17 +44,17 @@ export class PostsController {
             verifyRoles(ROLES.admin),
             upload.array('images', 12),
             validateDtoWithFiles(CreatePostDto),
-            this.createPost
+            this.createPost,
         );
         this.router.patch(
             '/:id',
             verifyRoles(ROLES.admin),
             upload.array('images', 12),
             validateDtoWithFiles(UpdatePostDto),
-            this.updatePost
+            this.updatePost,
         );
         this.router.delete('/:id', verifyRoles(ROLES.admin), this.deletePost);
-        this.router.get('/', pagination, this.getPosts);
+        this.router.get('/', validateQueryDtoWithPagination(GetPostsQueryDto), this.getPosts);
         this.router.get('/:id', this.getPost);
         // =====================================================================================
         this.router.post('/like', validateDto(PostLikeDto), this.postLike);
@@ -63,41 +62,41 @@ export class PostsController {
         this.router.post(
             '/comments',
             validateDto(CreateCommentDto),
-            this.commentsController.createComment
+            this.commentsController.createComment,
         );
         this.router.post(
             '/comments/guest',
             validateDto(CreateCommentGuestDto),
-            this.commentsController.createCommentGuest
+            this.commentsController.createCommentGuest,
         );
         this.router.post(
             '/child-comments',
             validateDto(CreateChildCommentDto),
-            this.commentsController.createChildComment
+            this.commentsController.createChildComment,
         );
         this.router.post(
             '/child-comments/guest',
             validateDto(CreateChildCommentGuestDto),
-            this.commentsController.createChildCommentGuest
+            this.commentsController.createChildCommentGuest,
         );
         this.router.patch(
             '/comments/:id',
             validateDto(UpdateCommentDto),
-            this.commentsController.updateComment
+            this.commentsController.updateComment,
         );
         this.router.patch(
             '/comments/guest/:id',
             validateDto(UpdateCommentGuestDto),
-            this.commentsController.updateCommentGuest
+            this.commentsController.updateCommentGuest,
         );
         this.router.delete(
             '/comments/:id',
-            this.commentsController.deleteComment
+            this.commentsController.deleteComment,
         );
         this.router.delete(
             '/comments/guest/:id',
             validateDto(DeleteCommentGuestDto),
-            this.commentsController.deleteCommentGuest
+            this.commentsController.deleteCommentGuest,
         );
     }
 
@@ -109,14 +108,14 @@ export class PostsController {
                     new CustomError(
                         401,
                         'Unauthorized',
-                        '로그인을 진행해주세요'
-                    )
+                        '로그인을 진행해주세요',
+                    ),
                 );
 
             // I. postsService.createPost 호출
             const postId = await this.postsService.createPost(
                 req.user.id,
-                req.body
+                req.body,
             );
 
             res.status(201).json({ id: postId });
@@ -133,8 +132,8 @@ export class PostsController {
                     new CustomError(
                         401,
                         'Unauthorized',
-                        '로그인을 진행해주세요'
-                    )
+                        '로그인을 진행해주세요',
+                    ),
                 );
 
             // I. 게시글 id 받기
@@ -157,8 +156,8 @@ export class PostsController {
                     new CustomError(
                         401,
                         'Unauthorized',
-                        '로그인을 진행해주세요'
-                    )
+                        '로그인을 진행해주세요',
+                    ),
                 );
 
             // I. 게시글 id 받기
@@ -177,33 +176,12 @@ export class PostsController {
         try {
             // I. JWT 필요 X
 
-            // I. query 체킹
-            const { searchQuery, category } = req.query;
-            // I. query 타입 가드
-            if (typeof searchQuery === 'object')
-                return next(
-                    new CustomError(
-                        400,
-                        'Bad Request',
-                        'searchQuery: 잘못된 형식입니다'
-                    )
-                );
-            if (typeof category === 'object')
-                return next(
-                    new CustomError(
-                        400,
-                        'Bad Request',
-                        'category: 잘못된 형식입니다'
-                    )
-                );
-
-            const pagination: PaginationType = req.pagination; // I. middleware pagination 참고
-
             // I. postsService.getPosts 호출
             const { posts, postCount } = await this.postsService.getPosts(
-                pagination,
-                searchQuery,
-                category
+                req.body.take,
+                req.body.skip,
+                req.body.search,
+                req.body.category,
             );
 
             res.status(200).json({ posts, postCount });
@@ -223,7 +201,7 @@ export class PostsController {
             // I. postsService.getPost 호출
             const { post } = await this.postsService.getPost(
                 id,
-                postLikeGuestId
+                postLikeGuestId,
             );
 
             res.status(200).json({ post });

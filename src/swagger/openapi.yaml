@@ -314,6 +314,28 @@ components:
           type: string
           description: 비밀번호
           example: password1234
+    # post
+    Post:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: 게시글 id
+          example: "14028647-b511-4a24-80fb-d4e25c82d0c1"
+        title:
+          type: string
+          description: 제목
+          example: "생성된 게시글"
+        content:
+          type: string
+          description: 내용
+          example: "생성했습니다"
+        createdAt:
+          type: string
+          format: date-time
+          description: 생성일
+          example: "2024-08-05T10:16:45.027Z"
 
   # responses
   responses:

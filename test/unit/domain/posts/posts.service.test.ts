@@ -304,12 +304,11 @@ describe('PostsService Main Functions', () => {
     // --- GetPosts
     describe('getPosts', () => {
         beforeEach(() => {
-            mockData.mockPagination = {
-                skip: 10,
-                take: 10,
-            };
-            mockData.mockSearchQuery = 'mockSearchQuery';
-            mockData.mockCategory = 'mockCategory';
+            mockData.skip = 3;
+            mockData.take = 10;
+            mockData.category = 'mockCategory';
+            mockData.search = 'mockSearch';
+
             mockData.mockReturnedPosts = [
                 { id: 'mockId1' } as Post,
                 { id: 'mockId2' } as Post,
@@ -320,17 +319,17 @@ describe('PostsService Main Functions', () => {
             // given
             prismaMock.post.findMany.mockResolvedValue(mockData.mockReturnedPosts);
             // when
-            const result = await postsService.getPosts(mockData.mockPagination, mockData.mockSearchQuery, mockData.mockCategory);
+            const result = await postsService.getPosts(mockData.take, mockData.skip, mockData.search, mockData.category);
             // then
             expect(result.posts).toStrictEqual(mockData.mockReturnedPosts);
             expect(result.postCount).toBe(mockData.mockReturnedPosts.length);
             expect(prismaMock.post.findMany).toHaveBeenCalledWith({
                 where: {
                     OR: [
-                        { title: { contains: mockData.mockSearchQuery } },
-                        { content: { contains: mockData.mockSearchQuery } },
+                        { title: { contains: mockData.search } },
+                        { content: { contains: mockData.search } },
                     ],
-                    category: { name: mockData.mockCategory },
+                    category: { name: mockData.category },
                 },
                 select: {
                     id: true,
@@ -341,54 +340,25 @@ describe('PostsService Main Functions', () => {
                 orderBy: {
                     createdAt: 'desc', // 내림, 최신순
                 },
-                skip: mockData.mockPagination.skip,
-                take: mockData.mockPagination.take,
+                skip: mockData.skip,
+                take: mockData.take,
             });
         });
 
-        test('should get posts successfully even if searchQuery is undefined', async () => {
+        test('should get posts successfully even if category is falsy value', async () => {
             // given
+            mockData.category = '';
             prismaMock.post.findMany.mockResolvedValue(mockData.mockReturnedPosts);
             // when
-            const result = await postsService.getPosts(mockData.mockPagination, undefined, mockData.mockCategory);
+            const result = await postsService.getPosts(mockData.take, mockData.skip, mockData.search, mockData.category);
             // then
             expect(result.posts).toStrictEqual(mockData.mockReturnedPosts);
             expect(result.postCount).toBe(mockData.mockReturnedPosts.length);
             expect(prismaMock.post.findMany).toHaveBeenCalledWith({
                 where: {
                     OR: [
-                        { title: { contains: '' } }, // 만약 undefined 이라면
-                        { content: { contains: '' } }, // 만약 undefined 이라면
-                    ],
-                    category: { name: mockData.mockCategory },
-                },
-                select: {
-                    id: true,
-                    title: true,
-                    content: true,
-                    createdAt: true,
-                },
-                orderBy: {
-                    createdAt: 'desc', // 내림, 최신순
-                },
-                skip: mockData.mockPagination.skip,
-                take: mockData.mockPagination.take,
-            });
-        });
-
-        test('should get posts successfully even if category is undefined', async () => {
-            // given
-            prismaMock.post.findMany.mockResolvedValue(mockData.mockReturnedPosts);
-            // when
-            const result = await postsService.getPosts(mockData.mockPagination, mockData.mockSearchQuery, undefined);
-            // then
-            expect(result.posts).toStrictEqual(mockData.mockReturnedPosts);
-            expect(result.postCount).toBe(mockData.mockReturnedPosts.length);
-            expect(prismaMock.post.findMany).toHaveBeenCalledWith({
-                where: {
-                    OR: [
-                        { title: { contains: mockData.mockSearchQuery } },
-                        { content: { contains: mockData.mockSearchQuery } },
+                        { title: { contains: mockData.search } },
+                        { content: { contains: mockData.search } },
                     ],
                     category: {}, // 만약 undefined 이라면
                 },
@@ -401,8 +371,8 @@ describe('PostsService Main Functions', () => {
                 orderBy: {
                     createdAt: 'desc', // 내림, 최신순
                 },
-                skip: mockData.mockPagination.skip,
-                take: mockData.mockPagination.take,
+                skip: mockData.skip,
+                take: mockData.take,
             });
         });
     });

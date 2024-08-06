@@ -166,12 +166,18 @@ describe('PostsController', () => {
         const mockReturnedPosts = { posts: [{ id: 'mockPostId' }, { id: 'mockPostId' }], postCount: 10 };
 
         beforeEach(() => {
-            req.pagination = {
-                skip: 10,
-                take: 10,
+            req.query = {
+                search: '',
+                category: '',
+                page: '3',
+                limit: '10',
             };
-            req.query.searchQuery = '';
-            req.query.category = '';
+            req.body = {
+                search: '',
+                category: '',
+                skip: 3,
+                take: 10
+            };
         });
 
         test('should get posts successfully', async () => {
@@ -183,27 +189,7 @@ describe('PostsController', () => {
             expect(res.statusCode).toBe(200);
             expect(res._getJSONData()).toStrictEqual(mockReturnedPosts);
             expect(res._isEndCalled()).toBeTruthy();
-            expect(postsServiceMock.getPosts).toHaveBeenCalledWith(req.pagination, req.query.searchQuery, req.query.category);
-        });
-
-        test('should handle error if searchQuery type is object', async () => {
-            // given
-            req.query.searchQuery = ['mock', 'mock'];
-            // when
-            await postsController.getPosts(req, res, next);
-            // then
-            expect(next).toHaveBeenCalledWith(new CustomError(400, 'Bad Request', 'searchQuery: 잘못된 형식입니다'));
-            expect(postsServiceMock.getPosts).not.toHaveBeenCalled();
-        });
-
-        test('should handle error if category type is object', async () => {
-            // given
-            req.query.category = ['mock', 'mock'];
-            // when
-            await postsController.getPosts(req, res, next);
-            // then
-            expect(next).toHaveBeenCalledWith(new CustomError(400, 'Bad Request', 'category: 잘못된 형식입니다'));
-            expect(postsServiceMock.getPosts).not.toHaveBeenCalled();
+            expect(postsServiceMock.getPosts).toHaveBeenCalledWith(req.body.take, req.body.skip, req.body.search, req.body.category);
         });
 
         test('should handle error if postsService.getPosts throws error', async () => {
