@@ -359,7 +359,7 @@ describe('CommentsService Main Functions', () => {
                 password: 'mockPassword',
             };
             mockData.returnedGuest = {
-                id: 'mockGuestId',
+                id: 'mockGuestCommentId',
                 email: mockData.createChildCommentGuestDto.email,
                 nickName: mockData.createChildCommentGuestDto.nickName,
             };
@@ -378,7 +378,7 @@ describe('CommentsService Main Functions', () => {
             // then
             expect(result).toStrictEqual({
                 newChildCommentId: 'newChildCommentId',
-                guestId: mockData.returnedGuest.id,
+                guestCommentId: mockData.returnedGuest.id,
                 postId: mockData.returnedParentComment.postId,
             });
             expect(commentsService.findComment).toHaveBeenCalledWith({ id: mockData.createChildCommentGuestDto.parentCommentId }, {
@@ -433,7 +433,7 @@ describe('CommentsService Main Functions', () => {
             // then
             expect(result).toStrictEqual({
                 newChildCommentId: 'newChildCommentId',
-                guestId: mockData.returnedGuest.id,
+                guestCommentId: mockData.returnedGuest.id,
                 postId: mockData.returnedParentComment.postId,
             });
             expect(commentsService.findComment).toHaveBeenCalled();
