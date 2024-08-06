@@ -1,6 +1,5 @@
 import { Prisma } from '@prisma';
 import { CategoriesService } from '../../../../src/domain/categories/categories.service';
-import { CreateCategoryDto } from '../../../../src/domain/categories/dto';
 import { prismaMock } from '../../../singleton';
 import { CustomError } from '@utils/customError';
 

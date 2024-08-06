@@ -1,0 +1,155 @@
+# /auth/register
+/register:
+  post:
+    tags:
+      - Auth
+    summary: 회원가입
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: './openapi.yaml#/components/schemas/RegisterDto'
+    responses:
+      '201':
+        description: Created
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: 회원가입 성공
+      '409':
+        description: Conflict
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                error:
+                  type: string
+                  example: 이미 존재하는 이메일 입니다
+      '500':
+        $ref: './openapi.yaml#/components/responses/InternalServerError'
+
+# /auth/login
+/login:
+  post:
+    tags:
+      - Auth
+    summary: 로그인
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: './openapi.yaml#/components/schemas/LoginDto'
+    responses:
+      '200':
+        description: OK
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: 로그인 성공
+      '404':
+        description: Not Found
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                error:
+                  type: string
+                  example: 가입되지 않은 이메일 입니다
+      '401':
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                error:
+                  type: string
+                  example: 비밀번호를 잘못 입력하셨습니다
+      '500':
+        $ref: './openapi.yaml#/components/responses/InternalServerError'
+
+# /auth/refresh
+/refresh:
+  get:
+    tags:
+      - Auth
+    summary: 토큰 리프레쉬
+    parameters:
+      - in: cookie
+        name: refreshToken
+        schema:
+          type: string
+        required: true
+        description: HttpOnly 쿠키에 들어있는 refresh token
+    responses:
+      '200':
+        description: OK
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: 인증 갱신 성공
+      '401':
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                error:
+                  type: string
+                  example: 토큰을 보내고 있지 않습니다 or 토큰 재발급은 refresh 토큰으로만 가능합니다 or 토큰 유효성 검증에 실패했습니다 or 만료된 토큰입니다 or 잘못된 토큰입니다
+      '500':
+        $ref: './openapi.yaml#/components/responses/InternalServerError'
+
+# /auth/logout
+/logout:
+  get:
+    tags:
+      - Auth
+    summary: 로그아웃
+    parameters:
+      - in: cookie
+        name: accessToken
+        schema:
+          type: string
+        required: true
+        description: HttpOnly 쿠키에 들어있는 access token
+    responses:
+      '200':
+        description: OK
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: 로그아웃 완료
+      '401':
+        description: Unauthorized
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                error:
+                  type: string
+                  example: 토큰을 보내고 있지 않습니다 or 로그아웃은 access 토큰으로만 가능합니다 or 잘못된 토큰입니다
+      '500':
+        $ref: './openapi.yaml#/components/responses/InternalServerError'

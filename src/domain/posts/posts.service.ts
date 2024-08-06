@@ -1,13 +1,13 @@
-import { CreatePostDto, PostLikeDto, UpdatePostDto } from './dto';
+import { CreatePostDto, GetPostsQueryDto, PostLikeDto, UpdatePostDto } from './dto';
 import { CustomError } from '@utils/customError';
 import database from '@utils/database';
 import { deleteImage } from '@utils/filesystem';
-import { PaginationType } from '@custom-type/customPagination';
 import { Prisma } from '@prisma';
 import { UsersService } from '../users/users.service';
 
 export class PostsService {
-    constructor(private readonly usersService: UsersService) {}
+    constructor(private readonly usersService: UsersService) {
+    }
 
     async createPost(userId: string, dto: CreatePostDto) {
         // I. user 찾기, user 가 없다면 에러 반환
@@ -82,7 +82,7 @@ export class PostsService {
             throw new CustomError(
                 403,
                 'Forbidden',
-                '게시글에 대한 권한이 없습니다'
+                '게시글에 대한 권한이 없습니다',
             );
         }
 
@@ -157,10 +157,9 @@ export class PostsService {
         // I. 트랜젝션이 성공하면 로컬 파일에 존재했던 이전 이미지 또한 지워야 함.
         if (post.images.length > 0) {
             try {
-                const result = await deleteImage(post.images);
-                console.log(result);
+                await deleteImage(post.images);
             } catch (err) {
-                console.log(`이미지 파일 삭제 오류: ${err}`);
+                throw new CustomError(500, 'Internal Server Error', `${err}`);
             }
         }
 
@@ -176,7 +175,7 @@ export class PostsService {
             throw new CustomError(
                 403,
                 'Forbidden',
-                '게시글에 대한 권한이 없습니다'
+                '게시글에 대한 권한이 없습니다',
             );
         }
 
@@ -195,19 +194,14 @@ export class PostsService {
         // I. 로컬 이미지 삭제하기
         if (post.images.length > 0) {
             try {
-                const result = await deleteImage(post.images);
-                console.log(result);
+                await deleteImage(post.images);
             } catch (err) {
-                console.log(`이미지 파일 삭제 오류: ${err}`);
+                throw new CustomError(500, 'Internal Server Error', `${err}`);
             }
         }
     }
 
-    async getPosts(
-        pagination: PaginationType,
-        searchQuery: string | undefined,
-        category: string | undefined
-    ) {
+    async getPosts(take: number, skip: number, search: string, category: string) {
         // I. 카테고리 옵션 설정, 있으면 { name : ... } , 없으면 {}
         let categoryOptions = category ? { name: category } : {};
 
@@ -215,8 +209,8 @@ export class PostsService {
         const posts = await database.post.findMany({
             where: {
                 OR: [
-                    { title: { contains: searchQuery ?? '' } },
-                    { content: { contains: searchQuery ?? '' } },
+                    { title: { contains: search } },
+                    { content: { contains: search } },
                 ],
                 category: categoryOptions,
             },
@@ -229,46 +223,105 @@ export class PostsService {
             orderBy: {
                 createdAt: 'desc', // 내림, 최신순
             },
-            skip: pagination.skip,
-            take: pagination.take,
+            skip,
+            take,
         });
 
         // I. posts, postCount 반환
         return { posts, postCount: posts.length };
     }
 
-    async getPost(postId: string, postLikeGuestId: string | undefined) {
+    async getPost(postId: string, guestLikeId: string) {
         // I. 게시글 상세 조회
-        const post = await this.findPostById(postId, {
-            tags: true,
-            _count: {
-                select: { postLikes: true },
+        const post = await database.post.findUnique({
+            where: {
+                id: postId,
             },
-            postLikes: true,
-            images: {
-                select: {
-                    id: true,
-                    url: true,
+            select: {
+                id: true,
+                title: true,
+                content: true,
+                createdAt: true,
+                updatedAt: true,
+                author: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                    },
                 },
-            },
-            author: {
-                select: {
-                    name: true,
+                tags: {
+                    select: {
+                        tagId: true,
+                    },
                 },
-            },
-            comments: {
-                where: {
-                    parentCommentId: null,
+                _count: {
+                    select: { postLikes: true },
                 },
-                include: {
-                    childComments: true,
+                postLikes: {
+                    select: {
+                        guestId: true,
+                    },
+                },
+                images: {
+                    select: {
+                        id: true,
+                        url: true,
+                    },
+                },
+                comments: {
+                    where: {
+                        parentCommentId: null,
+                    },
+                    select: {
+                        id: true,
+                        content: true,
+                        author: {
+                            select: {
+                                id: true,
+                                name: true,
+                            },
+                        },
+                        guest: {
+                            select: {
+                                id: true,
+                                nickName: true,
+                            },
+                        },
+                        childComments: {
+                            select: {
+                                id: true,
+                                content: true,
+                                author: {
+                                    select: {
+                                        id: true,
+                                        name: true,
+                                    },
+                                },
+                                guest: {
+                                    select: {
+                                        id: true,
+                                        nickName: true,
+                                    },
+                                },
+                            },
+                        },
+                    },
                 },
             },
         });
 
+        if (!post)
+            throw new CustomError(
+                404,
+                'Not Found',
+                '게시글을 찾을 수 없습니다',
+            );
+
+
         // I. 게시글 좋아요 여부
         const isLiked = post.postLikes.some(
-            (el) => el.guestId === postLikeGuestId
+            (el) => el.guestId === guestLikeId,
         );
 
         return {
@@ -281,28 +334,48 @@ export class PostsService {
 
     // 게시글 좋아요 ==========================================================================================
 
-    async postLike(postLikeGuestId: string, dto: PostLikeDto) {
+    async postLike(dto: PostLikeDto) {
+        // [guestLikeId, tryToLike]
+        // falsy, false => 잘못된 요청
+        // falsy, true => 좋아요 생성(isLiked === null)
+        // truthy, true => 좋아요 생성(isLiked === null)
+        // truthy, false => 좋아요 삭제(isLiked !== null)
+
+        // I. falsy, false
+        if (!dto.guestLikeId && !dto.tryToLike) {
+            throw new CustomError(400, 'Bad Request', '잘못된 요청입니다');
+        }
+        // I. falsy, true
+        else if (!dto.guestLikeId && dto.tryToLike) {
+            dto.guestLikeId = await this.usersService.createGuestLike();
+        }
+
         // I. 공통 로직(게시글 존재 여부, 게시글 좋아요 유무)
         const post = await this.findPostById(dto.postId);
         const isLiked = await database.postLike.findUnique({
             where: {
                 postId_guestId: {
                     postId: post.id,
-                    guestId: postLikeGuestId,
+                    guestId: dto.guestLikeId!,
                 },
             },
         });
 
         // I. 좋아요 생성 시, 백엔드에서도 한 번 더 체킹
         if (dto.tryToLike && !isLiked) {
+            // I. GuestLike 가 없으면 에러 발생함
+            const guest = await this.usersService.findGuestLikeById(
+                dto.guestLikeId!,
+            );
+
             await database.postLike.create({
                 data: {
                     post: { connect: { id: post.id } },
-                    guest: { connect: { id: postLikeGuestId } },
+                    guest: { connect: { id: guest.id } },
                 },
             });
 
-            return;
+            return guest.id;
         }
         // I. 좋아요 삭제 시
         else if (!dto.tryToLike && isLiked) {
@@ -310,7 +383,7 @@ export class PostsService {
                 where: {
                     postId_guestId: {
                         postId: post.id,
-                        guestId: postLikeGuestId,
+                        guestId: dto.guestLikeId!,
                     },
                 },
             });
@@ -322,7 +395,7 @@ export class PostsService {
                 },
             });
 
-            return;
+            return null;
         }
 
         throw new CustomError(400, 'Bad Request', '잘못된 요청입니다');
@@ -334,7 +407,7 @@ export class PostsService {
      */
     async findPostById(
         postId: string,
-        includeOptions: Prisma.PostInclude = {}
+        includeOptions: Prisma.PostInclude = {},
     ) {
         const post = await database.post.findUnique({
             where: { id: postId },
@@ -345,7 +418,7 @@ export class PostsService {
             throw new CustomError(
                 404,
                 'Not Found',
-                '게시글을 찾을 수 없습니다'
+                '게시글을 찾을 수 없습니다',
             );
 
         return post;

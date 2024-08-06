@@ -1,0 +1,263 @@
+# /posts/comments/
+/:
+  post:
+    tags:
+      - Comments
+    summary: 부모 댓글 생성(회원)
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: './openapi.yaml#/components/schemas/CreateCommentDto'
+    responses:
+      '201':
+        description: OK
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                newCommentId:
+                  type: string
+                  format: uuid
+                  description: 부모 댓글 id
+                  example: "12345"
+      '401':
+        $ref: './openapi.yaml#/components/responses/UnauthorizedError'
+      '404':
+        $ref: './openapi.yaml#/components/responses/NotFoundUserAndPostError'
+      '500':
+        $ref: './openapi.yaml#/components/responses/InternalServerError'
+
+# /posts/comments/{id}
+/{id}:
+  patch:
+    tags:
+      - Comments
+    summary: 댓글 수정(회원)
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: 수정할 댓글 id
+        schema:
+          type: string
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: './openapi.yaml#/components/schemas/UpdateCommentDto'
+    responses:
+      '200':
+        $ref: './openapi.yaml#/components/responses/SuccessOkResponse'
+      '401':
+        $ref: './openapi.yaml#/components/responses/UnauthorizedError'
+      '403':
+        $ref: './openapi.yaml#/components/responses/ForbiddenCommentError'
+      '404':
+        $ref: './openapi.yaml#/components/responses/NotFoundUserAndCommentError'
+      '500':
+        $ref: './openapi.yaml#/components/responses/InternalServerError'
+  delete:
+    tags:
+      - Comments
+    summary: 댓글 삭제(회원)
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: 삭제할 댓글 id
+        schema:
+          type: string
+    responses:
+      '200':
+        $ref: './openapi.yaml#/components/responses/SuccessOkResponse'
+      '401':
+        $ref: './openapi.yaml#/components/responses/UnauthorizedError'
+      '403':
+        $ref: './openapi.yaml#/components/responses/ForbiddenCommentError'
+      '404':
+        $ref: './openapi.yaml#/components/responses/NotFoundUserAndCommentError'
+      '500':
+        $ref: './openapi.yaml#/components/responses/InternalServerError'
+
+# /posts/comments/guest
+/guest:
+  post:
+    tags:
+      - Comments
+    summary: 부모 댓글 생성(비회원)
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: './openapi.yaml#/components/schemas/CreateCommentGuestDto'
+    responses:
+      '201':
+        description: Created
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                newCommentId:
+                  type: string
+                  format: uuid
+                  description: 부모 댓글 id
+                  example: 12345
+                guestCommentId:
+                  type: string
+                  format: uuid
+                  description: 게스트 댓글 id
+                  example: 56789
+      '404':
+        $ref: './openapi.yaml#/components/responses/NotFoundPostError'
+      '500':
+        $ref: './openapi.yaml#/components/responses/InternalServerError'
+
+# /posts/guest/{id}
+/guest/{id}:
+  patch:
+    tags:
+      - Comments
+    summary: 댓글 수정(비회원)
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: 수정할 댓글 id
+        schema:
+          type: string
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: './openapi.yaml#/components/schemas/UpdateCommentGuestDto'
+    responses:
+      '200':
+        $ref: './openapi.yaml#/components/responses/SuccessOkResponse'
+      '401':
+        $ref: './openapi.yaml#/components/responses/UnauthorizedPWDError'
+      '404':
+        $ref: './openapi.yaml#/components/responses/NotFoundCommentError'
+      '500':
+        $ref: './openapi.yaml#/components/responses/InternalServerError'
+  delete:
+    tags:
+      - Comments
+    summary: 댓글 삭제(비회원)
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: 삭제할 댓글 id
+        schema:
+          type: string
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: './openapi.yaml#/components/schemas/DeleteCommentGuestDto'
+    responses:
+      '200':
+        description: OK
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                guestCommentId:
+                  type: string
+                  format: uuid
+                  description: 게스트 댓글 id
+                  example: 56789
+                postId:
+                  type: string
+                  format: uuid
+                  description: 게시글 id
+                  example: 13131
+      '404':
+        $ref: './openapi.yaml#/components/responses/NotFoundCommentError'
+      '401':
+        $ref: './openapi.yaml#/components/responses/UnauthorizedPWDError'
+      '500':
+        $ref: './openapi.yaml#/components/responses/InternalServerError'
+
+
+
+# /posts/child-comments
+/child-comments:
+  post:
+    tags:
+      - Comments
+    summary: 자식 댓글 생성(회원)
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: './openapi.yaml#/components/schemas/CreateChildCommentDto'
+    responses:
+      '201':
+        description: Created
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                newChildCommentId:
+                  type: string
+                  format: uuid
+                  description: 자식 댓글 id
+                  example: 12345
+      '401':
+        $ref: './openapi.yaml#/components/responses/UnauthorizedError'
+      '404':
+        $ref: './openapi.yaml#/components/responses/NotFoundUserAndCommentError'
+      '500':
+        $ref: './openapi.yaml#/components/responses/InternalServerError'
+
+# /posts/child-comments/guest
+/child-comments/guest:
+  post:
+    tags:
+      - Comments
+    summary: 자식 댓글 생성(비회원)
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: './openapi.yaml#/components/schemas/CreateChildCommentGuestDto'
+    responses:
+      '201':
+        description: Created
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                newChildCommentId:
+                  type: string
+                  format: uuid
+                  description: 자식 댓글 id
+                  example: 12345
+                guestCommentId:
+                  type: string
+                  format: uuid
+                  description: 게스트 댓글 id
+                  example: 56789
+                postId:
+                  type: string
+                  format: uuid
+                  description: 게시글 id
+                  example: 13131
+      '404':
+        $ref: './openapi.yaml#/components/responses/NotFoundCommentError'
+      '500':
+        $ref: './openapi.yaml#/components/responses/InternalServerError'

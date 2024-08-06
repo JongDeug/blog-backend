@@ -4,8 +4,6 @@ import { NextFunction, Request, Response } from 'express';
 import httpMocks from 'node-mocks-http';
 import { User } from '@prisma';
 import { CustomError } from '@utils/customError';
-import { PostsService } from '../../../../src/domain/posts/posts.service';
-import { prismaMock } from '../../../singleton';
 
 jest.mock('../../../../src/domain/categories/categories.service');
 

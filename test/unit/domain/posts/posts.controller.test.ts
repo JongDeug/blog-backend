@@ -2,8 +2,7 @@ import httpMocks from 'node-mocks-http';
 import { NextFunction, Request, Response } from 'express';
 import { PostsController } from '../../../../src/domain/posts/posts.controller';
 import { PostsService } from '../../../../src/domain/posts/posts.service';
-import { AuthService } from '../../../../src/domain/auth/auth.service';
-import { Prisma, Post, User } from '@prisma';
+import { Prisma, User } from '@prisma';
 import { CustomError } from '@utils/customError';
 import { UsersService } from '../../../../src/domain/users/users.service';
 
@@ -17,15 +16,13 @@ describe('PostsController', () => {
     let next: NextFunction;
     let postsController: PostsController;
     let postsServiceMock: jest.Mocked<PostsService>;
-    let usersServiceMock: jest.Mocked<UsersService>;
 
     beforeEach(() => {
         req = httpMocks.createRequest();
         res = httpMocks.createResponse();
         next = jest.fn();
         postsServiceMock = jest.mocked(new PostsService(new UsersService())) as jest.Mocked<PostsService>;
-        usersServiceMock = jest.mocked(new UsersService()) as jest.Mocked<UsersService>;
-        postsController = new PostsController(postsServiceMock, usersServiceMock);
+        postsController = new PostsController(postsServiceMock);
     });
 
     // --- CreatePost
@@ -50,13 +47,10 @@ describe('PostsController', () => {
             // when
             await postsController.createPost(req, res, next);
             // then
-            expect(res.statusCode).toBe(200);
+            expect(res.statusCode).toBe(201);
             expect(res._getJSONData()).toStrictEqual({ id: 'newPostId' });
             expect(res._isEndCalled()).toBeTruthy();
-            expect(postsServiceMock.createPost).toHaveBeenCalledWith(req.user.id, {
-                ...req.body,
-                images: [{ path: 'image1.jpg' }, { path: 'image2.jpg' }],
-            });
+            expect(postsServiceMock.createPost).toHaveBeenCalledWith(req.user.id, req.body);
         });
 
         test('should handle error if user is not authenticated', async () => {
@@ -104,10 +98,7 @@ describe('PostsController', () => {
             expect(res.statusCode).toBe(200);
             expect(res._getJSONData()).toStrictEqual({});
             expect(res._isEndCalled()).toBeTruthy();
-            expect(postsServiceMock.updatePost).toHaveBeenCalledWith(req.user.id, req.params.id, {
-                ...req.body,
-                images: [{ path: 'image1.jpg' }, { path: 'image2.jpg' }],
-            });
+            expect(postsServiceMock.updatePost).toHaveBeenCalledWith(req.user.id, req.params.id, req.body);
         });
 
         test('should handle error if user is not authenticated', async () => {
@@ -175,12 +166,18 @@ describe('PostsController', () => {
         const mockReturnedPosts = { posts: [{ id: 'mockPostId' }, { id: 'mockPostId' }], postCount: 10 };
 
         beforeEach(() => {
-            req.pagination = {
-                skip: 10,
-                take: 10,
+            req.query = {
+                search: '',
+                category: '',
+                page: '3',
+                limit: '10',
             };
-            req.query.searchQuery = '';
-            req.query.category = '';
+            req.body = {
+                search: '',
+                category: '',
+                skip: 3,
+                take: 10
+            };
         });
 
         test('should get posts successfully', async () => {
@@ -192,27 +189,7 @@ describe('PostsController', () => {
             expect(res.statusCode).toBe(200);
             expect(res._getJSONData()).toStrictEqual(mockReturnedPosts);
             expect(res._isEndCalled()).toBeTruthy();
-            expect(postsServiceMock.getPosts).toHaveBeenCalledWith(req.pagination, req.query.searchQuery, req.query.category);
-        });
-
-        test('should handle error if searchQuery type is object', async () => {
-            // given
-            req.query.searchQuery = ['mock', 'mock'];
-            // when
-            await postsController.getPosts(req, res, next);
-            // then
-            expect(next).toHaveBeenCalledWith(new CustomError(400, 'Bad Request', 'searchQuery: 잘못된 형식입니다'));
-            expect(postsServiceMock.getPosts).not.toHaveBeenCalled();
-        });
-
-        test('should handle error if category type is object', async () => {
-            // given
-            req.query.category = ['mock', 'mock'];
-            // when
-            await postsController.getPosts(req, res, next);
-            // then
-            expect(next).toHaveBeenCalledWith(new CustomError(400, 'Bad Request', 'category: 잘못된 형식입니다'));
-            expect(postsServiceMock.getPosts).not.toHaveBeenCalled();
+            expect(postsServiceMock.getPosts).toHaveBeenCalledWith(req.body.take, req.body.skip, req.body.search, req.body.category);
         });
 
         test('should handle error if postsService.getPosts throws error', async () => {
@@ -234,7 +211,7 @@ describe('PostsController', () => {
 
         beforeEach(() => {
             req.params.id = 'mockPostId';
-            req.cookies.postLikeGuestId = 'mockGuestUserId';
+            req.body.guestLikeId = 'mockGuestLikeId';
         });
 
         test('should get a post successfully', async () => {
@@ -246,7 +223,7 @@ describe('PostsController', () => {
             expect(res.statusCode).toBe(200);
             expect(res._getJSONData()).toStrictEqual(mockReturnedPost);
             expect(res._isEndCalled()).toBeTruthy();
-            expect(postsServiceMock.getPost).toHaveBeenCalledWith(req.params.id, req.cookies.postLikeGuestId);
+            expect(postsServiceMock.getPost).toHaveBeenCalledWith(req.params.id, req.body.guestLikeId);
         });
 
         test('should handle error if postsService.getPost throws error', async () => {
@@ -262,51 +239,25 @@ describe('PostsController', () => {
 
     // --- PostLike
     describe('postLike', () => {
-
         beforeEach(() => {
             req.cookies.guestUserId = 'mockGuestUserId';
             req.body = {
                 postId: 'mockPostId',
                 tryToLike: true,
+                guestLikeId: '',
             };
         });
 
         test('should create a postLike or delete a postLike successfully', async () => {
+            // given
+            postsServiceMock.postLike.mockResolvedValue('mockGuestLikeId');
             // when
             await postsController.postLike(req, res, next);
             // then
             expect(res.statusCode).toBe(200);
-            expect(res._getJSONData()).toStrictEqual({});
+            expect(res._getJSONData()).toStrictEqual({ guestLikeId: 'mockGuestLikeId' });
             expect(res._isEndCalled()).toBeTruthy();
-            expect(postsServiceMock.postLike).toHaveBeenCalledWith(req.cookies.postLikeGuestId, req.body);
-        });
-
-        test('should create a postLike or delete a postLike successfully if guestUserId is undefined', async () => {
-            // given
-            req.cookies.guestUserId = undefined;
-            usersServiceMock.createGuestForLike.mockResolvedValue('mockGuestUserId');
-            // when
-            await postsController.postLike(req, res, next);
-            // then
-            expect(res.statusCode).toBe(200);
-            expect(res._getJSONData()).toStrictEqual({});
-            expect(res._isEndCalled()).toBeTruthy();
-            expect(res.cookies).toHaveProperty('postLikeGuestId');
-            expect(res.cookies.postLikeGuestId.value).toEqual('mockGuestUserId');
-            expect(postsServiceMock.postLike).toHaveBeenCalledWith('mockGuestUserId', req.body);
-        });
-
-        test('should handle error if usersService.createGuestUser throw errors', async () => {
-            // given
-            req.cookies.guestUserId = undefined;
-            usersServiceMock.createGuestForLike.mockRejectedValue(new Error('데이터베이스: 게스트 생성 실패'));
-            // when
-            await postsController.postLike(req, res, next);
-            // then
-            expect(next).toHaveBeenCalledWith(new Error('데이터베이스: 게스트 생성 실패'));
-            expect(usersServiceMock.createGuestForLike).toHaveBeenCalled();
-            expect(res.cookies.guestUserId).toBeUndefined();
-            expect(postsServiceMock.postLike).not.toHaveBeenCalled();
+            expect(postsServiceMock.postLike).toHaveBeenCalledWith(req.body);
         });
 
         test('should handle error if postsService.postLike throw errors', async () => {

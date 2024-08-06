@@ -16,10 +16,11 @@
 # chore
 .idea
 .env
-dist
+nohup.out
+dist/
 coverage/
 uploads/
-nohup.out
+node_modules/
 
 #DB
 mysql-data

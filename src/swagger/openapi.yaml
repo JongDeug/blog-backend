@@ -1,0 +1,650 @@
+openapi: 3.0.0
+info:
+  version: ''
+  title: Jongdeug's Blog API Docs
+  description: 블로그 API 명세서입니다.
+  license:
+    name: Jongdeug
+servers:
+  - url: http://localhost:8000/
+paths:
+  /auth/register:
+    $ref: './auth.yaml#/~1register'
+  /auth/login:
+    $ref: './auth.yaml#/~1login'
+  /auth/refresh:
+    $ref: './auth.yaml#/~1refresh'
+  /auth/logout:
+    $ref: './auth.yaml#/~1logout'
+  /categories:
+    $ref: './categories.yaml#/~1'
+  /categories/{name}:
+    $ref: './categories.yaml#/~1{name}'
+  /posts:
+    $ref: './posts.yaml#/~1'
+  /posts/{id}:
+    $ref: './posts.yaml#/~1{id}'
+  /posts/like:
+    $ref: './posts.yaml#/~1like'
+  /posts/comments:
+    $ref: './comments.yaml#/~1'
+  /posts/comments/guest:
+    $ref: './comments.yaml#/~1guest'
+  /posts/child-comments:
+    $ref: './comments.yaml#/~1child-comments'
+  /posts/child-comments/guest:
+    $ref: './comments.yaml#/~1child-comments~1guest'
+  /posts/comments/{id}:
+    $ref: './comments.yaml#/~1{id}'
+  /posts/comments/guest/{id}:
+    $ref: './comments.yaml#/~1guest~1{id}'
+components:
+  # schema
+  schemas:
+    # registerDto
+    RegisterDto:
+      type: object
+      required:
+        - name
+        - email
+        - password
+      properties:
+        name:
+          type: string
+          description: 이름
+          example: 홍길동
+        email:
+          type: string
+          format: email
+          description: 이메일
+          example: user@example.com
+        password:
+          type: string
+          description: 비밀번호
+          example: password1234!
+        description:
+          type: string
+          description: 간단한 소개
+          example: 안녕하세요~ 홍길동입니다.
+    # loginDto
+    LoginDto:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          example: test1@gmail.com
+        password:
+          type: string
+          example: 1234
+    # loginDto
+    CreateCategoryDto:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          example: 알고리즘
+    # updateCategoryDto
+    UpdateCategoryDto:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          example: 운영체제
+    # createPostDto
+    CreatePostDto:
+      type: object
+      required:
+        - title
+        - content
+        - category
+      properties:
+        title:
+          type: string
+          description: 제목
+          example: 생성된 게시글
+        content:
+          type: string
+          description: 내용
+          example: 생성했습니다
+        category:
+          type: string
+          description: 카테고리
+          example: 운영체제
+        tags:
+          type: array
+          items:
+            type: string
+          description: 태그
+          example: [ "커널", "스케줄링" ]
+        images:
+          type: array
+          items:
+            type: string
+            format: binary
+          description: 이미지 파일
+    # updatePostDto
+    UpdatePostDto:
+      type: object
+      required:
+        - title
+        - content
+        - category
+      properties:
+        title:
+          type: string
+          description: 제목
+          example: 수정된 게시글
+        content:
+          type: string
+          description: 내용
+          example: 수정했습니다
+        category:
+          type: string
+          description: 카테고리
+          example: 알고리즘
+        tags:
+          type: array
+          items:
+            type: string
+          description: 태그
+          example: [ "리눅스", "시간복잡도" ]
+        images:
+          type: array
+          items:
+            type: string
+            format: binary
+          description: 이미지 파일
+    # postLikeDto
+    PostLikeDto:
+      type: object
+      required:
+        - postId
+        - tryToLike
+      properties:
+        postId:
+          type: string
+          format: uuid
+          description: 게시글 id
+          example: 1234
+        tryToLike:
+          type: boolean
+          description: 좋아요 생성 or 삭제
+          example: true
+        guestLikeId:
+          type: string
+          format: uuid
+          description: 게시글 좋아요 id
+          example: 5678
+    # createCommentDto
+    CreateCommentDto:
+      type: object
+      required:
+        - postId
+        - content
+      properties:
+        postId:
+          type: string
+          format: uuid
+          description: 게시글 id
+          example: 1234
+        content:
+          type: string
+          description: 부모 댓글 내용(회원)
+          example: 부모 댓글입니다(회원)
+    # createCommentGuestDto
+    CreateCommentGuestDto:
+      type: object
+      required:
+        - postId
+        - content
+        - nickName
+        - email
+        - password
+      properties:
+        postId:
+          type: string
+          format: uuid
+          description: 게시글 id
+          example: 1234
+        content:
+          type: string
+          description: 부모 댓글 내용(비회원)
+          example: 부모 댓글입니다(비회원)
+        nickName:
+          type: string
+          description: 닉네임
+          example: 익명123
+        email:
+          type: string
+          description: 이메일
+          format: email
+          example: guest@example.com
+        password:
+          type: string
+          description: 비밀번호
+          example: password123
+    # createChildCommentDto
+    CreateChildCommentDto:
+      type: object
+      required:
+        - parentCommentId
+        - content
+      properties:
+        parentCommentId:
+          type: string
+          format: uuid
+          description: 부모 댓글 id
+          example: 1234
+        content:
+          type: string
+          description: 자식 댓글 내용(회원)
+          example: 자식 댓글입니다(회원)
+    # createChildCommentGuestDto
+    CreateChildCommentGuestDto:
+      type: object
+      required:
+        - parentCommentId
+        - content
+        - nickName
+        - email
+        - password
+      properties:
+        parentCommentId:
+          type: string
+          format: uuid
+          description: 부모 댓글 id
+          example: 12345
+        content:
+          type: string
+          description: 자식 댓글 내용(비회원)
+          example: 자식 댓글입니다(비회원)
+        nickName:
+          type: string
+          description: 닉네임
+          example: 익명123
+        email:
+          type: string
+          format: email
+          description: 이메일
+          example: guest@example.com
+        password:
+          type: string
+          description: 비밀번호
+          example: password1234
+    # updateCommentDto
+    UpdateCommentDto:
+      type: object
+      required:
+        - content
+      properties:
+        content:
+          type: string
+          description: 댓글 내용 수정(회원)
+          example: 댓글 수정합니다(회원)
+    # updateCommentGuestDto
+    UpdateCommentGuestDto:
+      type: object
+      required:
+        - content
+        - password
+      properties:
+        content:
+          type: string
+          description: 댓글 내용 수정(비회원)
+          example: 댓글 수정합니다(비회원)
+        password:
+          type: string
+          description: 비밀번호
+          example: password1234
+    # deleteCommentGuestDto
+    DeleteCommentGuestDto:
+      type: object
+      required:
+        - password
+      properties:
+        password:
+          type: string
+          description: 비밀번호
+          example: password1234
+    # getPosts
+    GetPosts:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: 게시글 id
+          example: "14028647-b511-4a24-80fb-d4e25c82d0c1"
+        title:
+          type: string
+          description: 제목
+          example: "생성된 게시글"
+        content:
+          type: string
+          description: 내용
+          example: "생성했습니다"
+        createdAt:
+          type: string
+          format: date-time
+          description: 생성일
+          example: "2024-08-05T10:16:45.027Z"
+    # getPost
+    GetPost:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: 게시글 id
+          example: ce9ea4dd-640e-4943-9d45-09aa580189e6
+        title:
+          type: string
+          description: 제목
+          example: 조회해보려고
+        content:
+          type: string
+          description: 내용
+          example: 내용
+        createdAt:
+          type: string
+          format: date-time
+          description: 생성일
+          example: 2024-08-06T09:50:49.743Z
+        updatedAt:
+          type: string
+          format: date-time
+          description: 수정일
+          example: 2024-08-06T09:50:49.743Z
+        author:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+              description: 작성자 id
+              example: 53c0c4da-e038-4756-98fc-c60790777cfc
+            name:
+              type: string
+              description: 이름
+              example: test1
+            email:
+              type: string
+              description: 이메일
+              example: test1@gmail.com
+        tags:
+          type: array
+          items:
+            type: object
+            properties:
+              tagId:
+                type: string
+                description: 태그 id
+                example: 스케줄링
+        _count:
+          type: object
+          properties:
+            postLikes:
+              type: integer
+              description: 게시글 좋아요 수
+              example: 1
+        postLikes:
+          type: array
+          items:
+            type: object
+            properties:
+              guestId:
+                type: string
+                format: uuid
+                description: 비회원 id
+                example: c0be2750-2d7c-40d9-bd27-804e2f5da8e6
+        images:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+                description: 이미지 id
+                example: 8664f262-fcb5-49e3-be66-497e106cfe7b
+              url:
+                type: string
+                description: url
+                example: uploads/17229378497340.8048456280552347-Screenshot from 2024-07-13 19-09-51.png
+        comments:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+                description: 댓글 id
+                example: 18b47aa1-2c8f-4709-8a93-82b201993950
+              content:
+                type: string
+                description: 내용
+                example: 부모 댓글입니다(비회원)
+              author:
+                type: object
+                nullable: true
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                    description: 작성자 id
+                    example: 53c0c4da-e038-4756-98fc-c60790777cfc
+                  name:
+                    type: string
+                    description: 이름
+                    example: test1
+              guest:
+                type: object
+                nullable: true
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                    description: 비회원 id
+                    example: ff15e178-b7d1-40e9-a56c-9389d6569c02
+                  nickName:
+                    type: string
+                    description: 닉네임
+                    example: 익명123
+              childComments:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                      description: 댓글 id
+                      example: 138f5be5-4e3e-4c40-ba6e-40ae8528514a
+                    content:
+                      type: string
+                      description: 내용
+                      example: 자식 댓글입니다(비회원)
+                    author:
+                      type: object
+                      nullable: true
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                          description: 작성자 id
+                          example: 53c0c4da-e038-4756-98fc-c60790777cfc
+                        name:
+                          type: string
+                          description: 이름
+                          example: test1
+                    guest:
+                      type: object
+                      nullable: true
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                          description: 비회원 id
+                          example: e5d5e399-2b9d-4fb2-886a-9ea450463fea
+                        nickName:
+                          type: string
+                          description: 닉네임
+                          example: 익명123
+        isLiked:
+          type: boolean
+          description: 좋아요 유무
+          example: true
+
+  # responses
+  responses:
+    SuccessCreatedResponse:
+      description: Created
+      content:
+        application/json:
+          schema:
+            type: object
+    SuccessOkResponse:
+      description: OK
+      content:
+        application/json:
+          schema:
+            type: object
+    BadRequest:
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: 잘못된 요청입니다
+    InternalServerError:
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: 서버에서 에러가 발생했습니다
+    ForbiddenAPIError:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: 해당 API 를 사용할 권한이 없습니다
+    ForbiddenCommentError:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: 댓글에 대한 권한이 없습니다.
+    UnauthorizedError:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: 잘못된 토큰입니다 or 만료된 토큰입니다 or 토큰을 보내고 있지 않습니다 or 서비스 이용은 access 토큰으로만 가능합니다 or 로그인을 진행해주세요
+    UnauthorizedPWDError:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: 비밀번호를 잘못 입력하셨습니다
+    ConflictCategoryError:
+      description: Conflict
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: 이미 존재하는 카테고리입니다
+    NotFoundCategoryError:
+      description: Not Found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: 카테고리를 찾을 수 없습니다
+    NotFoundUserError:
+      description: Not Found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: 유저를 찾을 수 없습니다
+    NotFoundPostError:
+      description: Not Found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: 게시글을 찾을 수 없습니다
+    NotFoundUserAndPostError:
+      description: Not Found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: 유저를 찾을 수 없습니다 or 게시글을 찾을 수 없습니다
+    NotFoundCommentError:
+      description: Not Found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: 댓글을 찾을 수 없습니다
+    NotFoundUserAndCommentError:
+      description: Not Found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: 유저를 찾을 수 없습니다 or 댓글을 찾을 수 없습니다

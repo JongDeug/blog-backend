@@ -1,24 +1,32 @@
 import { IsNotEmpty, IsOptional, IsString, IsArray } from 'class-validator';
 import { ImagePath } from '@custom-type/customImagePath';
+import { Transform } from 'class-transformer';
 
 export class CreatePostDto {
     @IsString()
-    @IsNotEmpty({ message: '제목을 입력해주세요' })
+    @IsNotEmpty()
     title: string;
 
     @IsString()
-    @IsNotEmpty({ message: '내용을 입력해주세요' })
+    @IsNotEmpty()
     content: string;
 
     @IsString()
-    @IsNotEmpty({ message: '카테고리(폴더명)을 입력해주세요' })
+    @IsNotEmpty()
     category: string;
 
-    @IsArray()
+    @IsArray({
+        message: '배열을 또는 구분자(,)를 사용하여 태그를 입력해주세요',
+    })
     @IsString({ each: true })
     @IsOptional()
+    @Transform(({ value }) =>
+        typeof value === 'string' && value !== ''
+            ? value.split(',').map((tag: string) => tag.trim())
+            : value
+    )
     tags?: string[];
 
     @IsArray()
-    images: ImagePath[];
+    images: ImagePath[]; // 값이 없어도 빈 배열로 변환해서 옴
 }
