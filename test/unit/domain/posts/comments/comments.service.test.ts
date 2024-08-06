@@ -760,7 +760,7 @@ describe('CommentsService Main Functions', () => {
             const result = await commentsService.deleteCommentGuest(mockData.commentId, mockData.deleteCommentGuestDto);
             // then
             expect(result).toStrictEqual({
-                guestId: mockData.returnedComment.guestId,
+                guestCommentId: mockData.returnedComment.guestId,
                 postId: mockData.returnedComment.postId,
             });
             expect(commentsService.findComment).toHaveBeenCalledWith(

@@ -173,14 +173,6 @@ export class CommentsController {
             const { guestCommentId, postId } =
                 await this.commentsService.deleteCommentGuest(id, req.body);
 
-            // // I. 쿠키(postId) 에서 guestId 삭제 후 저장
-            // const cookiePostId = req.cookies[`${postId}`];
-            // if (cookiePostId) {
-            //     let parse = JSON.parse(cookiePostId);
-            //     parse = parse.filter((item: string) => item !== guestId);
-            //     res.cookie(postId, JSON.stringify(parse), {});
-            // }
-
             res.status(200).json({ guestCommentId, postId });
         } catch (err) {
             next(err);

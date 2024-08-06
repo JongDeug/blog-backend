@@ -305,32 +305,16 @@ describe('CommentsController', () => {
             };
         });
 
-        test('should delete a guest comment successfully if req.cookies.postId is filled', async () => {
+        test('should delete a guest comment successfully', async () => {
             // given
             req.cookies['mockPostId'] = JSON.stringify(['mockGuestId', 'mock1', 'mock2', 'mock3']);
-            const mockData = { guestId: 'mockGuestId', postId: 'mockPostId' };
-            commentsServiceMock.deleteCommentGuest.mockResolvedValue(mockData);
+            commentsServiceMock.deleteCommentGuest.mockResolvedValue({ guestCommentId: 'mockGuestId', postId: 'mockPostId' });
             // when
             await commentsController.deleteCommentGuest(req, res, next);
             // then
             expect(res.statusCode).toBe(200);
-            expect(res._getJSONData()).toStrictEqual({});
+            expect(res._getJSONData()).toStrictEqual({ guestCommentId: 'mockGuestId', postId: 'mockPostId' });
             expect(res._isEndCalled()).toBeTruthy();
-            expect(res.cookies).toHaveProperty('mockPostId');
-            expect(res.cookies['mockPostId'].value).toStrictEqual(JSON.stringify(['mock1', 'mock2', 'mock3']));
-        });
-
-        test('should delete a guest comment successfully if req.cookies.postId is empty', async () => {
-            // given
-            const mockData = { guestId: 'mockGuestId', postId: 'mockPostId' };
-            commentsServiceMock.deleteCommentGuest.mockResolvedValue(mockData);
-            // when
-            await commentsController.deleteCommentGuest(req, res, next);
-            // then
-            expect(res.statusCode).toBe(200);
-            expect(res._getJSONData()).toStrictEqual({});
-            expect(res._isEndCalled()).toBeTruthy();
-            expect(res.cookies).toStrictEqual({});
         });
 
         test('should handle error if commentsService.deleteCommentGuest throws error', async () => {
