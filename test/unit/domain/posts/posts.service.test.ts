@@ -382,34 +382,85 @@ describe('PostsService Main Functions', () => {
     describe('getPost', () => {
         test('should get post successfully', async () => {
             // given
-            (postsService.findPostById as jest.Mock).mockResolvedValue(mockData.returnedpost);
+            prismaMock.post.findUnique.mockResolvedValue(mockData.returnedpost);
             // when
             const result = await postsService.getPost(mockData.postId, mockData.guestId);
             // then
             expect(result).toStrictEqual({ post: { ...mockData.returnedpost, isLiked: true } });
-            expect(postsService.findPostById).toHaveBeenCalledWith(mockData.postId, {
-                tags: true,
-                _count: {
-                    select: { postLikes: true },
+            expect(prismaMock.post.findUnique).toHaveBeenCalledWith({
+                where: {
+                    id: mockData.postId,
                 },
-                postLikes: true,
-                images: {
-                    select: {
-                        id: true,
-                        url: true,
+                select: {
+                    id: true,
+                    title: true,
+                    content: true,
+                    createdAt: true,
+                    updatedAt: true,
+                    author: {
+                        select: {
+                            id: true,
+                            name: true,
+                            email: true,
+                        },
                     },
-                },
-                author: {
-                    select: {
-                        name: true,
+                    tags: {
+                        select: {
+                            tagId: true,
+                        },
                     },
-                },
-                comments: {
-                    where: {
-                        parentCommentId: null,
+                    _count: {
+                        select: { postLikes: true },
                     },
-                    include: {
-                        childComments: true,
+                    postLikes: {
+                        select: {
+                            guestId: true,
+                        },
+                    },
+                    images: {
+                        select: {
+                            id: true,
+                            url: true,
+                        },
+                    },
+                    comments: {
+                        where: {
+                            parentCommentId: null,
+                        },
+                        select: {
+                            id: true,
+                            content: true,
+                            author: {
+                                select: {
+                                    id: true,
+                                    name: true,
+                                },
+                            },
+                            guest: {
+                                select: {
+                                    id: true,
+                                    nickName: true,
+                                },
+                            },
+                            childComments: {
+                                select: {
+                                    id: true,
+                                    content: true,
+                                    author: {
+                                        select: {
+                                            id: true,
+                                            name: true,
+                                        },
+                                    },
+                                    guest: {
+                                        select: {
+                                            id: true,
+                                            nickName: true,
+                                        },
+                                    },
+                                },
+                            },
+                        },
                     },
                 },
             });
@@ -417,14 +468,12 @@ describe('PostsService Main Functions', () => {
 
         test('should throw error if post is not found', async () => {
             // given
-            (postsService.findPostById as jest.Mock).mockRejectedValue(
-                new CustomError(404, 'Not Found', '게시글을 찾을 수 없습니다'),
-            );
+            prismaMock.post.findUnique.mockResolvedValue(null);
             // when, then
             await expect(postsService.getPost(mockData.postId, mockData.guestId)).rejects.toThrow(
                 new CustomError(404, 'Not Found', '게시글을 찾을 수 없습니다'),
             );
-            expect(postsService.findPostById).toHaveBeenCalled();
+            expect(prismaMock.post.findUnique).toHaveBeenCalled();
         });
     });
     //
