@@ -30,6 +30,8 @@ paths:
     $ref: './comments.yaml#/~1'
   /posts/comments/guest:
     $ref: './comments.yaml#/~1guest'
+  /posts/child-comments:
+    $ref: './comments.yaml#/~1child-comments'
 components:
   # schema
   schemas:
@@ -223,7 +225,22 @@ components:
           type: string
           description: 비밀번호
           example: password123
-
+    # createChildCommentDto
+    CreateChildCommentDto:
+      type: object
+      required:
+        - parentCommentId
+        - content
+      properties:
+        parentCommentId:
+          type: string
+          format: uuid
+          description: 부모 댓글 id
+          example: 1234
+        content:
+          type: string
+          description: 자식 댓글 내용(회원)
+          example: 자식 댓글입니다(회원)
 
   # responses
   responses:

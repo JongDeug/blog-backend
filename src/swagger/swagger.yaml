@@ -447,7 +447,7 @@ paths:
               $ref: '#/components/schemas/CreateCommentGuestDto'
       responses:
         '201':
-          description: OK
+          description: Created
           content:
             application/json:
               schema:
@@ -457,14 +457,52 @@ paths:
                     type: string
                     format: uuid
                     description: 부모 댓글 id
-                    example: '12345'
+                    example: 12345
                   guestCommentId:
                     type: string
                     format: uuid
                     description: 게스트 댓글 id
-                    example: '56789'
+                    example: 56789
         '404':
           $ref: '#/components/responses/NotFoundPostError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /posts/child-comments:
+    post:
+      tags:
+        - Comments
+      summary: 자식 댓글 생성(회원)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateChildCommentDto'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  newChildCommentId:
+                    type: string
+                    format: uuid
+                    description: 자식 댓글 id
+                    example: 12345
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: 유저를 찾을 수 없습니다 or 댓글을 찾을 수 없습니다
         '500':
           $ref: '#/components/responses/InternalServerError'
 components:
@@ -654,6 +692,21 @@ components:
           type: string
           description: 비밀번호
           example: password123
+    CreateChildCommentDto:
+      type: object
+      required:
+        - parentCommentId
+        - content
+      properties:
+        parentCommentId:
+          type: string
+          format: uuid
+          description: 부모 댓글 id
+          example: 1234
+        content:
+          type: string
+          description: 자식 댓글 내용(회원)
+          example: 자식 댓글입니다(회원)
   responses:
     SuccessCreatedResponse:
       description: Created
