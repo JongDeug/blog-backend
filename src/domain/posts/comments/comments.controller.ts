@@ -88,7 +88,7 @@ export class CommentsController {
             // I. commentsService.createChildCommentGuest 호출
             const { newChildCommentId, guestCommentId, postId } =
                 await this.commentsService.createChildCommentGuest(req.body);
-            
+
             res.status(201).json({ newChildCommentId, guestCommentId, postId });
         } catch (err) {
             next(err);
@@ -170,18 +170,18 @@ export class CommentsController {
 
             const { id } = req.params;
             // I. commentsService.deleteCommentGuest 호출
-            const { guestId, postId } =
+            const { guestCommentId, postId } =
                 await this.commentsService.deleteCommentGuest(id, req.body);
 
-            // I. 쿠키(postId) 에서 guestId 삭제 후 저장
-            const cookiePostId = req.cookies[`${postId}`];
-            if (cookiePostId) {
-                let parse = JSON.parse(cookiePostId);
-                parse = parse.filter((item: string) => item !== guestId);
-                res.cookie(postId, JSON.stringify(parse), {});
-            }
+            // // I. 쿠키(postId) 에서 guestId 삭제 후 저장
+            // const cookiePostId = req.cookies[`${postId}`];
+            // if (cookiePostId) {
+            //     let parse = JSON.parse(cookiePostId);
+            //     parse = parse.filter((item: string) => item !== guestId);
+            //     res.cookie(postId, JSON.stringify(parse), {});
+            // }
 
-            res.status(200).json({});
+            res.status(200).json({ guestCommentId, postId });
         } catch (err) {
             next(err);
         }

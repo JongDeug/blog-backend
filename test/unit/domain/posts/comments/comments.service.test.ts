@@ -729,7 +729,7 @@ describe('CommentsService Main Functions', () => {
             (commentsService.findComment as jest.Mock).mockResolvedValue(mockData.returnedComment);
             // when, then
             await expect(commentsService.deleteComment({ id: 'mockUserId' } as User, mockData.commentId)).rejects.toThrow(
-                new CustomError(403, 'Forbidden', '권한이 없습니다'),
+                new CustomError(403, 'Forbidden', '댓글에 대한 권한이 없습니다'),
             );
             expect(usersServiceMock.findUserById).toHaveBeenCalled();
             expect(commentsService.findComment).toHaveBeenCalled();

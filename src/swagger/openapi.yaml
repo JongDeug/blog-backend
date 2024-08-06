@@ -304,6 +304,17 @@ components:
           type: string
           description: 비밀번호
           example: password1234
+    # deleteCommentGuestDto
+    DeleteCommentGuestDto:
+      type: object
+      required:
+        - password
+      properties:
+        password:
+          type: string
+          description: 비밀번호
+          example: password1234
+
   # responses
   responses:
     SuccessCreatedResponse:

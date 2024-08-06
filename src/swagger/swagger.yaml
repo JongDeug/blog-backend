@@ -564,6 +564,28 @@ paths:
           $ref: '#/components/responses/NotFoundUserAndCommentError'
         '500':
           $ref: '#/components/responses/InternalServerError'
+    delete:
+      tags:
+        - Comments
+      summary: 댓글 삭제(회원)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: 삭제할 댓글 id
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessOkResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenCommentError'
+        '404':
+          $ref: '#/components/responses/NotFoundUserAndCommentError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
   '/posts/comments/guest/{id}':
     patch:
       tags:
@@ -585,6 +607,47 @@ paths:
       responses:
         '200':
           $ref: '#/components/responses/SuccessOkResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedPWDError'
+        '404':
+          $ref: '#/components/responses/NotFoundCommentError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      tags:
+        - Comments
+      summary: 댓글 삭제(비회원)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: 삭제할 댓글 id
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeleteCommentGuestDto'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  guestCommentId:
+                    type: string
+                    format: uuid
+                    description: 게스트 댓글 id
+                    example: 56789
+                  postId:
+                    type: string
+                    format: uuid
+                    description: 게시글 id
+                    example: 13131
         '401':
           $ref: '#/components/responses/UnauthorizedPWDError'
         '404':
@@ -843,6 +906,15 @@ components:
           type: string
           description: 댓글 내용 수정(비회원)
           example: 댓글 수정합니다(비회원)
+        password:
+          type: string
+          description: 비밀번호
+          example: password1234
+    DeleteCommentGuestDto:
+      type: object
+      required:
+        - password
+      properties:
         password:
           type: string
           description: 비밀번호

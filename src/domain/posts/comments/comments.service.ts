@@ -328,7 +328,7 @@ export class CommentsService {
         }
         // I. 권한 확인
         else {
-            throw new CustomError(403, 'Forbidden', '권한이 없습니다');
+            throw new CustomError(403, 'Forbidden', '댓글에 대한 권한이 없습니다');
         }
     }
 
@@ -373,7 +373,7 @@ export class CommentsService {
             },
         });
 
-        return { guestId: comment.guestId!, postId: comment.postId };
+        return { guestCommentId: comment.guestId!, postId: comment.postId };
     }
 
     /**
