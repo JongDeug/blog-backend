@@ -45,12 +45,13 @@
                 posts:
                   type: array
                   items:
-                    $ref: './openapi.yaml#/components/schemas/Post'
+                    $ref: './openapi.yaml#/components/schemas/GetPosts'
                 postCount:
                   type: integer
                   description: 게시글 개수
                   example: 100
-
+      '500':
+        $ref: './openapi.yaml#/components/responses/InternalServerError'
   post:
     tags:
       - Posts
@@ -86,6 +87,37 @@
 
 # /posts/{id}
 /{id}:
+  get:
+    tags:
+      - Posts
+    summary: 게시글 상세 조회
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: 게시글 id
+        schema:
+          type: string
+      - name: guestLikeId
+        in: query
+        description: 게시글 좋아요 id(좋아요 누르면 발급되는 것)
+        required: false
+        schema:
+          type: string
+    responses:
+      '200':
+        description: OK
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                post:
+                  $ref: './openapi.yaml#/components/schemas/GetPost'
+      '404':
+        $ref: './openapi.yaml#/components/responses/NotFoundPostError'
+      '500':
+        $ref: './openapi.yaml#/components/responses/InternalServerError'
   patch:
     tags:
       - Posts

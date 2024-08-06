@@ -8,9 +8,10 @@ interface QueryDtoType {
     category: any;
     page: any;
     limit: any;
+    guestLikeId: any;
 }
 
-export function validateQueryDtoWithPagination(dtoClass: any) {
+export function validateQueryDto(dtoClass: any) {
     // I. Express 미들웨어 반환
     return async (req: Request, res: Response, next: NextFunction) => {
         // I. plain -> dtoClass
@@ -39,6 +40,7 @@ export function validateQueryDtoWithPagination(dtoClass: any) {
             category: queryDto?.category ? queryDto.category : '',
             take: limitNum,
             skip: (pageNum - 1) * limitNum,
+            guestLikeId: queryDto?.guestLikeId ? queryDto.guestLikeId : '',
         };
         next();
     };

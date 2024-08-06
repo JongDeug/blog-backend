@@ -19,7 +19,8 @@ import {
 } from './comments/dto';
 import ROLES from '@utils/roles';
 import { verifyRoles } from '@middleware/verifyRoles';
-import { validateQueryDtoWithPagination } from '@middleware/validateQueryDtoWithPagination';
+import { validateQueryDto } from '@middleware/validateQueryDto';
+import { GetPostQueryDto } from './dto/get-post.query.dto';
 
 export class PostsController {
     path: string;
@@ -54,8 +55,8 @@ export class PostsController {
             this.updatePost,
         );
         this.router.delete('/:id', verifyRoles(ROLES.admin), this.deletePost);
-        this.router.get('/', validateQueryDtoWithPagination(GetPostsQueryDto), this.getPosts);
-        this.router.get('/:id', this.getPost);
+        this.router.get('/', validateQueryDto(GetPostsQueryDto), this.getPosts);
+        this.router.get('/:id', validateQueryDto(GetPostQueryDto), this.getPost);
         // =====================================================================================
         this.router.post('/like', validateDto(PostLikeDto), this.postLike);
         // =====================================================================================
@@ -176,6 +177,8 @@ export class PostsController {
         try {
             // I. JWT 필요 X
 
+            // I. query 같은 경우 validateQueryDto 에서 검증 후 req.body 로 값을 넘김
+
             // I. postsService.getPosts 호출
             const { posts, postCount } = await this.postsService.getPosts(
                 req.body.take,
@@ -194,14 +197,15 @@ export class PostsController {
         try {
             // I. JWT 필요 X
 
-            // I. param 으로 postId 받기, cookies 에서 postLikeGuestId 추출
+            // I. query 같은 경우 validateQueryDto 에서 검증 후 req.body 로 값을 넘김
+
+            // I. param 으로 postId 받기, query 로 guestLikeId 받기
             const { id } = req.params;
-            const { postLikeGuestId } = req.cookies;
 
             // I. postsService.getPost 호출
             const { post } = await this.postsService.getPost(
                 id,
-                postLikeGuestId,
+                req.body.guestLikeId,
             );
 
             res.status(200).json({ post });

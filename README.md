@@ -84,7 +84,7 @@
 |           | 1.3 로그인 갱신      | GET         | /auth/refresh                         | O     |
 |           | 1.4 로그아웃        | GET         | /auth/logout                          | O     |
 | 2. 게시글 관리 | 2.1 게시글 목록 조회   | GET         | /posts?search=&page=&limit=&category= | X     |
-|           | 2.2 게시글 상세 조회   | GET         | /posts/:id                            | X     |
+|           | 2.2 게시글 상세 조회   | GET         | /posts/:id?guestLikeId=               | X     |
 |           | 2.3 게시글 등록      | POST        | /posts                                | O     |
 |           | 2.4 게시글 수정      | PATCH       | /posts/:id                            | O     |
 |           | 2.5 게시글 삭제      | DELETE      | /posts/:id                            | O     |

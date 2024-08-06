@@ -309,11 +309,13 @@ paths:
                   posts:
                     type: array
                     items:
-                      $ref: '#/components/schemas/Post'
+                      $ref: '#/components/schemas/GetPosts'
                   postCount:
                     type: integer
                     description: 게시글 개수
                     example: 100
+        '500':
+          $ref: '#/components/responses/InternalServerError'
     post:
       tags:
         - Posts
@@ -346,6 +348,37 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
   '/posts/{id}':
+    get:
+      tags:
+        - Posts
+      summary: 게시글 상세 조회
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: 게시글 id
+          schema:
+            type: string
+        - name: guestLikeId
+          in: query
+          description: 게시글 좋아요 id(좋아요 누르면 발급되는 것)
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  post:
+                    $ref: '#/components/schemas/GetPost'
+        '404':
+          $ref: '#/components/responses/NotFoundPostError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
     patch:
       tags:
         - Posts
@@ -969,7 +1002,7 @@ components:
           type: string
           description: 비밀번호
           example: password1234
-    Post:
+    GetPosts:
       type: object
       properties:
         id:
@@ -990,6 +1023,172 @@ components:
           format: date-time
           description: 생성일
           example: '2024-08-05T10:16:45.027Z'
+    GetPost:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: 게시글 id
+          example: ce9ea4dd-640e-4943-9d45-09aa580189e6
+        title:
+          type: string
+          description: 제목
+          example: 조회해보려고
+        content:
+          type: string
+          description: 내용
+          example: 내용
+        createdAt:
+          type: string
+          format: date-time
+          description: 생성일
+          example: 2024-08-06T09:50:49.743Z
+        updatedAt:
+          type: string
+          format: date-time
+          description: 수정일
+          example: 2024-08-06T09:50:49.743Z
+        author:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+              description: 작성자 id
+              example: 53c0c4da-e038-4756-98fc-c60790777cfc
+            name:
+              type: string
+              description: 이름
+              example: test1
+            email:
+              type: string
+              description: 이메일
+              example: test1@gmail.com
+        tags:
+          type: array
+          items:
+            type: object
+            properties:
+              tagId:
+                type: string
+                description: 태그 id
+                example: 스케줄링
+        _count:
+          type: object
+          properties:
+            postLikes:
+              type: integer
+              description: 게시글 좋아요 수
+              example: 1
+        postLikes:
+          type: array
+          items:
+            type: object
+            properties:
+              guestId:
+                type: string
+                format: uuid
+                description: 비회원 id
+                example: c0be2750-2d7c-40d9-bd27-804e2f5da8e6
+        images:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+                description: 이미지 id
+                example: 8664f262-fcb5-49e3-be66-497e106cfe7b
+              url:
+                type: string
+                description: url
+                example: uploads/17229378497340.8048456280552347-Screenshot from 2024-07-13 19-09-51.png
+        comments:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+                description: 댓글 id
+                example: 18b47aa1-2c8f-4709-8a93-82b201993950
+              content:
+                type: string
+                description: 내용
+                example: 부모 댓글입니다(비회원)
+              author:
+                type: object
+                nullable: true
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                    description: 작성자 id
+                    example: 53c0c4da-e038-4756-98fc-c60790777cfc
+                  name:
+                    type: string
+                    description: 이름
+                    example: test1
+              guest:
+                type: object
+                nullable: true
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                    description: 비회원 id
+                    example: ff15e178-b7d1-40e9-a56c-9389d6569c02
+                  nickName:
+                    type: string
+                    description: 닉네임
+                    example: 익명123
+              childComments:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                      description: 댓글 id
+                      example: 138f5be5-4e3e-4c40-ba6e-40ae8528514a
+                    content:
+                      type: string
+                      description: 내용
+                      example: 자식 댓글입니다(비회원)
+                    author:
+                      type: object
+                      nullable: true
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                          description: 작성자 id
+                          example: 53c0c4da-e038-4756-98fc-c60790777cfc
+                        name:
+                          type: string
+                          description: 이름
+                          example: test1
+                    guest:
+                      type: object
+                      nullable: true
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                          description: 비회원 id
+                          example: e5d5e399-2b9d-4fb2-886a-9ea450463fea
+                        nickName:
+                          type: string
+                          description: 닉네임
+                          example: 익명123
+        isLiked:
+          type: boolean
+          description: 좋아요 유무
+          example: true
   responses:
     SuccessCreatedResponse:
       description: Created

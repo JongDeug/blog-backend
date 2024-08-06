@@ -211,7 +211,7 @@ describe('PostsController', () => {
 
         beforeEach(() => {
             req.params.id = 'mockPostId';
-            req.cookies.postLikeGuestId = 'mockGuestUserId';
+            req.body.guestLikeId = 'mockGuestLikeId';
         });
 
         test('should get a post successfully', async () => {
@@ -223,7 +223,7 @@ describe('PostsController', () => {
             expect(res.statusCode).toBe(200);
             expect(res._getJSONData()).toStrictEqual(mockReturnedPost);
             expect(res._isEndCalled()).toBeTruthy();
-            expect(postsServiceMock.getPost).toHaveBeenCalledWith(req.params.id, req.cookies.postLikeGuestId);
+            expect(postsServiceMock.getPost).toHaveBeenCalledWith(req.params.id, req.body.guestLikeId);
         });
 
         test('should handle error if postsService.getPost throws error', async () => {

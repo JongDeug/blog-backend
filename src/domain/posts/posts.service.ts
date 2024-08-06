@@ -231,38 +231,97 @@ export class PostsService {
         return { posts, postCount: posts.length };
     }
 
-    async getPost(postId: string, postLikeGuestId: string | undefined) {
+    async getPost(postId: string, guestLikeId: string) {
         // I. 게시글 상세 조회
-        const post = await this.findPostById(postId, {
-            tags: true,
-            _count: {
-                select: { postLikes: true },
+        const post = await database.post.findUnique({
+            where: {
+                id: postId,
             },
-            postLikes: true,
-            images: {
-                select: {
-                    id: true,
-                    url: true,
+            select: {
+                id: true,
+                title: true,
+                content: true,
+                createdAt: true,
+                updatedAt: true,
+                author: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                    },
                 },
-            },
-            author: {
-                select: {
-                    name: true,
+                tags: {
+                    select: {
+                        tagId: true,
+                    },
                 },
-            },
-            comments: {
-                where: {
-                    parentCommentId: null,
+                _count: {
+                    select: { postLikes: true },
                 },
-                include: {
-                    childComments: true,
+                postLikes: {
+                    select: {
+                        guestId: true,
+                    },
+                },
+                images: {
+                    select: {
+                        id: true,
+                        url: true,
+                    },
+                },
+                comments: {
+                    where: {
+                        parentCommentId: null,
+                    },
+                    select: {
+                        id: true,
+                        content: true,
+                        author: {
+                            select: {
+                                id: true,
+                                name: true,
+                            },
+                        },
+                        guest: {
+                            select: {
+                                id: true,
+                                nickName: true,
+                            },
+                        },
+                        childComments: {
+                            select: {
+                                id: true,
+                                content: true,
+                                author: {
+                                    select: {
+                                        id: true,
+                                        name: true,
+                                    },
+                                },
+                                guest: {
+                                    select: {
+                                        id: true,
+                                        nickName: true,
+                                    },
+                                },
+                            },
+                        },
+                    },
                 },
             },
         });
 
+        if (!post)
+            throw new CustomError(
+                404,
+                'Not Found',
+                '게시글을 찾을 수 없습니다',
+            );
+
+
         // I. 게시글 좋아요 여부
         const isLiked = post.postLikes.some(
-            (el) => el.guestId === postLikeGuestId,
+            (el) => el.guestId === guestLikeId,
         );
 
         return {
