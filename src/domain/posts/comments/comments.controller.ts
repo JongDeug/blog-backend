@@ -86,20 +86,20 @@ export class CommentsController {
             // I. JWT 인증 x
 
             // I. commentsService.createChildCommentGuest 호출
-            const { newChildCommentId, guestId, postId } =
+            const { newChildCommentId, guestCommentId, postId } =
                 await this.commentsService.createChildCommentGuest(req.body);
 
             // I. 쿠키에 배열로 저장
-            const cookiePostId = req.cookies[`${postId}`];
-            if (cookiePostId) {
-                let parse = JSON.parse(cookiePostId);
-                parse.push(guestId);
-                res.cookie(postId, JSON.stringify(parse), {});
-            } else {
-                res.cookie(postId, JSON.stringify([guestId]), {});
-            }
+            // const cookiePostId = req.cookies[`${postId}`];
+            // if (cookiePostId) {
+            //     let parse = JSON.parse(cookiePostId);
+            //     parse.push(guestId);
+            //     res.cookie(postId, JSON.stringify(parse), {});
+            // } else {
+            //     res.cookie(postId, JSON.stringify([guestId]), {});
+            // }
 
-            res.status(201).json({ newChildCommentId });
+            res.status(201).json({ newChildCommentId, guestCommentId, postId });
         } catch (err) {
             next(err);
         }

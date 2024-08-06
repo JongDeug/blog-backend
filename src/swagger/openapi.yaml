@@ -32,6 +32,8 @@ paths:
     $ref: './comments.yaml#/~1guest'
   /posts/child-comments:
     $ref: './comments.yaml#/~1child-comments'
+  /posts/child-comments/guest:
+    $ref: './comments.yaml#/~1child-comments~1guest'
 components:
   # schema
   schemas:
@@ -241,6 +243,38 @@ components:
           type: string
           description: 자식 댓글 내용(회원)
           example: 자식 댓글입니다(회원)
+    # createChildCommentGuestDto
+    CreateChildCommentGuestDto:
+      type: object
+      required:
+        - parentCommentId
+        - content
+        - nickName
+        - email
+        - password
+      properties:
+        parentCommentId:
+          type: string
+          format: uuid
+          description: 부모 댓글 id
+          example: 12345
+        content:
+          type: string
+          description: 자식 댓글 내용(비회원)
+          example: 자식 댓글입니다(비회원)
+        nickName:
+          type: string
+          description: 닉네임
+          example: 익명123
+        email:
+          type: string
+          format: email
+          description: 이메일
+          example: guest@example.com
+        password:
+          type: string
+          description: 비밀번호
+          example: password1234
 
   # responses
   responses:
@@ -346,3 +380,13 @@ components:
               error:
                 type: string
                 example: 유저를 찾을 수 없습니다 or 게시글을 찾을 수 없습니다
+    NotFoundCommentError:
+      description: Not Found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: 댓글을 찾을 수 없습니다

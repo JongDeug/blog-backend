@@ -236,7 +236,7 @@ export class CommentsService {
 
         return {
             newChildCommentId: newChildComment.id,
-            guestId: guest.id,
+            guestCommentId: guest.id,
             postId: parentComment.postId,
         };
     }

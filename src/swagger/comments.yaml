@@ -111,4 +111,36 @@
     tags:
       - Comments
     summary: 자식 댓글 생성(비회원)
-
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: './openapi.yaml#/components/schemas/CreateChildCommentGuestDto'
+    responses:
+      '201':
+        description: Created
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                newChildCommentId:
+                  type: string
+                  format: uuid
+                  description: 자식 댓글 id
+                  example: 12345
+                guestCommentId:
+                  type: string
+                  format: uuid
+                  description: 게스트 댓글 id
+                  example: 56789
+                postId:
+                  type: string
+                  format: uuid
+                  description: 게시글 id
+                  example: 13131
+      '404':
+        $ref: './openapi.yaml#/components/responses/NotFoundCommentError'
+      '500':
+        $ref: './openapi.yaml#/components/responses/InternalServerError'
