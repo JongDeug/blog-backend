@@ -24,7 +24,7 @@ export function validateQueryDto(dtoClass: any) {
                 .map(
                     (error) =>
                         // I. [형식] 프로퍼티 : 에러 메시지
-                        `${error.property}: ${Object.values(error.constraints!).join(', ')}`,
+                        `${error.property}: ${Object.values(error.constraints!).join(', ')}`
                 )
                 .join('\n ');
 
