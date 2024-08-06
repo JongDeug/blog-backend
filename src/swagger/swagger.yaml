@@ -494,15 +494,7 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
-          description: Not Found
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    example: 유저를 찾을 수 없습니다 or 댓글을 찾을 수 없습니다
+          $ref: '#/components/responses/NotFoundUserAndCommentError'
         '500':
           $ref: '#/components/responses/InternalServerError'
   /posts/child-comments/guest:
@@ -539,6 +531,62 @@ paths:
                     format: uuid
                     description: 게시글 id
                     example: 13131
+        '404':
+          $ref: '#/components/responses/NotFoundCommentError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  '/posts/comments/{id}':
+    patch:
+      tags:
+        - Comments
+      summary: 댓글 수정(회원)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: 수정할 댓글 id
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCommentDto'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessOkResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenCommentError'
+        '404':
+          $ref: '#/components/responses/NotFoundUserAndCommentError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  '/posts/comments/guest/{id}':
+    patch:
+      tags:
+        - Comments
+      summary: 댓글 수정(비회원)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: 수정할 댓글 id
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCommentGuestDto'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessOkResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedPWDError'
         '404':
           $ref: '#/components/responses/NotFoundCommentError'
         '500':
@@ -776,6 +824,29 @@ components:
           type: string
           description: 비밀번호
           example: password1234
+    UpdateCommentDto:
+      type: object
+      required:
+        - content
+      properties:
+        content:
+          type: string
+          description: 댓글 내용 수정(회원)
+          example: 댓글 수정합니다(회원)
+    UpdateCommentGuestDto:
+      type: object
+      required:
+        - content
+        - password
+      properties:
+        content:
+          type: string
+          description: 댓글 내용 수정(비회원)
+          example: 댓글 수정합니다(비회원)
+        password:
+          type: string
+          description: 비밀번호
+          example: password1234
   responses:
     SuccessCreatedResponse:
       description: Created
@@ -819,6 +890,16 @@ components:
               error:
                 type: string
                 example: 해당 API 를 사용할 권한이 없습니다
+    ForbiddenCommentError:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: 댓글에 대한 권한이 없습니다.
     UnauthorizedError:
       description: Unauthorized
       content:
@@ -829,6 +910,16 @@ components:
               error:
                 type: string
                 example: 잘못된 토큰입니다 or 만료된 토큰입니다 or 토큰을 보내고 있지 않습니다 or 서비스 이용은 access 토큰으로만 가능합니다 or 로그인을 진행해주세요
+    UnauthorizedPWDError:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: 비밀번호를 잘못 입력하셨습니다
     ConflictCategoryError:
       description: Conflict
       content:
@@ -889,3 +980,13 @@ components:
               error:
                 type: string
                 example: 댓글을 찾을 수 없습니다
+    NotFoundUserAndCommentError:
+      description: Not Found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: 유저를 찾을 수 없습니다 or 댓글을 찾을 수 없습니다

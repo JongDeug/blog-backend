@@ -255,7 +255,7 @@ export class CommentsService {
 
         // I. 권한 인증 (comment.authorId <=> user)
         if (comment.authorId !== user.id)
-            throw new CustomError(403, 'Forbidden', '권한이 없습니다');
+            throw new CustomError(403, 'Forbidden', '댓글에 대한 권한이 없습니다');
 
         // I. 댓글 수정
         await database.comment.update({

@@ -34,6 +34,10 @@ paths:
     $ref: './comments.yaml#/~1child-comments'
   /posts/child-comments/guest:
     $ref: './comments.yaml#/~1child-comments~1guest'
+  /posts/comments/{id}:
+    $ref: './comments.yaml#/~1{id}'
+  /posts/comments/guest/{id}:
+    $ref: './comments.yaml#/~1guest~1{id}'
 components:
   # schema
   schemas:
@@ -275,7 +279,31 @@ components:
           type: string
           description: 비밀번호
           example: password1234
-
+    # updateCommentDto
+    UpdateCommentDto:
+      type: object
+      required:
+        - content
+      properties:
+        content:
+          type: string
+          description: 댓글 내용 수정(회원)
+          example: 댓글 수정합니다(회원)
+    # updateCommentGuestDto
+    UpdateCommentGuestDto:
+      type: object
+      required:
+        - content
+        - password
+      properties:
+        content:
+          type: string
+          description: 댓글 내용 수정(비회원)
+          example: 댓글 수정합니다(비회원)
+        password:
+          type: string
+          description: 비밀번호
+          example: password1234
   # responses
   responses:
     SuccessCreatedResponse:
@@ -320,6 +348,16 @@ components:
               error:
                 type: string
                 example: 해당 API 를 사용할 권한이 없습니다
+    ForbiddenCommentError:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: 댓글에 대한 권한이 없습니다.
     UnauthorizedError:
       description: Unauthorized
       content:
@@ -330,6 +368,16 @@ components:
               error:
                 type: string
                 example: 잘못된 토큰입니다 or 만료된 토큰입니다 or 토큰을 보내고 있지 않습니다 or 서비스 이용은 access 토큰으로만 가능합니다 or 로그인을 진행해주세요
+    UnauthorizedPWDError:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: 비밀번호를 잘못 입력하셨습니다
     ConflictCategoryError:
       description: Conflict
       content:
@@ -390,3 +438,13 @@ components:
               error:
                 type: string
                 example: 댓글을 찾을 수 없습니다
+    NotFoundUserAndCommentError:
+      description: Not Found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: 유저를 찾을 수 없습니다 or 댓글을 찾을 수 없습니다
