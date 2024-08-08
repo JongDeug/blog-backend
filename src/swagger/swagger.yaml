@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   version: ''
-  title: Jongdeug's Blog API Docs
+  title: Blog API Docs
   description: 블로그 API 명세서입니다.
   license:
     name: Jongdeug
