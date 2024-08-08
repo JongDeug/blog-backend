@@ -91,13 +91,6 @@ paths:
       tags:
         - Auth
       summary: 토큰 리프레쉬
-      parameters:
-        - in: cookie
-          name: refreshToken
-          schema:
-            type: string
-          required: true
-          description: HttpOnly 쿠키에 들어있는 refresh token
       responses:
         '200':
           description: OK
@@ -126,13 +119,6 @@ paths:
       tags:
         - Auth
       summary: 로그아웃
-      parameters:
-        - in: cookie
-          name: accessToken
-          schema:
-            type: string
-          required: true
-          description: HttpOnly 쿠키에 들어있는 access token
       responses:
         '200':
           description: OK

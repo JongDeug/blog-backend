@@ -31,13 +31,13 @@ export class AuthController {
             // I. Http Only Cookie 를 사용해 토큰 전송
             res.cookie('accessToken', accessToken, {
                 httpOnly: true,
-                maxAge: 2 * 60 * 60 * 1000,
+                maxAge: 3 * 60 * 1000, // 3분
                 // sameSite: 'strict', // sameSite 속성 설정
                 // secure: true // HTTPS 연결에서만 쿠키가 전송되도록 설정
             });
             res.cookie('refreshToken', refreshToken, {
                 httpOnly: true,
-                maxAge: 24 * 60 * 60 * 1000,
+                maxAge: 7 * 24 * 60 * 60 * 1000, // 7일
                 // sameSite: 'strict', // sameSite 속성 설정
                 // secure: true // HTTPS 연결에서만 쿠키가 전송되도록 설정
             });
@@ -53,19 +53,19 @@ export class AuthController {
         try {
             // I. authService.login 에 req.body 넣기
             const { accessToken, refreshToken } = await this.authService.login(
-                req.body
+                req.body,
             );
 
             // I. Http Only Cookie 를 사용해 토큰 전송
             res.cookie('accessToken', accessToken, {
                 httpOnly: true,
-                maxAge: 2 * 60 * 60 * 1000,
+                maxAge: 3 * 60 * 1000, // 3분
                 // sameSite: 'strict', // sameSite 속성 설정
                 // secure: true // HTTPS 연결에서만 쿠키가 전송되도록 설정
             });
             res.cookie('refreshToken', refreshToken, {
                 httpOnly: true,
-                maxAge: 24 * 60 * 60 * 1000,
+                maxAge: 7 * 24 * 60 * 60 * 1000, // 7일
                 // sameSite: 'strict', // sameSite 속성 설정
                 // secure: true // HTTPS 연결에서만 쿠키가 전송되도록 설정
             });
@@ -86,8 +86,8 @@ export class AuthController {
                     new CustomError(
                         401,
                         'Unauthorized',
-                        '토큰을 보내고 있지 않습니다'
-                    )
+                        '토큰을 보내고 있지 않습니다',
+                    ),
                 );
 
             // I. cookie-parser 을 통해 refresh 토큰 추출
@@ -97,13 +97,13 @@ export class AuthController {
             // I. Http Only Cookie 를 사용해 토큰 전송
             res.cookie('accessToken', accessToken, {
                 httpOnly: true,
-                maxAge: 2 * 60 * 60 * 1000,
+                maxAge: 3 * 60 * 1000, // 3분
                 // sameSite: 'strict', // sameSite 속성 설정
                 // secure: true // HTTPS 연결에서만 쿠키가 전송되도록 설정
             });
             res.cookie('refreshToken', refreshToken, {
                 httpOnly: true,
-                maxAge: 24 * 60 * 60 * 1000,
+                maxAge: 7 * 24 * 60 * 60 * 1000, // 7일
                 // sameSite: 'strict', // sameSite 속성 설정
                 // secure: true // HTTPS 연결에서만 쿠키가 전송되도록 설정
             });
@@ -124,8 +124,8 @@ export class AuthController {
                     new CustomError(
                         401,
                         'Unauthorized',
-                        '토큰을 보내고 있지 않습니다'
-                    )
+                        '토큰을 보내고 있지 않습니다',
+                    ),
                 );
 
             // I. authService logout 호출 => DB refresh 를 null 로 만듦
