@@ -1,6 +1,6 @@
 {
   "name": "blog-backend",
-  "packageManager": "yarn@4.2.2",
+  "packageManager": "yarn@4.4.0",
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
     "@types/cookie-parser": "^1",
@@ -23,7 +23,6 @@
     "supertest": "^7.0.0",
     "ts-jest": "^29.1.4",
     "tsconfig-paths": "^4.2.0",
-    "tsx": "^4.15.6",
     "typescript": "5.4.5"
   },
   "dependencies": {
@@ -41,15 +40,18 @@
     "reflect-metadata": "^0.2.2",
     "swagger-cli": "^4.0.4",
     "swagger-ui-express": "^5.0.1",
+    "tsx": "^4.15.6",
     "yamljs": "^0.3.0"
   },
   "scripts": {
+    "postinstall": "yarn pnpify prisma generate",
     "build": "tsc",
-    "dev": "yarn api-docs && tsx watch --clear-screen=false ./src/index.ts",
     "test": "jest",
+    "test:coverage": "jest --coverage",
     "check": "tsc --noEmit && prettier 'src/**/*.ts' --check && rm -r node_modules",
     "format": "prettier 'src/**/*.ts' --write && rm -r node_modules",
-    "coverage": "jest --coverage",
-    "api-docs": "swagger-cli bundle ./src/swagger/openapi.yaml --outfile ./src/swagger/swagger.yaml --type yaml"
+    "dev": "yarn pnpify prisma generate && yarn pnpify prisma migrate dev --name init && yarn api-docs && tsx watch --clear-screen=false ./src/index.ts",
+    "api-docs": "swagger-cli bundle ./src/swagger/openapi.yaml --outfile ./src/swagger/swagger.yaml --type yaml",
+    "start:prod": "yarn pnpify prisma migrate deploy && tsx dist/src/index.js"
   }
 }

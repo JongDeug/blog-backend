@@ -130,10 +130,10 @@
   },
   "include": [
     "src/**/*",
-    "test/**/*",
+    "src/**/*.yaml" // swagger 포함
   ],
   "exclude": [
     "node_modules",
-    "dist"
+    "src/test"
   ]
 }

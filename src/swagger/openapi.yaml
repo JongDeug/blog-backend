@@ -6,7 +6,7 @@ info:
   license:
     name: Jongdeug
 servers:
-  - url: http://localhost:8000/
+  - url: https://jongdeug.port0.org:8080/
 paths:
   /auth/register:
     $ref: './auth.yaml#/~1register'
