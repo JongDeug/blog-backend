@@ -1,6 +1,6 @@
 import { PostsService } from '../../../../src/domain/posts/posts.service';
 import { prismaMock } from '../../../singleton';
-import { Image, Post, Prisma, User } from '@prisma';
+import { Image, Post, Prisma, User } from '../../../../prisma/prisma-client';
 import { CustomError } from '@utils/customError';
 import { deleteImage } from '@utils/filesystem';
 import { UsersService } from '../../../../src/domain/users/users.service';

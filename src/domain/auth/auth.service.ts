@@ -3,7 +3,7 @@ import database from '@utils/database';
 import bcrypt from 'bcrypt';
 import jwt, { Secret, VerifyOptions } from 'jsonwebtoken';
 import { LoginDto, RegisterDto } from './dto';
-import { User } from '@prisma';
+import { User } from '../../../prisma/prisma-client';
 import { CustomJwtPayload } from '@custom-type/customJwtPayload';
 
 export class AuthService {

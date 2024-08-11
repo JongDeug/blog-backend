@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { Image } from '@prisma';
+import { Image } from '../../prisma/prisma-client';
 
 const filepath = path.join(__dirname, '../../');
 

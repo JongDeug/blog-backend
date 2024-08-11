@@ -1,5 +1,5 @@
 import { prismaMock } from '../../../singleton';
-import { User } from '@prisma';
+import { User } from '../../../../prisma/prisma-client';
 import { CustomError } from '@utils/customError';
 import { UsersService } from '../../../../src/domain/users/users.service';
 

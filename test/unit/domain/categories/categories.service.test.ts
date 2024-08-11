@@ -1,4 +1,4 @@
-import { Prisma } from '@prisma';
+import { Prisma } from '../../../../prisma/prisma-client';
 import { CategoriesService } from '../../../../src/domain/categories/categories.service';
 import { prismaMock } from '../../../singleton';
 import { CustomError } from '@utils/customError';

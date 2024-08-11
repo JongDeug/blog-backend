@@ -1,6 +1,6 @@
 import httpMocks from 'node-mocks-http';
 import { NextFunction, Request, Response } from 'express';
-import { User } from '@prisma';
+import { User } from '../../../prisma/prisma-client';
 import { jwtVerify } from '@middleware/jwtVerify';
 import { AuthService } from '../../../src/domain/auth/auth.service';
 import { UsersService } from '../../../src/domain/users/users.service';

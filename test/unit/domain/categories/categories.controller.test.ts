@@ -2,7 +2,7 @@ import { CategoriesController } from '../../../../src/domain/categories/categori
 import { CategoriesService } from '../../../../src/domain/categories/categories.service';
 import { NextFunction, Request, Response } from 'express';
 import httpMocks from 'node-mocks-http';
-import { User } from '@prisma';
+import { User } from '../../../../prisma/prisma-client';
 import { CustomError } from '@utils/customError';
 
 jest.mock('../../../../src/domain/categories/categories.service');
@@ -164,7 +164,7 @@ describe('CategoriesController', () => {
             await categoriesController.getCategories(req, res, next);
             // then
             expect(next).toHaveBeenCalledWith(new Error('데이터베이스: 카테고리 조회 오류'));
-        })
+        });
     });
     // ---
 });

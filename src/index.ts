@@ -10,16 +10,15 @@ import * as path from 'node:path';
 import { AuthService } from './domain/auth/auth.service';
 import swaggerUi from 'swagger-ui-express';
 import YAML from 'yamljs';
-import process from 'node:process';
 
 // --- 즉시 실행 함수
 (async () => {
     const app = express();
-    await database.$connect() // connect db
+    await database.$connect(); // connect db
 
     // --- Swagger
     const swaggerSpec = YAML.load(
-        path.join(__dirname, './swagger/swagger.yaml'),
+        path.join(__dirname, './swagger/swagger.yaml')
     );
     app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
     // ---
@@ -50,7 +49,7 @@ import process from 'node:process';
     // ---
 
     app.listen(process.env.PORT, () =>
-        console.log(`Server running on port ${process.env.PORT}`),
+        console.log(`Server running on port ${process.env.PORT}`)
     );
 })();
 // ---
