@@ -1,12 +1,51 @@
+# ---------------------------------------- PRODUCTION ---------------------------------------- #
 version: '3'
 services:
-  db:
+  db: # Mysql 컨테이너
+    networks:
+      - app
     image: mysql:latest
     container_name: blog-backend-mysql
     restart: always
     ports:
-      - 3306:3306
+      - ${DATABASE_PORT}:${DATABASE_PORT}
     environment:
-      MYSQL_ROOT_PASSWORD: 1234
+      MYSQL_ROOT_PASSWORD: ${DATABASE_PWD}
     volumes:
-      - ./mysql-data:/var/lib/mysql
+      - mysql-data:/var/lib/mysql # /var/lib/docker/volumes/blog-backend_mysql-data/_data 에 실제 저장됨
+
+  server: # API 서버 Express 컨테이너
+    networks:
+      - app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    container_name: blog-backend-server
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+    depends_on: # Mysql 컨테이너 의존
+      - db
+    ports:
+      - ${PORT}:${PORT}
+
+networks:
+  app:
+    driver: bridge # 두 컨테이너가 동일한 네트워크에 있어야 함
+
+volumes:
+  mysql-data:
+
+# ---------------------------------------- DEV ---------------------------------------- #
+#version: '3'
+#services:
+#  db:
+#    image: mysql:latest
+#    container_name: blog-backend-mysql
+#    restart: always
+#    ports:
+#      - 3306:3306
+#    environment:
+#      MYSQL_ROOT_PASSWORD: ${DATABASE_PWD}
+#    volumes:
+#      - ./mysql-data:/var/lib/mysql # 프로젝트 폴더에 저장

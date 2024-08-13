@@ -1,7 +1,7 @@
 import { CommentsService } from '../../../../../src/domain/posts/comments/comments.service';
 import { UsersService } from '../../../../../src/domain/users/users.service';
 import { PostsService } from '../../../../../src/domain/posts/posts.service';
-import { User, Comment, Prisma } from '@prisma';
+import { User, Comment, Prisma } from '../../../../../prisma/prisma-client';
 import { prismaMock } from '../../../../singleton';
 import { CustomError } from '@utils/customError';
 import bcrypt from 'bcrypt';

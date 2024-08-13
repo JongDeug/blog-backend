@@ -1,13 +1,8 @@
-import {
-    CreatePostDto,
-    GetPostsQueryDto,
-    PostLikeDto,
-    UpdatePostDto,
-} from './dto';
+import { CreatePostDto, PostLikeDto, UpdatePostDto } from './dto';
 import { CustomError } from '@utils/customError';
 import database from '@utils/database';
 import { deleteImage } from '@utils/filesystem';
-import { Prisma } from '@prisma';
+import { Prisma } from '../../../prisma/prisma-client';
 import { UsersService } from '../users/users.service';
 
 export class PostsService {

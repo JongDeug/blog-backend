@@ -1,7 +1,7 @@
 import { CreateCategoryDto, UpdateCategoryDto } from './dto';
 import database from '@utils/database';
 import { CustomError } from '@utils/customError';
-import { Prisma } from '@prisma';
+import { Prisma } from '../../../prisma/prisma-client';
 
 export class CategoriesService {
     constructor() {}

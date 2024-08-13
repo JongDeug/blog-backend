@@ -1,7 +1,8 @@
 import { prismaMock } from '../../../singleton';
-import { User } from '@prisma';
+import { User } from '../../../../prisma/prisma-client';
 import { CustomError } from '@utils/customError';
 import { UsersService } from '../../../../src/domain/users/users.service';
+import prisma from '../../../../src/utils/database';
 
 describe('UsersService Util Functions', () => {
     let usersService: UsersService;
@@ -40,8 +41,36 @@ describe('UsersService Util Functions', () => {
     });
     // ---
 
-    // --- createGuestForLike
-    describe('createGuestForLike', () => {
+    // --- FindGuestLikeById
+    describe('findGuestLikeById', () => {
+        beforeEach(() => {
+            mockData.guestLikeId = 'mockGuestLikeId';
+        });
+
+        test('should get a guestLike successfully', async () => {
+            // given
+            prismaMock.guestLike.findUnique.mockResolvedValue({ id: 'mockGuestLikeId' });
+            // when
+            const result = await usersService.findGuestLikeById(mockData.guestLikeId);
+            // then
+            expect(result).toStrictEqual({ id: 'mockGuestLikeId' });
+            expect(prismaMock.guestLike.findUnique).toHaveBeenCalledWith({ where: { id: mockData.guestLikeId } });
+        });
+
+        test('should throw error if guest is not found', async () => {
+            // given
+            prismaMock.guestLike.findUnique.mockResolvedValue(null);
+            // when, then
+            await expect(usersService.findGuestLikeById(mockData.guestLikeId)).rejects.toThrow(
+                new CustomError(404, 'Not Found', 'guestLikeId 를 찾을 수 없습니다'),
+            );
+            expect(prismaMock.guestLike.findUnique).toHaveBeenCalled();
+        });
+    });
+    // ---
+
+    // --- CreateGuestLike
+    describe('createGuestLike', () => {
         beforeEach(() => {
             mockData.returnedGuest = { id: 'mockGuestId' };
         });
@@ -58,8 +87,8 @@ describe('UsersService Util Functions', () => {
     });
     // ---
 
-    // --- createGuestForComment
-    describe('createGuestForComment', () => {
+    // --- CreateGuestComment
+    describe('createGuestComment', () => {
         beforeEach(() => {
             mockData.returnedGuest = {
                 id: 'mockGuestId',

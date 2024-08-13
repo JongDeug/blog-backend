@@ -9,6 +9,7 @@ generator client {
   provider        = "prisma-client-js"
   output          = "./prisma-client" // yarn PnP 전략 때문에 prisma-client를 저장할 node_modules 폴더가 없어서 직접 담을 폴더 생성.
   previewFeatures = ["prismaSchemaFolder"] // 파일 분리
+  binaryTargets   = ["native", "debian-openssl-1.1.x"]
 }
 
 generator markdown {
@@ -243,3 +244,4 @@ model Comment {
   guestId String?       @unique
   guest   GuestComment? @relation(fields: [guestId], references: [id])
 }
+

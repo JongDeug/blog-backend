@@ -13,7 +13,12 @@ import database from '@utils/database';
 import bcrypt from 'bcrypt';
 import transporter from '@utils/nodemailer';
 import { CustomError } from '@utils/customError';
-import { GuestComment, Prisma, Comment, User } from '@prisma';
+import {
+    GuestComment,
+    Prisma,
+    Comment,
+    User,
+} from '../../../../prisma/prisma-client';
 import ROLES from '@utils/roles';
 
 interface ExtendedComment extends Comment {

@@ -3,7 +3,7 @@ import httpMocks from 'node-mocks-http';
 import { PostsService } from '../../../../../src/domain/posts/posts.service';
 import { UsersService } from '../../../../../src/domain/users/users.service';
 import { CustomError } from '@utils/customError';
-import { User } from '@prisma';
+import { User } from '../../../../../prisma/prisma-client';
 import { CommentsController } from '../../../../../src/domain/posts/comments/comments.controller';
 import { CommentsService } from '../../../../../src/domain/posts/comments/comments.service';
 
