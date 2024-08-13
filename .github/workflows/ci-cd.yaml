@@ -38,8 +38,8 @@ jobs:
 
   build_and_push:
     runs-on: ubuntu-latest
-    needs: test
-    if: success() # test 성공 시 실행
+    needs: test_and_createEnv
+    if: success() # test_and_createEnv 성공 시 실행
 
     steps:
       - name: Checkout code
