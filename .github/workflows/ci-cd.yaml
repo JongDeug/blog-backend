@@ -35,9 +35,7 @@ jobs:
           echo "MAIL_PWD=${{ secrets.MAIL_PWD }}" >> .env
           echo "PASSWORD_SALT=${{ secrets.PASSWORD_SALT }}" >> .env
           echo "PORT=${{ secrets.PORT }}" >> .env
-
-      - name: 테스트
-        run: env
+          echo "PORT=${{ env.REGISTRY }}" >> .env
 
   build_and_push:
     runs-on: ubuntu-latest
