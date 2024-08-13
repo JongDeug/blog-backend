@@ -6,11 +6,11 @@ FROM node:22-alpine AS builder
 WORKDIR /usr/blog-backend-app
 
 # 프로젝트 복사
-COPY .pnp.cjs .yarnrc.yml yarn.lock package.json tsconfig.json      /usr/blog-backend-app/
-COPY ./.yarn/releases                                               /usr/blog-backend-app/.yarn/releases
-COPY ./.yarn/sdks                                                   /usr/blog-backend-app/.yarn/sdks
-COPY prisma                                                         /usr/blog-backend-app/prisma
-COPY src                                                            /usr/blog-backend-app/src
+COPY .pnp.cjs .yarnrc.yml yarn.lock package.json tsconfig.json .env     /usr/blog-backend-app/
+COPY ./.yarn/releases                                                   /usr/blog-backend-app/.yarn/releases
+COPY ./.yarn/sdks                                                       /usr/blog-backend-app/.yarn/sdks
+COPY prisma                                                             /usr/blog-backend-app/prisma
+COPY src                                                                /usr/blog-backend-app/src
 
 # yarn berry 설정
 RUN yarn set version berry
@@ -25,6 +25,7 @@ WORKDIR /app
 
 # 최적화
 COPY --from=builder /usr/blog-backend-app/.pnp.cjs                  /app/.pnp.cjs
+COPY --from=builder /usr/blog-backend-app/.env                      /app/.env
 COPY --from=builder /usr/blog-backend-app/.yarnrc.yml               /app/.yarnrc.yml
 COPY --from=builder /usr/blog-backend-app/yarn.lock                 /app/yarn.lock
 COPY --from=builder /usr/blog-backend-app/package.json              /app/package.json

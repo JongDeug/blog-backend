@@ -17,10 +17,7 @@ services:
   server: # API 서버 Express 컨테이너
     networks:
       - app
-    build:
-      context: .
-      dockerfile: Dockerfile
-#    image: ghcr.io/${{ github.repository }}:blog-backend-server
+    image: ${REGISTRY}/${IMAGE_NAME}:main
     restart: always
     container_name: blog-backend-server
     environment:
