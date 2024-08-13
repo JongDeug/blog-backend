@@ -8,6 +8,7 @@ on:
 
 jobs:
   test_and_createEnv:
+    environment: prod # 환경 변수 설정
     runs-on: ubuntu-latest
 
     steps:
