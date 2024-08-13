@@ -8,7 +8,6 @@ on:
 
 jobs:
   test_and_createEnv:
-    environment: prod # 환경 변수 설정
     runs-on: ubuntu-latest
 
     steps:
@@ -36,7 +35,6 @@ jobs:
           echo "MAIL_PWD=${{ secrets.MAIL_PWD }}" >> .env
           echo "PASSWORD_SALT=${{ secrets.PASSWORD_SALT }}" >> .env
           echo "PORT=${{ secrets.PORT }}" >> .env
-          echo "TEST=${{ vars.PORT }}" >> .env
 
   build_and_push:
     environment: prod # 환경 변수 설정
