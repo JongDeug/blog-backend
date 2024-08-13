@@ -26,7 +26,6 @@ jobs:
       - name: Run tests
         run: yarn test
 
-
   build_and_push:
     environment: prod # github environments, 그냥 써봄
     runs-on: ubuntu-latest
