@@ -36,6 +36,9 @@ jobs:
           echo "PASSWORD_SALT=${{ secrets.PASSWORD_SALT }}" >> .env
           echo "PORT=${{ secrets.PORT }}" >> .env
 
+      - name: 테스트
+        run: env
+
   build_and_push:
     runs-on: ubuntu-latest
     needs: test_and_createEnv
