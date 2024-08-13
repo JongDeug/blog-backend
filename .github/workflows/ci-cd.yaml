@@ -86,6 +86,22 @@ jobs:
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
-          script: whoami
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            # docker-compose 파일 download
+            cd blog-backend
+            wget https://github.com/JongDeug/blog-backend/blob/main/docker-compose.yaml
+            
+            # .env 파일 생성
+            echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" > .env
+            echo "DATABASE_PORT=${{ secrets.DATABASE_PORT }}" >> .env
+            echo "DATABASE_PWD=${{ secrets.DATABASE_PWD }}" >> .env
+            echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
+            echo "MAIL_ID=${{ secrets.MAIL_ID }}" >> .env
+            echo "MAIL_PWD=${{ secrets.MAIL_PWD }}" >> .env
+            echo "PASSWORD_SALT=${{ secrets.PASSWORD_SALT }}" >> .env
+            echo "PORT=${{ secrets.PORT }}" >> .env
+              
+            docker compose pull
+            docker compose up -d 
