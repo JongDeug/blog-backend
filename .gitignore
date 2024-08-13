@@ -11,7 +11,7 @@
 
 #!.yarn/cache
 # Zero-install
-.pnp.*
+#.pnp.*
 
 # chore
 .idea
