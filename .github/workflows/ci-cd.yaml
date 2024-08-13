@@ -57,7 +57,7 @@ jobs:
       - name: Log in to Github Container Registry
         uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
         with:
-          registry: ${{ prod.REGISTRY }}
+          registry: ${{ vars.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
@@ -65,7 +65,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
         with:
-          images: ${{ prod.REGISTRY }}/${{ prod.IMAGE_NAME }}
+          images: ${{ vars.REGISTRY }}/${{ vars.IMAGE_NAME }}
 
       - name: Build and push Docker image to Github Container Registry
         id: push
