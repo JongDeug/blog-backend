@@ -1,6 +1,7 @@
 # Multi-Stage builds
 # ----------------------------------- Builder ----------------------------------- #
-FROM node:22-alpine AS builder
+# arm64 => 라즈베리파이
+FROM --platform=linux/arm64 node:22-alpine AS builder
 
 # 존재하지 않을 경우 생성
 WORKDIR /usr/blog-backend-app
@@ -18,7 +19,7 @@ RUN yarn set version berry
 RUN yarn install --immutable && yarn build
 
 # ----------------------------------- Runner ----------------------------------- #
-FROM node:22-alpine AS runner
+FROM --platform=linux/arm64 node:22-alpine AS runner
 
 ENV NODE_ENV=production
 WORKDIR /app
