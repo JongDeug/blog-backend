@@ -5,6 +5,7 @@ import jwt, { Secret, VerifyOptions } from 'jsonwebtoken';
 import { LoginDto, RegisterDto } from './dto';
 import { User } from '../../../prisma/prisma-client';
 import { CustomJwtPayload } from '@custom-type/customJwtPayload';
+import process from 'node:process';
 
 export class AuthService {
     async register(dto: RegisterDto) {
@@ -18,13 +19,13 @@ export class AuthService {
             throw new CustomError(
                 409,
                 'Conflict',
-                '이미 존재하는 이메일 입니다'
+                '이미 존재하는 이메일 입니다',
             );
 
         // I. 유저 생성, bcrypt 로 비밀번호 복호화
         const hashedPwd = await bcrypt.hash(
             dto.password,
-            Number(process.env.PASSWORD_SALT)
+            Number(process.env.PASSWORD_SALT),
         );
         const user = await database.user.create({
             data: {
@@ -58,7 +59,7 @@ export class AuthService {
             throw new CustomError(
                 404,
                 'Not Found',
-                '가입되지 않은 이메일 입니다'
+                '가입되지 않은 이메일 입니다',
             );
 
         // I. 유저가 있다면 password 를 가져와서 bcrypt.compare 함수로 비교
@@ -69,7 +70,7 @@ export class AuthService {
             throw new CustomError(
                 401,
                 'Unauthorized',
-                '비밀번호를 잘못 입력하셨습니다'
+                '비밀번호를 잘못 입력하셨습니다',
             );
 
         // I. 인증이 완료되면 accessToken, refreshToken 발급
@@ -95,7 +96,7 @@ export class AuthService {
             throw new CustomError(
                 401,
                 'Unauthorized',
-                '토큰 재발급은 refresh 토큰으로만 가능합니다'
+                '토큰 재발급은 refresh 토큰으로만 가능합니다',
             );
 
         // I. DB 에서 해당 user 를 가져옴
@@ -107,7 +108,7 @@ export class AuthService {
             throw new CustomError(
                 401,
                 'Unauthorized',
-                '토큰 유효성 검증에 실패했습니다'
+                '토큰 유효성 검증에 실패했습니다',
             );
 
         // I. refresh 토큰은 사용될 때마다 다시 rotation
@@ -132,7 +133,7 @@ export class AuthService {
             throw new CustomError(
                 401,
                 'Unauthorized',
-                '로그아웃은 access 토큰으로만 가능합니다'
+                '로그아웃은 access 토큰으로만 가능합니다',
             );
 
         // I. decoded 정보를 가지고 User 의 refresh field 삭제 => *유저가 없어도 에러 발생시키지 않아야 됨. // 없으면 null 반환
@@ -160,6 +161,10 @@ export class AuthService {
             type: isRefreshToken ? 'refresh' : 'access',
         };
 
+        if (!process.env.JWT_SECRET) {
+            new CustomError(500, 'Internal Server Error', 'JWT_SECRET 키가 존재하지 않습니다');
+        }
+
         return jwt.sign(payload, process.env.JWT_SECRET as Secret, {
             expiresIn: isRefreshToken ? '1d' : '1h',
         });
@@ -178,7 +183,7 @@ export class AuthService {
                     throw new CustomError(
                         401,
                         'Unauthorized',
-                        '만료된 토큰입니다'
+                        '만료된 토큰입니다',
                     );
                 }
             }

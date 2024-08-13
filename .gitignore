@@ -25,6 +25,7 @@ node_modules/
 #DB
 mysql-data
 prisma/*
+!prisma/migrations
 !prisma/schema.prisma
 !prisma/ERD.md
 

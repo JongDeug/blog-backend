@@ -17,10 +17,6 @@ RUN yarn set version berry
 # yarn.lock package.json 일관성 유지 및 빌드
 RUN yarn install --immutable && yarn build
 
-#COPY . .
-
-#RUN #yarn build
-
 # ----------------------------------- Runner ----------------------------------- #
 FROM node:22-bullseye-slim AS runner
 
@@ -39,6 +35,7 @@ COPY --from=builder /usr/blog-backend-app/src/swagger               /app/dist/sw
 
 # 캐시 삭제 후 이동
 RUN rm -rf ./.yarn/cache
+RUN rm -rf ./.yarn/unplugged
 COPY --from=builder /usr/blog-backend-app/.yarn                     /app/.yarn
 
 # Docker 컨테이너가 사용할 포트
