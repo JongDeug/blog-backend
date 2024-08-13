@@ -91,7 +91,7 @@ jobs:
           script: |
             # docker-compose 파일 download
             cd blog-backend
-            wget -O docker-compose.yaml https://github.com/JongDeug/blog-backend/blob/main/docker-compose.yaml
+            wget -O docker-compose.yaml https://raw.github.com/JongDeug/blog-backend/blob/main/docker-compose.yaml
             
             # .env 파일 생성
             echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" > .env
