@@ -11,5 +11,6 @@ module.exports = {
   },
   coveragePathIgnorePatterns: [ // coverage 무시
     "/prisma/",
+    "/dist/"
   ],
 };

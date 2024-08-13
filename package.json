@@ -1,6 +1,6 @@
 {
   "name": "blog-backend",
-  "packageManager": "yarn@4.2.2",
+  "packageManager": "yarn@4.4.0",
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
     "@types/cookie-parser": "^1",
@@ -45,7 +45,7 @@
   },
   "scripts": {
     "postinstall": "yarn pnpify prisma generate",
-    "build": "tsc --project tsconfig.json && tsc-alias -p tsconfig.json",
+    "build": "tsc && tsc-alias",
     "test": "jest",
     "test:coverage": "jest --coverage",
     "check": "tsc --noEmit && prettier 'src/**/*.ts' --check && rm -r node_modules",

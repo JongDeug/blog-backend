@@ -6,12 +6,20 @@ FROM node:22-bullseye-slim AS builder
 WORKDIR /usr/blog-backend-app
 
 # 프로젝트 복사
-COPY . .
+COPY .pnp.cjs .yarnrc.yml yarn.lock package.json tsconfig.json      /usr/blog-backend-app/
+COPY ./.yarn/releases                                               /usr/blog-backend-app/.yarn/releases
+COPY ./.yarn/sdks                                                   /usr/blog-backend-app/.yarn/sdks
+COPY prisma                                                         /usr/blog-backend-app/prisma
+COPY src                                                            /usr/blog-backend-app/src
 
 # yarn berry 설정
 RUN yarn set version berry
 # yarn.lock package.json 일관성 유지 및 빌드
 RUN yarn install --immutable && yarn build
+
+#COPY . .
+
+#RUN #yarn build
 
 # ----------------------------------- Runner ----------------------------------- #
 FROM node:22-bullseye-slim AS runner
@@ -35,7 +43,7 @@ COPY --from=builder /usr/blog-backend-app/.yarn                     /app/.yarn
 
 # Docker 컨테이너가 사용할 포트
 EXPOSE 8080
-# 서버가 사용할 포트
+# API 서버가 사용할 포트
 ENV PORT=8080
 
 CMD ["yarn", "start:prod"]
