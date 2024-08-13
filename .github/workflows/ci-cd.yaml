@@ -8,9 +8,8 @@ on:
 
 # 해야할 작업
 jobs:
-  test_and_createEnv:
+  test:
     runs-on: ubuntu-latest
-    environment: prod # github environments, 안써도 되는데 그냥 써봄
 
     steps:
       - name: Checkout code
@@ -27,6 +26,23 @@ jobs:
       - name: Run tests
         run: yarn test
 
+
+  build_and_push:
+    environment: prod # github environments, 그냥 써봄
+    runs-on: ubuntu-latest
+    needs: test
+
+    # github 참고
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Create .env file
         run: |
           echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> .env
@@ -39,22 +55,6 @@ jobs:
           echo "PORT=${{ secrets.PORT }}" >> .env
           echo "REGISTRY=${{ vars.REGISTRY }}" >> .env
           echo "IMAGE_NAME=${{ vars.IMAGE_NAME }}" >> .env
-
-  build_and_push:
-    environment: prod
-    runs-on: ubuntu-latest
-    needs: test_and_createEnv
-
-    # github 참고
-    permissions:
-      contents: read
-      packages: write
-      attestations: write
-      id-token: write
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
 
       - name: Log in to Github Container Registry
         uses: docker/login-action@v3
