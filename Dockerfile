@@ -1,6 +1,6 @@
 # Multi-Stage builds
 # ----------------------------------- Builder ----------------------------------- #
-FROM node:22-bullseye-slim AS builder
+FROM node:22-alpine AS builder
 
 # 존재하지 않을 경우 생성
 WORKDIR /usr/blog-backend-app
@@ -18,7 +18,7 @@ RUN yarn set version berry
 RUN yarn install --immutable && yarn build
 
 # ----------------------------------- Runner ----------------------------------- #
-FROM node:22-bullseye-slim AS runner
+FROM node:22-alpine AS runner
 
 ENV NODE_ENV=production
 WORKDIR /app
@@ -34,13 +34,10 @@ COPY --from=builder /usr/blog-backend-app/prisma                    /app/prisma
 COPY --from=builder /usr/blog-backend-app/src/swagger               /app/dist/swagger
 
 # 캐시 삭제 후 이동
-RUN rm -rf ./.yarn/cache
-RUN rm -rf ./.yarn/unplugged
+RUN rm -rf ./.yarn/cache ./.yarn/unplugged
 COPY --from=builder /usr/blog-backend-app/.yarn                     /app/.yarn
 
 # Docker 컨테이너가 사용할 포트
 EXPOSE 8080
-# API 서버가 사용할 포트
-ENV PORT=8080
 
 CMD ["yarn", "start:prod"]

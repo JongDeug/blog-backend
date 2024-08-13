@@ -20,6 +20,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+#    image: ghcr.io/${{ github.repository }}:blog-backend-server
     restart: always
     container_name: blog-backend-server
     environment:

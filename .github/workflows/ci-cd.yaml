@@ -24,3 +24,40 @@ jobs:
 
       - name: Run tests
         run: yarn test
+
+  build_and_push:
+    runs-on: ubuntu-latest
+    needs: test
+    if: success() # test 성공 시 실행
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Create .env file
+        run: |
+          echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> .env
+          echo "DATABASE_PORT=${{ secrets.DATABASE_URL }}" >> .env
+          echo "DATABASE_PWD=${{ secrets.DATABASE_URL }}" >> .env
+          echo "JWT_SECRET=${{ secrets.DATABASE_URL }}" >> .env
+          echo "MAIL_ID=${{ secrets.DATABASE_URL }}" >> .env
+          echo "MAIL_PWD=${{ secrets.DATABASE_URL }}" >> .env
+          echo "PASSWORD_SALT=${{ secrets.DATABASE_URL }}" >> .env
+          echo "PORT=${{ secrets.DATABASE_URL }}" >> .env
+
+      - name: Log in to Github Container Registry
+        uses: docker/login-actions@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build Docker Image and Push it to GHCR
+        run: |
+          docker build . -t ghcr.io/${{ github.repository }}:blog-backend-server
+          docker push ghcr.io/${{ github.repository }}:blog-backend-server
