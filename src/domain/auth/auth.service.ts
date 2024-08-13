@@ -5,7 +5,6 @@ import jwt, { Secret, VerifyOptions } from 'jsonwebtoken';
 import { LoginDto, RegisterDto } from './dto';
 import { User } from '../../../prisma/prisma-client';
 import { CustomJwtPayload } from '@custom-type/customJwtPayload';
-import process from 'node:process';
 
 export class AuthService {
     async register(dto: RegisterDto) {
@@ -160,10 +159,6 @@ export class AuthService {
             email: user.email,
             type: isRefreshToken ? 'refresh' : 'access',
         };
-
-        if (!process.env.JWT_SECRET) {
-            new CustomError(500, 'Internal Server Error', 'JWT_SECRET 키가 존재하지 않습니다');
-        }
 
         return jwt.sign(payload, process.env.JWT_SECRET as Secret, {
             expiresIn: isRefreshToken ? '1d' : '1h',
