@@ -6,7 +6,7 @@ info:
   license:
     name: Jongdeug
 servers:
-  - url: 'https://jongdeug.port0.org:8080/'
+  - url: 'http://jongdeug.port0.org'
 paths:
   /auth/register:
     post:

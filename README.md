@@ -1,15 +1,8 @@
 # 🌐 blog-backend
 
-## 📌 프로젝트 정보
-
-블로그 백엔드 프로젝트 <br>
-개발기간: 2024.06.04 ~
-
-## 📌 배포 주소
-
 ## 📌 프로젝트 소개
 
-개인 블로그 운영(브랜딩)을 위한 백엔드 서버입니다.
+개인 블로그 운영(브랜딩)을 위한 백엔드 서버입니다. (2024.06 ~ .)
 
 ### 프로젝트를 진행하게된 계기
 
@@ -32,16 +25,23 @@
 ![Prisma](https://img.shields.io/badge/Prisma-2D3748?style=for-the-badge&logo=prisma&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
 
-[//]: # (## 📌 화면 구성/API 주소)
+## 📌 배포 주소
+
+**API** - http://jongdeug.port0.org  
+
+**Swagger API DOCS(admin, 1234)** - http://jongdeug.port0.org/api-docs
 
 ## 📌 주요 기능
 
-- 게시글 CRUD
-- 비회원 댓글 작성, 게시글 좋아요
+- 블로그 게시글 CRUD
+- 비회원 게시글 좋아요
+- 비회원 댓글 작성
+- 이메일 알림
 
 ## 📌 아키텍처
 
-## 📌 기타 추가 사항들
+[//]: # (## 📌 기타 추가 사항들)
+[//]: # (## 📌 화면 구성/API 주소)
 
 ## 📌 기능 리스트 
 
