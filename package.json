@@ -55,6 +55,6 @@
     "swagger": "swagger-cli bundle ./src/swagger/openapi.yaml --outfile ./swagger.yaml --type yaml",
     "prisma:generate": "yarn pnpify prisma generate",
     "prisma:migrate:dev": "yarn prisma migrate dev",
-    "prisma:migrate:prod": "yarn prisma generate deploy"
+    "prisma:migrate:prod": "yarn prisma migrate deploy"
   }
 }
