@@ -17,9 +17,7 @@ services:
   server: # API 서버 Express 컨테이너
     networks:
       - app
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: ${REGISTRY}/${IMAGE_NAME}
     restart: always
     container_name: blog-backend-server
     environment:
