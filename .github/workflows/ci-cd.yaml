@@ -88,7 +88,6 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            
             # docker-compose 파일 download
             cd blog-backend
             wget -O docker-compose.yaml https://raw.github.com/JongDeug/blog-backend/main/docker-compose.yaml
@@ -103,4 +102,5 @@ jobs:
             
             # docker stop => pull, build, run
             docker compose down
-            docker compose up --build -d
+            docker compose pull
+            docker compose up -d
