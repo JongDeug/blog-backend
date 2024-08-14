@@ -27,7 +27,7 @@ jobs:
         run: yarn test
 
   build_and_push:
-    environment: prod # github environments, 그냥 써봄
+    environment: prod # github environments, vars.
     runs-on: ubuntu-latest
     needs: test
 
@@ -52,8 +52,6 @@ jobs:
           echo "MAIL_PWD=${{ secrets.MAIL_PWD }}" >> .env
           echo "PASSWORD_SALT=${{ secrets.PASSWORD_SALT }}" >> .env
           echo "PORT=${{ secrets.PORT }}" >> .env
-          echo "REGISTRY=${{ vars.REGISTRY }}" >> .env
-          echo "IMAGE_NAME=${{ vars.IMAGE_NAME }}" >> .env
 
       - name: Log in to Github Container Registry
         uses: docker/login-action@v3
@@ -94,7 +92,7 @@ jobs:
             cd blog-backend
             wget -O docker-compose.yaml https://raw.github.com/JongDeug/blog-backend/main/docker-compose.yaml
             
-            # docker-compose.yaml 에 필요한 .env 파일 생성
+            # docker-compose.yaml에 필요한 .env 파일 생성
             echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> .env
             echo "DATABASE_PORT=${{ secrets.DATABASE_PORT }}" >> .env
             echo "DATABASE_PWD=${{ secrets.DATABASE_PWD }}" >> .env

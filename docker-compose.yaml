@@ -1,4 +1,4 @@
-## ---------------------------------------- PRODUCTION ---------------------------------------- #
+# ---------------------------------------- PRODUCTION ---------------------------------------- #
 version: '3'
 services:
   db: # Mysql 컨테이너
@@ -17,7 +17,12 @@ services:
   server: # API 서버 Express 컨테이너
     networks:
       - app
+    # --- PRODUCTION --- #
     image: ${REGISTRY}/${IMAGE_NAME}:main
+    # --- DEV --- #
+    #    build:
+    #      context: .
+    #      dockerfile: Dockerfile
     restart: always
     container_name: blog-backend-server
     environment:
@@ -46,4 +51,6 @@ volumes:
 #    environment:
 #      MYSQL_ROOT_PASSWORD: ${DATABASE_PWD}
 #    volumes:
-#      - ./mysql-data:/var/lib/mysql # 프로젝트 폴더에 저장
+#      - mysql-data:/var/lib/mysql
+#volumes:
+#  mysql-data:

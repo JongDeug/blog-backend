@@ -1,45 +1,42 @@
-# Multi-Stage builds
+# [Multi-Stage builds]
+# 해당 빌드는 linux/amd64 를 사용함
+# 하지만 라즈베리파이는 linux/arm64 를 사용함
+# 라즈베리파이에서 QEMU 를 다운로드 후 에뮬레이터로 돌려야함
 # ----------------------------------- Builder ----------------------------------- #
-# arm64 => 라즈베리파이
-FROM --platform=linux/arm64 node:22-alpine AS builder
+FROM node:22-alpine AS builder
 
 # 존재하지 않을 경우 생성
-WORKDIR /usr/blog-backend-app
+WORKDIR /app/blog-backend-app
 
-# 프로젝트 복사
-COPY .pnp.cjs .yarnrc.yml yarn.lock package.json tsconfig.json .env     /usr/blog-backend-app/
-COPY ./.yarn/releases                                                   /usr/blog-backend-app/.yarn/releases
-COPY ./.yarn/sdks                                                       /usr/blog-backend-app/.yarn/sdks
-COPY prisma                                                             /usr/blog-backend-app/prisma
-COPY src                                                                /usr/blog-backend-app/src
+# 프로젝트 복사 (dockerignore 참고)
+COPY . .
 
 # yarn berry 설정
 RUN yarn set version berry
 # yarn.lock package.json 일관성 유지 및 빌드
 RUN yarn install --immutable && yarn build
+# 최적화: prisma migrate deploy 명령어 때문에 cache 파일 사용해야함.
+RUN find ./.yarn/cache -type f ! -name '@prisma*' -exec rm -f {} +
 
 # ----------------------------------- Runner ----------------------------------- #
-FROM --platform=linux/arm64 node:22-alpine AS runner
+FROM node:22-alpine AS runner
 
 ENV NODE_ENV=production
-WORKDIR /app
+WORKDIR /app/blog-backend-app
 
-# 최적화
-COPY --from=builder /usr/blog-backend-app/.pnp.cjs                  /app/.pnp.cjs
-COPY --from=builder /usr/blog-backend-app/.env                      /app/.env
-COPY --from=builder /usr/blog-backend-app/.yarnrc.yml               /app/.yarnrc.yml
-COPY --from=builder /usr/blog-backend-app/yarn.lock                 /app/yarn.lock
-COPY --from=builder /usr/blog-backend-app/package.json              /app/package.json
-COPY --from=builder /usr/blog-backend-app/tsconfig.json             /app/tsconfig.json
-COPY --from=builder /usr/blog-backend-app/dist                      /app/dist
-COPY --from=builder /usr/blog-backend-app/prisma                    /app/prisma
-COPY --from=builder /usr/blog-backend-app/src/swagger               /app/dist/swagger
+# 원하는 파일 복사
+COPY --from=builder /app/blog-backend-app/.pnp.cjs                  ./.pnp.cjs
+COPY --from=builder /app/blog-backend-app/.env                      ./.env
+COPY --from=builder /app/blog-backend-app/.yarnrc.yml               ./.yarnrc.yml
+COPY --from=builder /app/blog-backend-app/.yarn                     ./.yarn
+COPY --from=builder /app/blog-backend-app/yarn.lock                 ./yarn.lock
+COPY --from=builder /app/blog-backend-app/package.json              ./package.json
+COPY --from=builder /app/blog-backend-app/tsconfig.json             ./tsconfig.json
+COPY --from=builder /app/blog-backend-app/dist                      ./dist
+COPY --from=builder /app/blog-backend-app/prisma                    ./prisma
 
-# 캐시 삭제 후 이동
-RUN rm -rf ./.yarn/cache ./.yarn/unplugged
-COPY --from=builder /usr/blog-backend-app/.yarn                     /app/.yarn
-
-# Docker 컨테이너가 사용할 포트
+# 컨테이너가 사용할 포트
 EXPOSE 8080
 
+# 컨테이너가 만들어지고 사용할 명령어
 CMD ["yarn", "start:prod"]

@@ -1,0 +1,25 @@
+# 폴더
+.github
+.yarn/*
+!.yarn/releases
+coverage
+dist
+prisma/*
+!prisma/migrations
+!prisma/schema.prisma
+test
+uploads
+
+
+# 파일
+.dockerignore
+.editorconfig
+.gitattributes
+.pnp.loader.mjs
+.prettierignore
+.prettierrc
+docker-compose.yaml
+Dockerfile
+jest.config.js
+nohup.out
+README.md

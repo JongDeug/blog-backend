@@ -18,7 +18,7 @@
     "jest-mock-extended": "^3.0.7",
     "node-mocks-http": "^1.14.1",
     "prettier": "^3.3.1",
-    "prisma": "5.15.0",
+    "prisma": "5.18.0",
     "prisma-markdown": "^1.0.9",
     "supertest": "^7.0.0",
     "ts-jest": "^29.1.4",
@@ -27,7 +27,7 @@
     "typescript": "5.4.5"
   },
   "dependencies": {
-    "@prisma/client": "5.15.0",
+    "@prisma/client": "5.18.0",
     "bcrypt": "^5.1.1",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
@@ -48,10 +48,10 @@
     "build": "tsc && tsc-alias",
     "test": "jest",
     "test:coverage": "jest --coverage",
+    "start:dev": "yarn swagger && tsx watch --clear-screen=false ./src/index.ts",
+    "start:prod": "yarn prisma migrate deploy && node dist/index.js",
     "check": "tsc --noEmit && prettier 'src/**/*.ts' --check && rm -r node_modules",
     "format": "prettier 'src/**/*.ts' --write && rm -r node_modules",
-    "dev": "yarn api-docs && tsx watch --clear-screen=false ./src/index.ts",
-    "api-docs": "swagger-cli bundle ./src/swagger/openapi.yaml --outfile ./src/swagger/swagger.yaml --type yaml",
-    "start:prod": "yarn prisma migrate deploy && node dist/index.js"
+    "swagger": "swagger-cli bundle ./src/swagger/openapi.yaml --outfile ./swagger.yaml --type yaml"
   }
 }
