@@ -34,7 +34,7 @@ COPY --from=builder /app/blog-backend-app/.yarn                     ./.yarn
 COPY --from=builder /app/blog-backend-app/yarn.lock                 ./yarn.lock
 COPY --from=builder /app/blog-backend-app/package.json              ./package.json
 COPY --from=builder /app/blog-backend-app/tsconfig.json             ./tsconfig.json
-COPY --from=builder /app/blog-backend-app/swagger.yaml              ./dist/swagger.yaml
+COPY --from=builder /app/blog-backend-app/swagger.yaml              ./swagger.yaml
 COPY --from=builder /app/blog-backend-app/dist                      ./dist
 COPY --from=builder /app/blog-backend-app/prisma                    ./prisma
 
