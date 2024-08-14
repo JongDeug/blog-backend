@@ -44,12 +44,12 @@
     "yamljs": "^0.3.0"
   },
   "scripts": {
-    "postinstall": "prisma:generate",
+    "postinstall": "yarn prisma:generate",
     "build": "tsc && tsc-alias",
     "test": "jest",
     "test:coverage": "jest --coverage",
     "start:dev": "tsx watch --clear-screen=false ./src/index.ts",
-    "start:prod": "prisma:migrate:prod && node dist/index.js",
+    "start:prod": "yarn prisma:migrate:prod && node dist/index.js",
     "check": "tsc --noEmit && prettier 'src/**/*.ts' --check && rm -r node_modules",
     "format": "prettier 'src/**/*.ts' --write && rm -r node_modules",
     "swagger": "swagger-cli bundle ./src/swagger/openapi.yaml --outfile ./swagger.yaml --type yaml",
