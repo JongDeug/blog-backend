@@ -15,13 +15,15 @@ COPY . .
 RUN yarn set version berry
 # yarn.lock package.json 일관성 유지 및 빌드
 RUN yarn install --immutable && yarn build
-# 최적화: prisma migrate deploy 명령어 때문에 cache 파일 사용해야함.
-RUN find ./.yarn/cache -type f ! -name '@prisma*' -exec rm -f {} +
+# devDependencies 제외하기 위해 삭제
+RUN rm -rf ./.yarn/cache ./.yarn/unplugged
+
+ENV NODE_ENV=production
+RUN yarn install --immutable
 
 # ----------------------------------- Runner ----------------------------------- #
 FROM node:22-alpine AS runner
 
-ENV NODE_ENV=production
 WORKDIR /app/blog-backend-app
 
 # 원하는 파일 복사

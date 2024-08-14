@@ -17,7 +17,7 @@ services:
   server: # API 서버 Express 컨테이너
     networks:
       - app
-    image: ${REGISTRY}/${IMAGE_NAME}:main
+    image: ${REGISTRY}/${IMAGE_NAME}:latest
     restart: always
     container_name: blog-backend-server
     environment:
