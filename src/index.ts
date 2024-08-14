@@ -10,6 +10,7 @@ import * as path from 'node:path';
 import { AuthService } from './domain/auth/auth.service';
 import swaggerUi from 'swagger-ui-express';
 import YAML from 'yamljs';
+import basicAuth from 'express-basic-auth';
 
 // --- 즉시 실행 함수
 (async () => {
@@ -18,9 +19,12 @@ import YAML from 'yamljs';
 
     // --- Swagger
     const swaggerSpec = YAML.load(
-        path.join(__dirname, '../swagger.yaml')
+        path.join(__dirname, '../swagger.yaml'),
     );
-    app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+    app.use('/api-docs', basicAuth({
+        users: { 'admin': '1234' },
+        challenge: true,
+    }), swaggerUi.serve, swaggerUi.setup(swaggerSpec));
     // ---
 
     // --- 미들웨어
@@ -49,7 +53,7 @@ import YAML from 'yamljs';
     // ---
 
     app.listen(process.env.PORT, () =>
-        console.log(`Server running on port ${process.env.PORT}`)
+        console.log(`Server running on port ${process.env.PORT}`),
     );
 })();
 // ---

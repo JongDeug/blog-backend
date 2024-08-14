@@ -47,6 +47,7 @@ const RAW_RUNTIME_STATE =
           ["cors", "npm:2.8.5"],\
           ["dotenv", "npm:16.4.5"],\
           ["express", "npm:4.19.2"],\
+          ["express-basic-auth", "npm:1.2.1"],\
           ["jest", "virtual:702ce269f2bd39b7c19f258ea5d60f30107b26971155d06f4645f69ab342961659432dab03bc5d4385392678c6141f7844c961eaebf4273cfed007f96acd1c8f#npm:29.7.0"],\
           ["jest-mock-extended", "virtual:702ce269f2bd39b7c19f258ea5d60f30107b26971155d06f4645f69ab342961659432dab03bc5d4385392678c6141f7844c961eaebf4273cfed007f96acd1c8f#npm:3.0.7"],\
           ["jsonwebtoken", "npm:9.0.2"],\
@@ -2624,6 +2625,16 @@ const RAW_RUNTIME_STATE =
         "linkType": "HARD"\
       }]\
     ]],\
+    ["basic-auth", [\
+      ["npm:2.0.1", {\
+        "packageLocation": "./.yarn/cache/basic-auth-npm-2.0.1-f1627ef330-05f56db3a0.zip/node_modules/basic-auth/",\
+        "packageDependencies": [\
+          ["basic-auth", "npm:2.0.1"],\
+          ["safe-buffer", "npm:5.1.2"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
     ["bcrypt", [\
       ["npm:5.1.1", {\
         "packageLocation": "./.yarn/unplugged/bcrypt-npm-5.1.1-434d47322a/node_modules/bcrypt/",\
@@ -2669,6 +2680,7 @@ const RAW_RUNTIME_STATE =
           ["cors", "npm:2.8.5"],\
           ["dotenv", "npm:16.4.5"],\
           ["express", "npm:4.19.2"],\
+          ["express-basic-auth", "npm:1.2.1"],\
           ["jest", "virtual:702ce269f2bd39b7c19f258ea5d60f30107b26971155d06f4645f69ab342961659432dab03bc5d4385392678c6141f7844c961eaebf4273cfed007f96acd1c8f#npm:29.7.0"],\
           ["jest-mock-extended", "virtual:702ce269f2bd39b7c19f258ea5d60f30107b26971155d06f4645f69ab342961659432dab03bc5d4385392678c6141f7844c961eaebf4273cfed007f96acd1c8f#npm:3.0.7"],\
           ["jsonwebtoken", "npm:9.0.2"],\
@@ -3871,6 +3883,16 @@ const RAW_RUNTIME_STATE =
           ["type-is", "npm:1.6.18"],\
           ["utils-merge", "npm:1.0.1"],\
           ["vary", "npm:1.1.2"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
+    ["express-basic-auth", [\
+      ["npm:1.2.1", {\
+        "packageLocation": "./.yarn/cache/express-basic-auth-npm-1.2.1-e8844f8da5-01a14cff7a.zip/node_modules/express-basic-auth/",\
+        "packageDependencies": [\
+          ["express-basic-auth", "npm:1.2.1"],\
+          ["basic-auth", "npm:2.0.1"]\
         ],\
         "linkType": "HARD"\
       }]\
