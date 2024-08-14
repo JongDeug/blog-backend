@@ -18,7 +18,7 @@ import YAML from 'yamljs';
 
     // --- Swagger
     const swaggerSpec = YAML.load(
-        path.join(__dirname, './swagger.yaml')
+        path.join(__dirname, '../swagger.yaml')
     );
     app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
     // ---
