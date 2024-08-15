@@ -24,7 +24,7 @@
   get:
     tags:
       - Categories
-    summary: 카테고리 생성
+    summary: 카테고리 조회
     responses:
       '200':
         description: 카테고리 리스트

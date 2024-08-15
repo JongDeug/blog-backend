@@ -12,9 +12,9 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: ${DATABASE_PWD}
     volumes:
-      - mysql-data:/var/lib/mysql # /var/lib/docker/volumes/blog-backend_mysql-data/_data 에 실제 저장됨
+      - mysql-data:/var/lib/mysql # /var/lib/docker/volumes/blog-backend_mysql-data/_data
 
-  server: # API 서버 Express 컨테이너
+  server: # Server 컨테이너
     networks:
       - app
     image: ${REGISTRY}/${IMAGE_NAME}:main
@@ -33,19 +33,3 @@ networks:
 
 volumes:
   mysql-data:
-
-# ---------------------------------------- DEV ---------------------------------------- #
-#version: '3'
-#services:
-#  db:
-#    image: mysql:latest
-#    container_name: blog-backend-mysql
-#    restart: always
-#    ports:
-#      - 3306:3306
-#    environment:
-#      MYSQL_ROOT_PASSWORD: ${DATABASE_PWD}
-#    volumes:
-#      - mysql-data:/var/lib/mysql
-#volumes:
-#  mysql-data:

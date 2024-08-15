@@ -1,4 +1,4 @@
-name: CI/CD Pipeline
+name: Production CI/CD
 
 # main branch 에 push 시
 on:
@@ -90,7 +90,7 @@ jobs:
           script: |
             # docker-compose 파일 download
             cd blog-backend
-            wget -O docker-compose.yaml https://raw.github.com/JongDeug/blog-backend/main/docker-compose.yaml
+            wget -O docker-compose.yaml https://raw.github.com/JongDeug/blog-backend/main/docker-compose.prod.yaml
             
             # docker-compose.yaml에 필요한 .env 파일 생성
             echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> .env
@@ -102,8 +102,8 @@ jobs:
             
             # docker stop => pull, build, run
             docker compose down
-            docker compose pull
-            docker compose up -d
+            docker compose -f docker-compose.prod.yaml pull
+            docker compose -f docker-compose.prod.yaml up -d
             # 태그 없는 이미지 삭제
             docker image prune -f 
 

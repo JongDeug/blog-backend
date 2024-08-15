@@ -6,7 +6,7 @@ info:
   license:
     name: Jongdeug
 servers:
-  - url: 'http://jongdeug.port0.org'
+  - url: 'https://jongdeug.port0.org:8080/'
 paths:
   /auth/register:
     post:
@@ -167,7 +167,7 @@ paths:
     get:
       tags:
         - Categories
-      summary: 카테고리 생성
+      summary: 카테고리 조회
       responses:
         '200':
           description: 카테고리 리스트
