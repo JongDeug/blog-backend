@@ -88,8 +88,9 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            # docker-compose 파일 download
+            # docker-compose 파일 download, 호스트에 uploads 파일 생성
             cd blog-backend
+            mkdir -p uploads
             wget -O docker-compose.yaml https://raw.github.com/JongDeug/blog-backend/main/docker-compose.prod.yaml
             
             # docker-compose.yaml에 필요한 .env 파일 생성
@@ -100,10 +101,9 @@ jobs:
             echo "REGISTRY=${{ vars.REGISTRY }}" >> .env
             echo "IMAGE_NAME=${{ vars.IMAGE_NAME }}" >> .env
             
-            # docker stop => pull, build, run
+            # docker stop => pull, build, run, 필요없는(태그없는) 이미지 삭제
             docker compose down
             docker compose pull
             docker compose up -d
-            # 태그 없는 이미지 삭제
             docker image prune -f 
 

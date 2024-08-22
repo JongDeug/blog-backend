@@ -6,7 +6,7 @@
 FROM node:22-alpine AS builder
 
 # 존재하지 않을 경우 생성
-WORKDIR /app/blog-backend-app
+WORKDIR /app/blog-backend-server
 
 # 프로젝트 복사 (dockerignore 참고)
 COPY . .
@@ -24,19 +24,22 @@ RUN yarn install --immutable
 # ----------------------------------- Runner ----------------------------------- #
 FROM node:22-alpine AS runner
 
-WORKDIR /app/blog-backend-app
+WORKDIR /app/blog-backend-server
 
 # 원하는 파일 복사
-COPY --from=builder /app/blog-backend-app/.pnp.cjs                  ./.pnp.cjs
-COPY --from=builder /app/blog-backend-app/.env                      ./.env
-COPY --from=builder /app/blog-backend-app/.yarnrc.yml               ./.yarnrc.yml
-COPY --from=builder /app/blog-backend-app/.yarn                     ./.yarn
-COPY --from=builder /app/blog-backend-app/yarn.lock                 ./yarn.lock
-COPY --from=builder /app/blog-backend-app/package.json              ./package.json
-COPY --from=builder /app/blog-backend-app/tsconfig.json             ./tsconfig.json
-COPY --from=builder /app/blog-backend-app/swagger.yaml              ./swagger.yaml
-COPY --from=builder /app/blog-backend-app/dist                      ./dist
-COPY --from=builder /app/blog-backend-app/prisma                    ./prisma
+COPY --from=builder /app/blog-backend-server/.pnp.cjs                  ./.pnp.cjs
+COPY --from=builder /app/blog-backend-server/.env                      ./.env
+COPY --from=builder /app/blog-backend-server/.yarnrc.yml               ./.yarnrc.yml
+COPY --from=builder /app/blog-backend-server/.yarn                     ./.yarn
+COPY --from=builder /app/blog-backend-server/yarn.lock                 ./yarn.lock
+COPY --from=builder /app/blog-backend-server/package.json              ./package.json
+COPY --from=builder /app/blog-backend-server/tsconfig.json             ./tsconfig.json
+COPY --from=builder /app/blog-backend-server/swagger.yaml              ./swagger.yaml
+COPY --from=builder /app/blog-backend-server/dist                      ./dist
+COPY --from=builder /app/blog-backend-server/prisma                    ./prisma
+
+# 이미지 업로드 폴더 생성
+RUN mkdir -p /app/blog-backend-server/uploads
 
 # 컨테이너가 사용할 포트
 EXPOSE 8080
