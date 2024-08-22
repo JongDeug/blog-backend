@@ -12,7 +12,8 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: ${DATABASE_PWD}
     volumes:
-      - mysql-data:/var/lib/mysql # /var/lib/docker/volumes/blog-backend_mysql-data/_data
+      - mysql-data:/var/lib/mysql # /var/lib/docker/volumes/blog-backend_mysql-data/_data, 호스트:컨테이너
+
 
   server: # Server 컨테이너
     networks:
@@ -26,6 +27,8 @@ services:
       - db
     ports:
       - ${PORT}:${PORT}
+    volumes:
+      - /home/uploads/blog-backend:/app/blog-backend-server/uploads # 왼쪽 호스트, 오른쪽 컨테이너
 
 networks:
   app:
