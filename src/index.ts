@@ -28,7 +28,7 @@ import basicAuth from 'express-basic-auth';
     // ---
 
     // --- 미들웨어
-    app.use('/uploads', express.static(path.join(__dirname, '../uploads'))); // src 폴더가 포함돼서 ../로 뺌
+    // app.use('/uploads', express.static(path.join(__dirname, '../uploads'))); // src 폴더가 포함돼서 ../로 뺌
     app.use(cors({ origin: '*' }));
     app.use(express.json()); // JSON 형식
     app.use(express.urlencoded({ extended: true })); // HTML 폼
