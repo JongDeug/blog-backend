@@ -38,7 +38,7 @@ COPY --from=builder /app/blog-backend-server/swagger.yaml              ./swagger
 COPY --from=builder /app/blog-backend-server/dist                      ./dist
 COPY --from=builder /app/blog-backend-server/prisma                    ./prisma
 
-# 이미지 업로드 폴더 생성
+# 컨테이터에 이미지 업로드 폴더 생성
 RUN mkdir -p /app/blog-backend-server/uploads
 
 # 컨테이너가 사용할 포트

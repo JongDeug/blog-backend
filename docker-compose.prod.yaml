@@ -28,7 +28,7 @@ services:
     ports:
       - ${PORT}:${PORT}
     volumes:
-      - /home/uploads/blog-backend:/app/blog-backend-server/uploads # 왼쪽 호스트, 오른쪽 컨테이너
+      - /home/uploads/blog-backend:/app/blog-backend-server/uploads # 왼쪽 호스트, 오른쪽 컨테이너 동기화
 
 networks:
   app:

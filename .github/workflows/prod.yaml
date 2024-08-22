@@ -88,9 +88,9 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            # docker-compose 파일 download, 호스트에 uploads 파일 생성
+            # docker-compose 파일 download, 호스트 경로에 uploads 폴더 생성
             cd blog-backend
-            mkdir -p uploads
+            mkdir -p /home/uploads/blog-backend
             wget -O docker-compose.yaml https://raw.github.com/JongDeug/blog-backend/main/docker-compose.prod.yaml
             
             # docker-compose.yaml에 필요한 .env 파일 생성
