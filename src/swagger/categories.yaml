@@ -1,4 +1,4 @@
-# /categories/
+# /api/categories
 /:
   post:
     tags:
@@ -48,7 +48,7 @@
       '500':
         $ref: './openapi.yaml#/components/responses/InternalServerError'
 
-# /categories/{name}
+# /api/categories/{name}
 /{name}:
   patch:
     tags:

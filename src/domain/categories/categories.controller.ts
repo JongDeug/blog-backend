@@ -11,7 +11,7 @@ export class CategoriesController {
     router: Router;
 
     constructor(private readonly categoriesService: CategoriesService) {
-        this.path = '/api/categories';
+        this.path = '/categories';
         this.router = Router();
         this.init();
     }

@@ -1,4 +1,4 @@
-# /posts/comments/
+# /api/posts/comments/
 /:
   post:
     tags:
@@ -30,7 +30,7 @@
       '500':
         $ref: './openapi.yaml#/components/responses/InternalServerError'
 
-# /posts/comments/{id}
+# /api/posts/comments/{id}
 /{id}:
   patch:
     tags:
@@ -83,7 +83,7 @@
       '500':
         $ref: './openapi.yaml#/components/responses/InternalServerError'
 
-# /posts/comments/guest
+# /api/posts/comments/guest
 /guest:
   post:
     tags:
@@ -118,7 +118,7 @@
       '500':
         $ref: './openapi.yaml#/components/responses/InternalServerError'
 
-# /posts/guest/{id}
+# /api/posts/guest/{id}
 /guest/{id}:
   patch:
     tags:
@@ -190,7 +190,7 @@
 
 
 
-# /posts/child-comments
+# /api/posts/child-comments
 /child-comments:
   post:
     tags:
@@ -222,7 +222,7 @@
       '500':
         $ref: './openapi.yaml#/components/responses/InternalServerError'
 
-# /posts/child-comments/guest
+# /api/posts/child-comments/guest
 /child-comments/guest:
   post:
     tags:

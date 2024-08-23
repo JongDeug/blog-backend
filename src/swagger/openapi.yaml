@@ -8,35 +8,35 @@ info:
 servers:
   - url: https://jongdeug.port0.org:8080/
 paths:
-  /auth/register:
+  /api/auth/register:
     $ref: './auth.yaml#/~1register'
-  /auth/login:
+  /api/auth/login:
     $ref: './auth.yaml#/~1login'
-  /auth/refresh:
+  /api/auth/refresh:
     $ref: './auth.yaml#/~1refresh'
-  /auth/logout:
+  /api/auth/logout:
     $ref: './auth.yaml#/~1logout'
-  /categories:
+  /api/categories:
     $ref: './categories.yaml#/~1'
-  /categories/{name}:
+  /api/categories/{name}:
     $ref: './categories.yaml#/~1{name}'
-  /posts:
+  /api/posts:
     $ref: './posts.yaml#/~1'
-  /posts/{id}:
+  /api/posts/{id}:
     $ref: './posts.yaml#/~1{id}'
-  /posts/like:
+  /api/posts/like:
     $ref: './posts.yaml#/~1like'
-  /posts/comments:
+  /api/posts/comments:
     $ref: './comments.yaml#/~1'
-  /posts/comments/guest:
+  /api/posts/comments/guest:
     $ref: './comments.yaml#/~1guest'
-  /posts/child-comments:
+  /api/posts/child-comments:
     $ref: './comments.yaml#/~1child-comments'
-  /posts/child-comments/guest:
+  /api/posts/child-comments/guest:
     $ref: './comments.yaml#/~1child-comments~1guest'
-  /posts/comments/{id}:
+  /api/posts/comments/{id}:
     $ref: './comments.yaml#/~1{id}'
-  /posts/comments/guest/{id}:
+  /api/posts/comments/guest/{id}:
     $ref: './comments.yaml#/~1guest~1{id}'
 components:
   # schema

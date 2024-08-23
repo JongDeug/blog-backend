@@ -1,4 +1,4 @@
-# /posts
+# /api/posts
 /:
   get:
     tags:
@@ -85,7 +85,7 @@
         $ref: './openapi.yaml#/components/responses/InternalServerError'
 
 
-# /posts/{id}
+# /api/posts/{id}
 /{id}:
   get:
     tags:
@@ -185,7 +185,7 @@
       '500':
         $ref: './openapi.yaml#/components/responses/InternalServerError'
 
-# /posts/like
+# /api/posts/like
 /like:
   post:
     tags:
