@@ -1009,6 +1009,14 @@ components:
           format: date-time
           description: 생성일
           example: '2024-08-05T10:16:45.027Z'
+        tags:
+          type: array
+          items:
+            type: object
+            properties:
+              tagId:
+                type: string
+                example: 태그1
     GetPost:
       type: object
       properties:
