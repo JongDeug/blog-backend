@@ -37,7 +37,7 @@ import basicAuth from 'express-basic-auth';
 
     // --- 라우터 등록
     Router.forEach((el) => {
-        app.use(`/api/${el.path}`, el.router);
+        app.use(`/api${el.path}`, el.router);
     });
     //
 
