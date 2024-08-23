@@ -143,7 +143,8 @@ describe('CategoriesController', () => {
 
     // --- GetCategories
     describe('getCategories', () => {
-        const mockCategories = ['mock1', 'mock2', 'mock3'];
+        const mockCategories = [{ name: 'mock1', count: 1 }, { name: 'mock2', count: 2 }, { name: 'mock3', count: 3 }];
+
 
         test('should get categories', async () => {
             // given

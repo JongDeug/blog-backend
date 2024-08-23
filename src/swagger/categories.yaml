@@ -31,20 +31,23 @@
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                categories:
-                  type: array
-                  items:
+              type: array
+              items:
+                type: object
+                properties:
+                  name:
                     type: string
                     example: 운영체제
+                  count:
+                    type: integer
+                    example: 3
             examples:
               example1:
                 value:
-                  categories:
-                    - 운영체제
-                    - 알고리즘
-                    - CS
+                  - name: 운영체제
+                    count: 3
+                  - name: 데이터베이스
+                    count: 5
       '500':
         $ref: './openapi.yaml#/components/responses/InternalServerError'
 

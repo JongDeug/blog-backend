@@ -144,7 +144,7 @@ describe('CategoriesService Main Functions', () => {
     // --- GetCategories
     describe('getCategories', () => {
         beforeEach(() => {
-            mockData.returnedCategories = [{ name: 'mock1' }, { name: 'mock2' }, { name: 'mock3' }];
+            mockData.returnedCategories = [{ name: 'mock1', _count: {posts: 2} }, { name: 'mock2', _count: {posts: 2} }, { name: 'mock3', _count: {posts: 4} }];
         });
 
         test('should get categories successfully', async () => {
@@ -153,8 +153,19 @@ describe('CategoriesService Main Functions', () => {
             // when
             const result = await categoriesService.getCategories();
             // then
-            expect(result).toStrictEqual(mockData.returnedCategories.map((category: { name: any; }) => category.name));
-            expect(prismaMock.category.findMany).toHaveBeenCalledWith({});
+            expect(result).toStrictEqual(mockData.returnedCategories.map((category: any) => {
+                return {
+                    name: category.name,
+                    count: category._count.posts,
+                };
+            }));
+            expect(prismaMock.category.findMany).toHaveBeenCalledWith({
+                include: {
+                    _count: {
+                        select: { posts: true },
+                    },
+                },
+            });
         });
     });
     // ---
