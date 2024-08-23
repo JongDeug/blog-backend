@@ -6,37 +6,37 @@ info:
   license:
     name: Jongdeug
 servers:
-  - url: https://jongdeug.port0.org
+  - url: https://jongdeug.port0.org/api
 paths:
-  /api/auth/register:
+  /auth/register:
     $ref: './auth.yaml#/~1register'
-  /api/auth/login:
+  /auth/login:
     $ref: './auth.yaml#/~1login'
-  /api/auth/refresh:
+  /auth/refresh:
     $ref: './auth.yaml#/~1refresh'
-  /api/auth/logout:
+  /auth/logout:
     $ref: './auth.yaml#/~1logout'
-  /api/categories:
+  /categories:
     $ref: './categories.yaml#/~1'
-  /api/categories/{name}:
+  /categories/{name}:
     $ref: './categories.yaml#/~1{name}'
-  /api/posts:
+  /posts:
     $ref: './posts.yaml#/~1'
-  /api/posts/{id}:
+  /posts/{id}:
     $ref: './posts.yaml#/~1{id}'
-  /api/posts/like:
+  /posts/like:
     $ref: './posts.yaml#/~1like'
-  /api/posts/comments:
+  /posts/comments:
     $ref: './comments.yaml#/~1'
-  /api/posts/comments/guest:
+  /posts/comments/guest:
     $ref: './comments.yaml#/~1guest'
-  /api/posts/child-comments:
+  /posts/child-comments:
     $ref: './comments.yaml#/~1child-comments'
-  /api/posts/child-comments/guest:
+  /posts/child-comments/guest:
     $ref: './comments.yaml#/~1child-comments~1guest'
-  /api/posts/comments/{id}:
+  /posts/comments/{id}:
     $ref: './comments.yaml#/~1{id}'
-  /api/posts/comments/guest/{id}:
+  /posts/comments/guest/{id}:
     $ref: './comments.yaml#/~1guest~1{id}'
 components:
   # schema
