@@ -11,7 +11,7 @@ export class AuthController {
     // 의존성 역전 원칙을 통해 의존도를 낮춤 => 테스트 코드를 더 쉽게 작성할 수 있게 됨
     constructor(private readonly authService: AuthService) {
         this.router = Router();
-        this.path = '/auth';
+        this.path = '/api/auth';
         this.init();
     }
 

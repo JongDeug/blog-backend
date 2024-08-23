@@ -4,12 +4,12 @@ import { CustomError } from '@utils/customError';
 import database from '@utils/database';
 
 const excludedUrls = [
-    { path: '/auth', method: 'ALL' },
-    { path: '/posts', method: 'GET' },
-    { path: '/posts/like', method: 'ALL' },
-    { path: '/posts/comments/guest', method: 'ALL' },
-    { path: '/posts/child-comments/guest', method: 'ALL' },
-    { path: '/categories', method: 'GET' },
+    { path: '/api/auth', method: 'ALL' },
+    { path: '/api/posts', method: 'GET' },
+    { path: '/api/posts/like', method: 'ALL' },
+    { path: '/api/posts/comments/guest', method: 'ALL' },
+    { path: '/api/posts/child-comments/guest', method: 'ALL' },
+    { path: '/api/categories', method: 'GET' },
 ];
 
 export const jwtVerify = (authService: AuthService): RequestHandler => {

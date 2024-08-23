@@ -33,7 +33,7 @@ export class PostsController {
     commentsController: CommentsController;
 
     constructor(private readonly postsService: PostsService) {
-        this.path = '/posts';
+        this.path = '/api/posts';
         this.router = Router();
         this.commentsController = new CommentsController(
             new CommentsService(

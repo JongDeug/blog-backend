@@ -25,21 +25,22 @@
 ![Prisma](https://img.shields.io/badge/Prisma-2D3748?style=for-the-badge&logo=prisma&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
 
-## 📌 배포 주소
+## 📌 Swagger 배포 주소
 
-**API** - http://jongdeug.port0.org  
-
-**Swagger API DOCS(admin, 1234)** - http://jongdeug.port0.org/api-docs
+- username: admin
+- password: 1234
+- http://jongdeug.port0.org/api-docs
 
 ## 📌 주요 기능
 
 - 블로그 게시글 CRUD
-- 비회원 게시글 좋아요
-- 비회원 댓글 작성
-- 이메일 알림
+- 비회원 게시글 좋아요, 댓글 작성 
+- 댓글 작성 시 이메일 알림
 
 ## 📌 아키텍처
 
+- 서버 아키텍처 그림 그려서 보여주면 됨
+- 
 [//]: # (## 📌 기타 추가 사항들)
 [//]: # (## 📌 화면 구성/API 주소)
 
