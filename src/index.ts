@@ -28,18 +28,16 @@ import basicAuth from 'express-basic-auth';
     // ---
 
     // --- 미들웨어
-    // app.use('/uploads', express.static(path.join(__dirname, '../uploads'))); // src 폴더가 포함돼서 ../로 뺌
     app.use(cors({ origin: '*' }));
     app.use(express.json()); // JSON 형식
     app.use(express.urlencoded({ extended: true })); // HTML 폼
     app.use(cookieParser());
     app.use(jwtVerify(new AuthService()));
-    // 정적 파일 제공 설정
     // ---
 
     // --- 라우터 등록
     Router.forEach((el) => {
-        app.use(el.path, el.router);
+        app.use(`/api/${el.path}`, el.router);
     });
     //
 

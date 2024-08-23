@@ -1,4 +1,4 @@
-# /auth/register
+# /api/auth/register
 /register:
   post:
     tags:
@@ -34,7 +34,7 @@
       '500':
         $ref: './openapi.yaml#/components/responses/InternalServerError'
 
-# /auth/login
+# /api/auth/login
 /login:
   post:
     tags:
@@ -80,7 +80,7 @@
       '500':
         $ref: './openapi.yaml#/components/responses/InternalServerError'
 
-# /auth/refresh
+# /api/auth/refresh
 /refresh:
   get:
     tags:
@@ -110,7 +110,7 @@
       '500':
         $ref: './openapi.yaml#/components/responses/InternalServerError'
 
-# /auth/logout
+# /api/auth/logout
 /logout:
   get:
     tags:
