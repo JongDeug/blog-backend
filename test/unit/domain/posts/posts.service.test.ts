@@ -336,6 +336,7 @@ describe('PostsService Main Functions', () => {
                     title: true,
                     content: true,
                     createdAt: true,
+                    tags: true,
                 },
                 orderBy: {
                     createdAt: 'desc', // 내림, 최신순
@@ -367,6 +368,7 @@ describe('PostsService Main Functions', () => {
                     title: true,
                     content: true,
                     createdAt: true,
+                    tags: true,
                 },
                 orderBy: {
                     createdAt: 'desc', // 내림, 최신순
