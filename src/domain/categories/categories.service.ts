@@ -4,7 +4,8 @@ import { CustomError } from '@utils/customError';
 import { Prisma } from '../../../prisma/prisma-client';
 
 export class CategoriesService {
-    constructor() {}
+    constructor() {
+    }
 
     async createCategory(dto: CreateCategoryDto) {
         // I. 카테고리를 찾고, 있으면 Conflict 에러
@@ -45,7 +46,7 @@ export class CategoriesService {
                     throw new CustomError(
                         400,
                         'Bad Request',
-                        '카테고리를 참조하고 있는 Post가 존재합니다'
+                        '카테고리를 참조하고 있는 Post가 존재합니다',
                     );
                 }
             }
@@ -54,10 +55,21 @@ export class CategoriesService {
     }
 
     async getCategories() {
-        // I. 모든 카테고리 반환
-        const categories = await database.category.findMany({});
+        // I. 모든 카테고리 반환 + 관련된 post 수
+        const categories = await database.category.findMany({
+            include: {
+                _count: {
+                    select: { posts: true },
+                },
+            },
+        });
 
-        return categories.map((category) => category.name);
+        return categories.map(category => {
+            return {
+                name: category.name,
+                count: category._count.posts,
+            };
+        });
     }
 
     /**
@@ -72,14 +84,14 @@ export class CategoriesService {
                 throw new CustomError(
                     404,
                     'Not Found',
-                    '카테고리를 찾을 수 없습니다'
+                    '카테고리를 찾을 수 없습니다',
                 );
         } else if (statusCode === 409) {
             if (isExist)
                 throw new CustomError(
                     409,
                     'Conflict',
-                    '이미 존재하는 카테고리입니다'
+                    '이미 존재하는 카테고리입니다',
                 );
         }
     }
