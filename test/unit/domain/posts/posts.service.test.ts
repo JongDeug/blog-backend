@@ -312,8 +312,8 @@ describe('PostsService Main Functions', () => {
             mockData.search = 'mockSearch';
 
             mockData.mockReturnedPosts = [
-                { id: 'mockId1' } as Post,
-                { id: 'mockId2' } as Post,
+                { id: 'mockId1', tags: [{ tagId: 'hi' }, { tagId: 'hello' }] },
+                { id: 'mockId2', tags: [{ tagId: 'hi' }, { tagId: 'hello' }] },
             ];
         });
 
@@ -323,7 +323,14 @@ describe('PostsService Main Functions', () => {
             // when
             const result = await postsService.getPosts(mockData.take, mockData.skip, mockData.search, mockData.category);
             // then
-            expect(result.posts).toStrictEqual(mockData.mockReturnedPosts);
+            const postList = mockData.mockReturnedPosts.map((post: any) => {
+                const { tags, ...restPost } = post;
+                return {
+                    ...restPost,
+                    tags: tags.map((tag: any) => tag.tagId),
+                };
+            });
+            expect(result.posts).toStrictEqual(postList);
             expect(result.postCount).toBe(mockData.mockReturnedPosts.length);
             expect(prismaMock.post.findMany).toHaveBeenCalledWith({
                 where: {
@@ -359,7 +366,14 @@ describe('PostsService Main Functions', () => {
             // when
             const result = await postsService.getPosts(mockData.take, mockData.skip, mockData.search, mockData.category);
             // then
-            expect(result.posts).toStrictEqual(mockData.mockReturnedPosts);
+            const postList = mockData.mockReturnedPosts.map((post: any) => {
+                const { tags, ...restPost } = post;
+                return {
+                    ...restPost,
+                    tags: tags.map((tag: any) => tag.tagId),
+                };
+            });
+            expect(result.posts).toStrictEqual(postList);
             expect(result.postCount).toBe(mockData.mockReturnedPosts.length);
             expect(prismaMock.post.findMany).toHaveBeenCalledWith({
                 where: {
