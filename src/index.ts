@@ -26,12 +26,12 @@ import basicAuth from 'express-basic-auth';
             challenge: true,
         }),
         swaggerUi.serve,
-        swaggerUi.setup(swaggerSpec)
+        swaggerUi.setup(swaggerSpec),
     );
     // ---
 
     // --- 미들웨어
-    app.use(cors({ origin: '*' }));
+    app.use(cors({ origin: '*', credentials: true }));
     app.use(express.json()); // JSON 형식
     app.use(express.urlencoded({ extended: true })); // HTML 폼
     app.use(cookieParser());
@@ -54,7 +54,7 @@ import basicAuth from 'express-basic-auth';
     // ---
 
     app.listen(process.env.PORT, () =>
-        console.log(`Server running on port ${process.env.PORT}`)
+        console.log(`Server running on port ${process.env.PORT}`),
     );
 })();
 // ---
