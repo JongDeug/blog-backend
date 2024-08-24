@@ -18,13 +18,16 @@ import basicAuth from 'express-basic-auth';
     await database.$connect(); // connect db
 
     // --- Swagger
-    const swaggerSpec = YAML.load(
-        path.join(__dirname, '../swagger.yaml'),
+    const swaggerSpec = YAML.load(path.join(__dirname, '../swagger.yaml'));
+    app.use(
+        '/api-docs',
+        basicAuth({
+            users: { admin: '1234' },
+            challenge: true,
+        }),
+        swaggerUi.serve,
+        swaggerUi.setup(swaggerSpec)
     );
-    app.use('/api-docs', basicAuth({
-        users: { 'admin': '1234' },
-        challenge: true,
-    }), swaggerUi.serve, swaggerUi.setup(swaggerSpec));
     // ---
 
     // --- 미들웨어
@@ -51,7 +54,7 @@ import basicAuth from 'express-basic-auth';
     // ---
 
     app.listen(process.env.PORT, () =>
-        console.log(`Server running on port ${process.env.PORT}`),
+        console.log(`Server running on port ${process.env.PORT}`)
     );
 })();
 // ---

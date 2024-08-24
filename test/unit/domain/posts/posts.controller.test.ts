@@ -2,7 +2,7 @@ import httpMocks from 'node-mocks-http';
 import { NextFunction, Request, Response } from 'express';
 import { PostsController } from '../../../../src/domain/posts/posts.controller';
 import { PostsService } from '../../../../src/domain/posts/posts.service';
-import { Prisma, User } from '../../../../prisma/prisma-client';
+import { Post, Prisma, User } from '../../../../prisma/prisma-client';
 import { CustomError } from '@utils/customError';
 import { UsersService } from '../../../../src/domain/users/users.service';
 
@@ -206,7 +206,6 @@ describe('PostsController', () => {
     // --- GetPost
     describe('getPost', () => {
         type GetPostType = Prisma.PromiseReturnType<typeof postsServiceMock.getPost>
-        type PostWithIsLiked = GetPostType & { isLiked: boolean }
         const mockReturnedPost = { post: { id: 'mockPostId', isLiked: true } };
 
         beforeEach(() => {
@@ -216,7 +215,7 @@ describe('PostsController', () => {
 
         test('should get a post successfully', async () => {
             // given
-            postsServiceMock.getPost.mockResolvedValue(mockReturnedPost as PostWithIsLiked);
+            postsServiceMock.getPost.mockResolvedValue(mockReturnedPost as GetPostType);
             // when
             await postsController.getPost(req, res, next);
             // then
