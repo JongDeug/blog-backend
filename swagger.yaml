@@ -1015,11 +1015,11 @@ components:
         tags:
           type: array
           items:
-            type: object
-            properties:
-              tagId:
-                type: string
-                example: 태그1
+            type: string
+          description: 태그
+          example:
+            - 커널
+            - 스케줄링
     GetPost:
       type: object
       properties:
@@ -1065,29 +1065,15 @@ components:
         tags:
           type: array
           items:
-            type: object
-            properties:
-              tagId:
-                type: string
-                description: 태그 id
-                example: 스케줄링
-        _count:
-          type: object
-          properties:
-            postLikes:
-              type: integer
-              description: 게시글 좋아요 수
-              example: 1
-        postLikes:
-          type: array
-          items:
-            type: object
-            properties:
-              guestId:
-                type: string
-                format: uuid
-                description: 비회원 id
-                example: c0be2750-2d7c-40d9-bd27-804e2f5da8e6
+            type: string
+          description: 태그
+          example:
+            - 커널
+            - 스케줄링
+        postLikeCount:
+          type: integer
+          description: 게시글 좋아요 수
+          example: 3
         images:
           type: array
           items:

@@ -25,6 +25,8 @@ describe('PostsService Main Functions', () => {
             authorId: 'mockUserId',
             images: [{ url: 'images' }, { url: 'images' }],
             postLikes: [{ postId: mockData.postId, guestId: mockData.guestId }],
+            _count: { postLikes: 3 },
+            tags: [{ tagId: 'hi' }, { tagId: 'hello' }],
         };
         mockData.guestId = 'mockGuestId';
     });
@@ -310,8 +312,8 @@ describe('PostsService Main Functions', () => {
             mockData.search = 'mockSearch';
 
             mockData.mockReturnedPosts = [
-                { id: 'mockId1' } as Post,
-                { id: 'mockId2' } as Post,
+                { id: 'mockId1', tags: [{ tagId: 'hi' }, { tagId: 'hello' }] },
+                { id: 'mockId2', tags: [{ tagId: 'hi' }, { tagId: 'hello' }] },
             ];
         });
 
@@ -321,7 +323,14 @@ describe('PostsService Main Functions', () => {
             // when
             const result = await postsService.getPosts(mockData.take, mockData.skip, mockData.search, mockData.category);
             // then
-            expect(result.posts).toStrictEqual(mockData.mockReturnedPosts);
+            const postList = mockData.mockReturnedPosts.map((post: any) => {
+                const { tags, ...restPost } = post;
+                return {
+                    ...restPost,
+                    tags: tags.map((tag: any) => tag.tagId),
+                };
+            });
+            expect(result.posts).toStrictEqual(postList);
             expect(result.postCount).toBe(mockData.mockReturnedPosts.length);
             expect(prismaMock.post.findMany).toHaveBeenCalledWith({
                 where: {
@@ -338,8 +347,8 @@ describe('PostsService Main Functions', () => {
                     createdAt: true,
                     tags: {
                         select: {
-                            tagId: true
-                        }
+                            tagId: true,
+                        },
                     },
                 },
                 orderBy: {
@@ -357,7 +366,14 @@ describe('PostsService Main Functions', () => {
             // when
             const result = await postsService.getPosts(mockData.take, mockData.skip, mockData.search, mockData.category);
             // then
-            expect(result.posts).toStrictEqual(mockData.mockReturnedPosts);
+            const postList = mockData.mockReturnedPosts.map((post: any) => {
+                const { tags, ...restPost } = post;
+                return {
+                    ...restPost,
+                    tags: tags.map((tag: any) => tag.tagId),
+                };
+            });
+            expect(result.posts).toStrictEqual(postList);
             expect(result.postCount).toBe(mockData.mockReturnedPosts.length);
             expect(prismaMock.post.findMany).toHaveBeenCalledWith({
                 where: {
@@ -374,8 +390,8 @@ describe('PostsService Main Functions', () => {
                     createdAt: true,
                     tags: {
                         select: {
-                            tagId: true
-                        }
+                            tagId: true,
+                        },
                     },
                 },
                 orderBy: {
@@ -396,7 +412,9 @@ describe('PostsService Main Functions', () => {
             // when
             const result = await postsService.getPost(mockData.postId, mockData.guestId);
             // then
-            expect(result).toStrictEqual({ post: { ...mockData.returnedpost, isLiked: true } });
+            const { postLikes, _count: { postLikes: postLikeCount }, tags, ...restPost } = mockData.returnedpost;
+            const tagList = tags.map((el: { tagId: string; }) => el.tagId);
+            expect(result).toStrictEqual({ post: { ...restPost, tags: tagList, postLikeCount, isLiked: true } });
             expect(prismaMock.post.findUnique).toHaveBeenCalledWith({
                 where: {
                     id: mockData.postId,

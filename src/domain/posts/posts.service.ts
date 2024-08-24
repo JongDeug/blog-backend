@@ -211,7 +211,7 @@ export class PostsService {
         let categoryOptions = category ? { name: category } : {};
 
         // I. post search 쿼리(제목, 내용)에 해당하는 게시글 가져오기
-        const posts = await database.post.findMany({
+        let posts = await database.post.findMany({
             where: {
                 OR: [
                     { title: { contains: search } },
@@ -226,8 +226,8 @@ export class PostsService {
                 createdAt: true,
                 tags: {
                     select: {
-                        tagId: true
-                    }
+                        tagId: true,
+                    },
                 },
             },
             orderBy: {
@@ -237,8 +237,17 @@ export class PostsService {
             take,
         });
 
+        // I. 반환값 수정
+        const postList = posts.map(post => {
+            const { tags, ...restPost } = post;
+            return {
+                ...restPost,
+                tags: tags.map(tag => tag.tagId),
+            };
+        });
+
         // I. posts, postCount 반환
-        return { posts, postCount: posts.length };
+        return { posts: postList, postCount: posts.length };
     }
 
     async getPost(postId: string, guestLikeId: string) {
@@ -331,9 +340,20 @@ export class PostsService {
         // I. 게시글 좋아요 여부
         const isLiked = post.postLikes.some((el) => el.guestId === guestLikeId);
 
+        // I. 반환값 편집
+        const {
+            postLikes,
+            _count: { postLikes: postLikeCount },
+            tags,
+            ...restPost
+        } = post;
+        const tagList = tags.map((el) => el.tagId);
+
         return {
             post: {
-                ...post,
+                ...restPost,
+                tags: tagList,
+                postLikeCount,
                 isLiked,
             },
         };
