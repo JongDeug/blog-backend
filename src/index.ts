@@ -31,7 +31,7 @@ import basicAuth from 'express-basic-auth';
     // ---
 
     // --- 미들웨어
-    app.use(cors({ origin: 'http://localhost:5000', credentials: true }));
+    app.use(cors({ origin: '*' }));
     app.use(express.json()); // JSON 형식
     app.use(express.urlencoded({ extended: true })); // HTML 폼
     app.use(cookieParser());
