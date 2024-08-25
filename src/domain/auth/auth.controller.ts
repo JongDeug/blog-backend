@@ -62,14 +62,14 @@ export class AuthController {
             res.cookie('accessToken', accessToken, {
                 httpOnly: true,
                 maxAge: 3 * 60 * 1000, // 3분
-                sameSite: 'none',
+                // sameSite: 'none',
                 // sameSite: 'strict', // sameSite 속성 설정
                 // secure: true // HTTPS 연결에서만 쿠키가 전송되도록 설정
             });
             res.cookie('refreshToken', refreshToken, {
                 httpOnly: true,
                 maxAge: 7 * 24 * 60 * 60 * 1000, // 7일
-                sameSite: 'none',
+                // sameSite: 'none',
                 // sameSite: 'strict', // sameSite 속성 설정
                 // secure: true // HTTPS 연결에서만 쿠키가 전송되도록 설정
             });
