@@ -32,7 +32,7 @@ import basicAuth from 'express-basic-auth';
 
     // --- 미들웨어
     app.use(cors({
-        origin: 'https://jongdeug.port0.org',
+        origin: ['http://localhost:5000', 'https://jongdeug.port0.org'],
         credentials: true,
     }));
     app.use(express.json()); // JSON 형식
