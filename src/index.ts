@@ -20,7 +20,7 @@ import basicAuth from 'express-basic-auth';
     // --- Swagger
     const swaggerSpec = YAML.load(path.join(__dirname, '../swagger.yaml'));
     app.use(
-        '/api/docs',
+        '/docs',
         basicAuth({
             users: { admin: '1234' },
             challenge: true,
@@ -32,7 +32,7 @@ import basicAuth from 'express-basic-auth';
 
     // --- 미들웨어
     app.use(cors({
-        origin: ['http://localhost:5000', 'https://jongdeug.port0.org'],
+        origin: 'https://jongdeug.port0.org',
         credentials: true,
     }));
     app.use(express.json()); // JSON 형식
@@ -43,7 +43,7 @@ import basicAuth from 'express-basic-auth';
 
     // --- 라우터 등록
     Router.forEach((el) => {
-        app.use(`/api${el.path}`, el.router);
+        app.use(`${el.path}`, el.router);
     });
     //
 

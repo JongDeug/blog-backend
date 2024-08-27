@@ -32,14 +32,14 @@ export class AuthController {
             res.cookie('accessToken', accessToken, {
                 httpOnly: true,
                 maxAge: 3 * 60 * 1000, // 3분
-                // sameSite: 'strict', // sameSite 속성 설정
-                // secure: true // HTTPS 연결에서만 쿠키가 전송되도록 설정
+                sameSite: 'strict', // sameSite 속성 설정
+                secure: true, // HTTPS 연결에서만 쿠키가 전송되도록 설정
             });
             res.cookie('refreshToken', refreshToken, {
                 httpOnly: true,
                 maxAge: 7 * 24 * 60 * 60 * 1000, // 7일
-                // sameSite: 'strict', // sameSite 속성 설정
-                // secure: true // HTTPS 연결에서만 쿠키가 전송되도록 설정
+                sameSite: 'strict', // sameSite 속성 설정
+                secure: true, // HTTPS 연결에서만 쿠키가 전송되도록 설정
             });
 
             // I. 201: Created
@@ -61,14 +61,14 @@ export class AuthController {
                 path: '/',
                 httpOnly: true,
                 maxAge: 3 * 60 * 1000, // 3분
-                sameSite: 'none', // sameSite 속성 설정
+                sameSite: 'strict', // sameSite 속성 설정
                 secure: true, // HTTPS 연결에서만 쿠키가 전송되도록 설정
             });
             res.cookie('refreshToken', refreshToken, {
                 path: '/',
                 httpOnly: true,
                 maxAge: 7 * 24 * 60 * 60 * 1000, // 7일
-                sameSite: 'none', // sameSite 속성 설정
+                sameSite: 'strict', // sameSite 속성 설정
                 secure: true, // HTTPS 연결에서만 쿠키가 전송되도록 설정
             });
 
