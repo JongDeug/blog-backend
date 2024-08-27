@@ -4,12 +4,12 @@ import { CustomError } from '@utils/customError';
 import database from '@utils/database';
 
 const excludedUrls = [
-    { path: '/api/auth', method: 'ALL' },
-    { path: '/api/posts', method: 'GET' },
-    { path: '/api/posts/like', method: 'ALL' },
-    { path: '/api/posts/comments/guest', method: 'ALL' },
-    { path: '/api/posts/child-comments/guest', method: 'ALL' },
-    { path: '/api/categories', method: 'GET' },
+    { path: '/auth', method: 'ALL' },
+    { path: '/posts', method: 'GET' },
+    { path: '/posts/like', method: 'ALL' },
+    { path: '/posts/comments/guest', method: 'ALL' },
+    { path: '/posts/child-comments/guest', method: 'ALL' },
+    { path: '/categories', method: 'GET' },
 ];
 
 export const jwtVerify = (authService: AuthService): RequestHandler => {
@@ -40,8 +40,8 @@ export const jwtVerify = (authService: AuthService): RequestHandler => {
                     new CustomError(
                         401,
                         'Unauthorized',
-                        '토큰을 보내고 있지 않습니다'
-                    )
+                        '토큰을 보내고 있지 않습니다',
+                    ),
                 );
             }
 
@@ -54,8 +54,8 @@ export const jwtVerify = (authService: AuthService): RequestHandler => {
                     new CustomError(
                         401,
                         'Unauthorized',
-                        '서비스 이용은 access 토큰으로만 가능합니다'
-                    )
+                        '서비스 이용은 access 토큰으로만 가능합니다',
+                    ),
                 );
             }
 
@@ -73,7 +73,7 @@ export const jwtVerify = (authService: AuthService): RequestHandler => {
 
             if (!req.user) {
                 return next(
-                    new CustomError(404, 'Not Found', '유저를 찾을 수 없습니다')
+                    new CustomError(404, 'Not Found', '유저를 찾을 수 없습니다'),
                 );
             }
 
