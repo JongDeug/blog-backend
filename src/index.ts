@@ -20,8 +20,7 @@ import basicAuth from 'express-basic-auth';
     // --- Swagger
     const swaggerSpec = YAML.load(path.join(__dirname, '../swagger.yaml'));
     app.use(
-        // REST API 와 달리 브라우저에서 접근하므로 리다이렉트 될 수 있음 /api/docs 로 고정해서 해결
-        '/api/docs',
+        '/docs',
         basicAuth({
             users: { admin: '1234' },
             challenge: true,
