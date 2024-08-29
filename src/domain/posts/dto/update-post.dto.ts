@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsOptional, IsString, IsArray } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString, IsArray, IsBoolean } from 'class-validator';
 import { ImagePath } from '@custom-type/customImagePath';
 import { Transform } from 'class-transformer';
 
@@ -14,6 +14,21 @@ export class UpdatePostDto {
     @IsString()
     @IsNotEmpty()
     category: string;
+
+    @IsString()
+    @IsOptional()
+    prev: string;
+
+    @IsString()
+    @IsOptional()
+    next: string;
+
+    @Transform(({ value }) => {
+        if (typeof value === 'string') return value.toLowerCase() !== 'false';
+    })
+    @IsBoolean()
+    @IsNotEmpty()
+    draft: boolean;
 
     @IsArray({
         message: '배열을 또는 구분자(,)를 사용하여 태그를 입력해주세요',

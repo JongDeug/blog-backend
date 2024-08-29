@@ -1,4 +1,3 @@
-
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
@@ -121,6 +120,12 @@ model Post {
   createdAt DateTime @default(now())
   /// 수정일
   updatedAt DateTime @updatedAt
+  /// 이전 게시글 id
+  prev      String?
+  /// 다음 게시글 id
+  next      String?
+  /// 초안
+  draft     Boolean  @default(true)
 
   /// ---
   /// RELATIONS
@@ -244,4 +249,3 @@ model Comment {
   guestId String?       @unique
   guest   GuestComment? @relation(fields: [guestId], references: [id])
 }
-

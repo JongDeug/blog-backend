@@ -796,6 +796,20 @@ components:
           type: string
           description: 내용
           example: 생성했습니다
+        prev:
+          type: string
+          format: uuid
+          description: 이전 게시글 id
+          example: 123-123-123
+        next:
+          type: string
+          format: uuid
+          description: 다음 게시글 id
+          example: 123-123-123
+        draft:
+          type: boolean
+          description: 초안인지 아닌지
+          example: true
         category:
           type: string
           description: 카테고리
@@ -829,6 +843,20 @@ components:
           type: string
           description: 내용
           example: 수정했습니다
+        prev:
+          type: string
+          format: uuid
+          description: 이전 게시글 id
+          example: 123-123-123
+        next:
+          type: string
+          format: uuid
+          description: 다음 게시글 id
+          example: 123-123-123
+        draft:
+          type: boolean
+          description: 초안인지 아닌지
+          example: true
         category:
           type: string
           description: 카테고리
@@ -1036,6 +1064,20 @@ components:
           type: string
           description: 내용
           example: 내용
+        prev:
+          type: string
+          format: uuid
+          description: 이전 게시글 id
+          example: 123-123-123
+        next:
+          type: string
+          format: uuid
+          description: 다음 게시글 id
+          example: 123-123-123
+        draft:
+          type: boolean
+          description: 초안인지 아닌지
+          example: true
         createdAt:
           type: string
           format: date-time

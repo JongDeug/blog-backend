@@ -20,6 +20,9 @@ export class PostsService {
                 data: {
                     title: dto.title,
                     content: dto.content,
+                    prev: dto.prev,
+                    next: dto.next,
+                    draft: dto.draft,
                     // I. 없는 경우 create, 있는 경우 connect, 1대다 이므로 connectOrCreate 가능
                     category: {
                         connectOrCreate: {
@@ -125,6 +128,9 @@ export class PostsService {
                 data: {
                     title: dto.title,
                     content: dto.content,
+                    prev: dto.prev,
+                    next: dto.next,
+                    draft: dto.draft,
                     // I. category 는 post 기능에서 삭제하지 못함, 생성만 가능
                     category: {
                         connectOrCreate: {
@@ -260,6 +266,9 @@ export class PostsService {
                 id: true,
                 title: true,
                 content: true,
+                prev: true,
+                next: true,
+                draft: true,
                 createdAt: true,
                 updatedAt: true,
                 author: {
