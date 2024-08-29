@@ -34,6 +34,9 @@ erDiagram
   String content
   DateTime createdAt
   DateTime updatedAt
+  String prev "nullable"
+  String next "nullable"
+  Boolean draft
   String authorId FK
   String categoryName FK
 }
@@ -122,6 +125,9 @@ erDiagram
   - `content`: 내용
   - `createdAt`: 생성일
   - `updatedAt`: 수정일
+  - `prev`: 이전 게시글 id
+  - `next`: 다음 게시글 id
+  - `draft`: 초안
   - `authorId`
     > Foreign Key
     > 

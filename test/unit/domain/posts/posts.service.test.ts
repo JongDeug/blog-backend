@@ -40,6 +40,9 @@ describe('PostsService Main Functions', () => {
                 category: 'TestCategory',
                 images: [{ path: 'images' }, { path: 'images' }],
                 tags: ['Tag1', 'Tag2'],
+                next: 'Next id',
+                prev: 'Prev id',
+                draft: 'false',
             };
         });
 
@@ -61,6 +64,9 @@ describe('PostsService Main Functions', () => {
                 data: {
                     title: mockData.createPostDto.title,
                     content: mockData.createPostDto.content,
+                    prev: mockData.createPostDto.prev,
+                    next: mockData.createPostDto.next,
+                    draft: mockData.createPostDto.draft,
                     category: {
                         connectOrCreate: {
                             where: { name: mockData.createPostDto.category },
@@ -123,6 +129,9 @@ describe('PostsService Main Functions', () => {
                 category: 'TestCategory',
                 images: [{ path: 'images' }, { path: 'images' }],
                 tags: ['Tag1', 'Tag2'],
+                next: 'Next id',
+                prev: 'Prev id',
+                draft: 'false',
             };
         });
 
@@ -423,6 +432,9 @@ describe('PostsService Main Functions', () => {
                     id: true,
                     title: true,
                     content: true,
+                    prev: true,
+                    next: true,
+                    draft: true,
                     createdAt: true,
                     updatedAt: true,
                     author: {
