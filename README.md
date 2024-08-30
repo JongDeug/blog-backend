@@ -37,11 +37,10 @@
 ## 📌 아키텍처
 
 #### 전체적인 서비스 구조
-![app.png](.github/public/app.png)
+![app.png](public/app.png)
 
 #### 백엔드 구조
-![img.png](.github/public/img.png)
-![back-end.png](.github/public/back-end.png)
+![back-end.png](public/back-end.png)
 
 [//]: # (## 📌 기타 추가 사항들)
 
