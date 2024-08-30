@@ -9,6 +9,7 @@ prisma/*
 !prisma/schema.prisma
 test
 uploads
+public
 
 
 # 파일

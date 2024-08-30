@@ -44,7 +44,6 @@ jobs:
 
       - name: Create .env file
         run: |
-          > .env
           echo "ORIGIN=${{ vars.ORIGIN }}" >> .env
           echo "PORT=${{ secrets.PORT }}" >> .env
           echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> .env
@@ -98,7 +97,16 @@ jobs:
             mkdir -p /home/uploads/blog-backend
             wget -O docker-compose.yaml https://raw.github.com/JongDeug/blog-backend/main/docker-compose.prod.yaml
             
+            # Redis 설정 파일 생성
+            > redis.conf
+            
+            echo "appendonly yes" >> redis.conf
+            echo "appendfilename \"appendonly.aof\"" >> redis.conf
+            echo "appendfsync everysec" >> redis.conf
+            
             # docker-compose.yaml에 필요한 .env 파일 생성
+            > .env
+            
             echo "PORT=${{ secrets.PORT }}" >> .env
             echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> .env
             echo "DATABASE_PORT=${{ secrets.DATABASE_PORT }}" >> .env

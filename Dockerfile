@@ -13,7 +13,7 @@ COPY . .
 
 # yarn berry 설정
 RUN yarn set version berry
-# yarn.lock package.json 일관성 유지 및 빌드
+# yarn.lock package.json 일관성 유지 및 빌드 => prisma 때문에
 RUN yarn install --immutable && yarn build
 # devDependencies 제외하기 위해 삭제
 RUN rm -rf ./.yarn/cache ./.yarn/unplugged
@@ -34,7 +34,6 @@ COPY --from=builder /app/blog-backend-server/.yarn                     ./.yarn
 COPY --from=builder /app/blog-backend-server/yarn.lock                 ./yarn.lock
 COPY --from=builder /app/blog-backend-server/package.json              ./package.json
 COPY --from=builder /app/blog-backend-server/tsconfig.json             ./tsconfig.json
-COPY --from=builder /app/blog-backend-server/redis.conf                ./redis.conf
 COPY --from=builder /app/blog-backend-server/swagger.yaml              ./swagger.yaml
 COPY --from=builder /app/blog-backend-server/dist                      ./dist
 COPY --from=builder /app/blog-backend-server/prisma                    ./prisma
