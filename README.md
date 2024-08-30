@@ -24,23 +24,23 @@
 ![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white)
 ![Prisma](https://img.shields.io/badge/Prisma-2D3748?style=for-the-badge&logo=prisma&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
+![Redis](https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![Docker Compose](https://img.shields.io/badge/Docker_Compose-2496ED?style=for-the-badge&logo=docker&logoColor=white)
 
 ## 📌 Swagger 배포 주소
 
+- https://jongdeug.port0.org/api/docs
 - username: admin
 - password: 1234
-- http://jongdeug.port0.org/api-docs
-
-## 📌 주요 기능
-
-- 블로그 게시글 CRUD
-- 비회원 게시글 좋아요, 댓글 작성
-- 댓글 작성 시 이메일 알림
 
 ## 📌 아키텍처
 
-- 서버 아키텍처 그림 그려서 보여주면 됨
--
+**전체적인 서비스 구조**
+![app.png](.github:/public/app.png)
+
+**백엔드 구조**
+![back-end.png](.github/public/back-end.png)
 
 [//]: # (## 📌 기타 추가 사항들)
 
