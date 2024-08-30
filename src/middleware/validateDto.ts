@@ -16,7 +16,7 @@ export function validateDto(dtoClass: any) {
                 .map(
                     (error) =>
                         // I. 앞글자 대문자 : 에러 메시지
-                        `${error.property}: ${Object.values(error.constraints!).join(', ')}`
+                        `${error.property}: ${Object.values(error.constraints!).join(', ')}`,
                 )
                 .join('\n ');
 
@@ -25,6 +25,7 @@ export function validateDto(dtoClass: any) {
         }
 
         // I. validation 성공
+        req.body = dto;
         next();
     };
 }

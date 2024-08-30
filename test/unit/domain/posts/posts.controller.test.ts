@@ -2,7 +2,7 @@ import httpMocks from 'node-mocks-http';
 import { NextFunction, Request, Response } from 'express';
 import { PostsController } from '../../../../src/domain/posts/posts.controller';
 import { PostsService } from '../../../../src/domain/posts/posts.service';
-import { Post, Prisma, User } from '../../../../prisma/prisma-client';
+import { Prisma, User } from '../../../../prisma/prisma-client';
 import { CustomError } from '@utils/customError';
 import { UsersService } from '../../../../src/domain/users/users.service';
 
@@ -176,7 +176,7 @@ describe('PostsController', () => {
                 search: '',
                 category: '',
                 skip: 3,
-                take: 10
+                take: 10,
             };
         });
 

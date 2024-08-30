@@ -18,8 +18,8 @@ import { redisListener } from '@utils/redisListener';
 (async () => {
     const app = express();
     await redisClient.connect(); // connect redis
-    await redisClient.configSet('notify-keyspace-events', 'Ex'); // set event
     await database.$connect(); // connect db
+    await redisClient.configSet('notify-keyspace-events', 'Ex'); // set event
 
     // --- Redis 이미지 만료 이벤트 관리
     const subscriber = redisClient.duplicate();
@@ -73,6 +73,5 @@ import { redisListener } from '@utils/redisListener';
     app.listen(process.env.PORT, () =>
         console.log(`Server running on port ${process.env.PORT}`),
     );
-
 })();
 // ---

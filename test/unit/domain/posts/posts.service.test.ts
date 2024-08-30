@@ -4,9 +4,11 @@ import { Image, Post, Prisma, User } from '../../../../prisma/prisma-client';
 import { CustomError } from '@utils/customError';
 import { deleteImages } from '@utils/filesystem';
 import { UsersService } from '../../../../src/domain/users/users.service';
+import redisClientMock from '@utils/redis';
 
 jest.mock('../../../../src/domain/users/users.service');
 jest.mock('@utils/filesystem'); // 정확한 명칭으로 설정하니 에러가 사라짐.
+jest.mock('@utils/redis');
 
 describe('PostsService Main Functions', () => {
     let postsService: PostsService;
@@ -38,7 +40,7 @@ describe('PostsService Main Functions', () => {
                 title: 'Test Title',
                 content: 'Test Content',
                 category: 'TestCategory',
-                images: [{ path: 'images' }, { path: 'images' }],
+                images: ['images url', 'images url'],
                 tags: ['Tag1', 'Tag2'],
                 next: 'Next id',
                 prev: 'Prev id',
@@ -78,12 +80,13 @@ describe('PostsService Main Functions', () => {
                     },
                     images: {
                         createMany: {
-                            data: mockData.createPostDto.images.map((image: { path: any; }) => ({ url: image.path })),
+                            data: mockData.createPostDto.images.map((url: string) => ({ url })),
                         },
                     },
                 },
             });
-            expect(prismaMock.postTag.create).toHaveBeenCalledTimes(mockData.createPostDto.tags!.length);
+            expect(prismaMock.postTag.create).toHaveBeenCalledTimes(mockData.createPostDto.tags.length);
+            expect(redisClientMock.del as jest.Mock).toHaveBeenCalledTimes(mockData.createPostDto.images.length);
         });
 
         test('should throw error if user is not found', async () => {
@@ -115,6 +118,7 @@ describe('PostsService Main Functions', () => {
             expect(usersServiceMock.findUserById).toHaveBeenCalledWith(mockData.userId);
             expect(prismaMock.$transaction).toHaveBeenCalled();
             expect(prismaMock.post.create).toHaveBeenCalled();
+            expect(redisClientMock.del as jest.Mock).not.toHaveBeenCalled();
         });
     });
     // ---
@@ -127,7 +131,7 @@ describe('PostsService Main Functions', () => {
                 title: 'Test Title',
                 content: 'Test Content',
                 category: 'TestCategory',
-                images: [{ path: 'images' }, { path: 'images' }],
+                images: ['images url', 'images url'],
                 tags: ['Tag1', 'Tag2'],
                 next: 'Next id',
                 prev: 'Prev id',

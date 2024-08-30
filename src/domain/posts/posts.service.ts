@@ -4,7 +4,7 @@ import database from '@utils/database';
 import { deleteImages } from '@utils/filesystem';
 import { Prisma } from '../../../prisma/prisma-client';
 import { UsersService } from '../users/users.service';
-import redis from '@utils/redis';
+import redisClient from '@utils/redis';
 
 export class PostsService {
     constructor(private readonly usersService: UsersService) {
@@ -35,42 +35,39 @@ export class PostsService {
                         connect: { id: user.id },
                     },
                     images: {
-                        createMany: {
-                            data: dto.images.map((image) => ({
-                                url: image.path,
-                            })),
-                        },
+                        createMany: { data: dto.images.map(url => ({ url })) },
                     },
                 },
             });
 
             // I. 태그 생성 및 연결
-            if (dto.tags) {
-                // I. 태그가 중복으로 들어왔을 경우 처리해야함
-                const set = new Set(dto.tags);
-                const tags = [...set];
-                for (const tagName of tags) {
-                    // I. 생성한 태그와 게시글을 연결, 태그가 없으면 생성, 있으면 연결
-                    // I. createMany 는 사용할 수 없음. => 일대다는 되는데, 다대다에는 제공되지 않음
-                    // I. createMany works only on a single entity and not on sub-entities.
-                    await database.postTag.create({
-                        data: {
-                            post: {
-                                connect: { id: post.id },
-                            },
-                            tag: {
-                                connectOrCreate: {
-                                    where: { name: tagName },
-                                    create: { name: tagName },
-                                },
+            // I. 태그가 중복으로 들어왔을 경우 처리해야함
+            const set = new Set(dto.tags);
+            const tags = [...set];
+            for (const tagName of tags) {
+                // I. 생성한 태그와 게시글을 연결, 태그가 없으면 생성, 있으면 연결
+                // I. createMany 는 사용할 수 없음. => 일대다는 되는데, 다대다에는 제공되지 않음
+                // I. createMany works only on a single entity and not on sub-entities.
+                await database.postTag.create({
+                    data: {
+                        post: {
+                            connect: { id: post.id },
+                        },
+                        tag: {
+                            connectOrCreate: {
+                                where: { name: tagName },
+                                create: { name: tagName },
                             },
                         },
-                    });
-                }
+                    },
+                });
             }
 
             return post;
         });
+
+        // I. Redis 에서 만료시간 제거
+        for (const path of dto.images) await redisClient.del(`image:${path}`);
 
         return newPost.id;
     }
@@ -103,25 +100,23 @@ export class PostsService {
             });
 
             // I. tags : postTag 새롭게 생성
-            if (dto.tags) {
-                // I. 태그가 중복으로 들어왔을 경우 처리해야함
-                const set = new Set(dto.tags);
-                const tags = [...set];
-                for (const tagName of tags) {
-                    await database.postTag.create({
-                        data: {
-                            post: {
-                                connect: { id: post.id },
-                            },
-                            tag: {
-                                connectOrCreate: {
-                                    where: { name: tagName },
-                                    create: { name: tagName },
-                                },
+            // I. 태그가 중복으로 들어왔을 경우 처리해야함
+            const set = new Set(dto.tags);
+            const tags = [...set];
+            for (const tagName of tags) {
+                await database.postTag.create({
+                    data: {
+                        post: {
+                            connect: { id: post.id },
+                        },
+                        tag: {
+                            connectOrCreate: {
+                                where: { name: tagName },
+                                create: { name: tagName },
                             },
                         },
-                    });
-                }
+                    },
+                });
             }
 
             await database.post.update({
@@ -140,11 +135,7 @@ export class PostsService {
                         },
                     },
                     images: {
-                        createMany: {
-                            data: dto.images.map((image) => ({
-                                url: image.path,
-                            })),
-                        },
+                        createMany: { data: dto.images.map(url => ({ url })) },
                     },
                     updatedAt: new Date().toISOString(),
                 },
@@ -448,8 +439,8 @@ export class PostsService {
         const imageKey = `image:${imagePath}`;
 
         // I. redis expire 1day 설정
-        // 60 * 60 * 24
-        await redis.set(imageKey, '', { EX: 60 * 60 * 24 });
+        await redisClient.set(imageKey, '', { EX: 60 * 60 * 24 });
+        return imagePath;
     }
 
 

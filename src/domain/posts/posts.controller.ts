@@ -26,6 +26,8 @@ import ROLES from '@utils/roles';
 import { verifyRoles } from '@middleware/verifyRoles';
 import { validateQueryDto } from '@middleware/validateQueryDto';
 import { GetPostQueryDto } from './dto/get-post.query.dto';
+import process from 'node:process';
+
 
 export class PostsController {
     path: string;
@@ -48,15 +50,13 @@ export class PostsController {
         this.router.post(
             '/',
             verifyRoles(ROLES.admin),
-            upload.array('images', 12),
-            validateDtoWithFiles(CreatePostDto),
+            validateDto(CreatePostDto),
             this.createPost,
         );
         this.router.patch(
             '/:id',
             verifyRoles(ROLES.admin),
-            upload.array('images', 12),
-            validateDtoWithFiles(UpdatePostDto),
+            validateDto(UpdatePostDto),
             this.updatePost,
         );
         this.router.delete('/:id', verifyRoles(ROLES.admin), this.deletePost);
@@ -254,9 +254,9 @@ export class PostsController {
                 );
 
             // I. postsService.uploadImage 호출
-            await this.postsService.uploadImage(req?.file);
+            const imagePath = await this.postsService.uploadImage(req?.file);
 
-            res.status(200).json({});
+            res.status(200).json({ success: 1, file: { url: `${process.env.ORIGIN}/${imagePath}` } });
         } catch (err) {
             next(err);
         }

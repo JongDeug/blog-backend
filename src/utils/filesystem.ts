@@ -2,11 +2,11 @@ import fs from 'fs';
 import path from 'path';
 import { Image } from '../../prisma/prisma-client';
 
-const filepath = path.join(__dirname, '../../');
+const dirPath = path.join(__dirname, '../../');
 
 export const deleteImage = (imagePath: string) => {
     try {
-        fs.unlinkSync(`${filepath}/${imagePath}`);
+        fs.unlinkSync(`${dirPath}/${imagePath}`);
     } catch (err) {
         console.error(err);
     }
@@ -18,12 +18,12 @@ export const deleteImages = async (images: Image[]) => {
             (file) =>
                 new Promise((resolve, reject) => {
                     try {
-                        fs.unlinkSync(`${filepath}/${file.url}`);
+                        fs.unlinkSync(`${dirPath}/${file.url}`);
                         resolve(`${file.url} 파일이 성공적으로 삭제됨`);
                     } catch (err) {
                         reject(err);
                     }
-                }),
+                })
         ),
     );
 };
