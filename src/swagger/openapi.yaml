@@ -26,6 +26,8 @@ paths:
     $ref: './posts.yaml#/~1{id}'
   /api/posts/like:
     $ref: './posts.yaml#/~1like'
+  /api/posts/upload:
+    $ref: './posts.yaml#/~1upload'
   /api/posts/comments:
     $ref: './comments.yaml#/~1'
   /api/posts/comments/guest:
@@ -550,6 +552,28 @@ components:
         application/json:
           schema:
             type: object
+    FileResponse:
+      description: 이미지 업로드 성공
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: integer
+                description: 이미지 업로드 상태
+                example: 0
+              file:
+                type: object
+                properties:
+                  url:
+                    type: string
+                    description: URL
+                    example: https://example.com/upload/sdlfsdfsfd.jpg
+            example:
+              success: 1
+              file:
+                url: "http://localhost:3000/uploads/image123.jpg"
     BadRequest:
       description: Bad Request
       content:

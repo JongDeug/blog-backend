@@ -312,7 +312,7 @@ paths:
       requestBody:
         required: true
         content:
-          multipart/form-data:
+          application/json:
             schema:
               $ref: '#/components/schemas/CreatePostDto'
       responses:
@@ -382,7 +382,7 @@ paths:
       requestBody:
         required: true
         content:
-          multipart/form-data:
+          application/json:
             schema:
               $ref: '#/components/schemas/UpdatePostDto'
       responses:
@@ -474,6 +474,35 @@ paths:
                   error:
                     type: string
                     example: 게시글을 찾을 수 없습니다 or guestLikeId 를 찾을 수 없습니다
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /api/posts/upload:
+    post:
+      tags:
+        - Posts
+      summary: 게시글 이미지 업로드
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: 이미지 파일
+              required:
+                - file
+      responses:
+        '200':
+          $ref: '#/components/responses/FileResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenAPIError'
         '500':
           $ref: '#/components/responses/InternalServerError'
   /api/posts/comments:
@@ -1227,6 +1256,28 @@ components:
         application/json:
           schema:
             type: object
+    FileResponse:
+      description: 이미지 업로드 성공
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: integer
+                description: 이미지 업로드 상태
+                example: 0
+              file:
+                type: object
+                properties:
+                  url:
+                    type: string
+                    description: URL
+                    example: 'https://example.com/upload/sdlfsdfsfd.jpg'
+            example:
+              success: 1
+              file:
+                url: 'http://localhost:3000/uploads/image123.jpg'
     BadRequest:
       description: Bad Request
       content:

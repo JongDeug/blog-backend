@@ -1,5 +1,4 @@
 import { IsNotEmpty, IsOptional, IsString, IsArray, IsBoolean } from 'class-validator';
-import { Transform } from 'class-transformer';
 
 export class CreatePostDto {
     @IsString()
