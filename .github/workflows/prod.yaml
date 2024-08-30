@@ -57,6 +57,7 @@ jobs:
           echo "MAIL_ID=${{ secrets.MAIL_ID }}" >> .env
           echo "MAIL_PWD=${{ secrets.MAIL_PWD }}" >> .env
 
+      #      GHCR.io
       #      - name: Log in to Github Container Registry
       #        uses: docker/login-action@v3
       #        with:
@@ -79,7 +80,7 @@ jobs:
       #          tags: ${{ steps.meta.outputs.tags }}
       #          labels: ${{ steps.meta.outputs.labels }}
 
-      # Ghcr.io 느리면 Docker.io 사용
+      # Docker.io
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
@@ -96,7 +97,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          platforms: linux/arm64/v8
+          platforms: linux/arm64 # Raspberrypi
           push: true
           tags: ${{ vars.IMAGE_NAME }}:latest
 
@@ -118,14 +119,14 @@ jobs:
             mkdir -p /home/uploads/blog-backend
             wget -O docker-compose.yaml https://raw.github.com/JongDeug/blog-backend/main/docker-compose.prod.yaml
             
-            # Redis 설정 파일 생성
+            # Redis: 설정 파일 생성
             > redis.conf
             
             echo "appendonly yes" >> redis.conf
             echo "appendfilename \"appendonly.aof\"" >> redis.conf
             echo "appendfsync everysec" >> redis.conf
             
-            # docker-compose.yaml에 필요한 .env 파일 생성
+            # Docker: docker-compose.yaml에 필요한 .env 파일 생성
             > .env
             
             echo "PORT=${{ secrets.PORT }}" >> .env
@@ -137,7 +138,6 @@ jobs:
             echo "REGISTRY_G=${{ vars.REGISTRY_G }}" >> .env
             echo "REGISTRY_D=${{ vars.REGISTRY_D }}" >> .env
             echo "IMAGE_NAME=${{ vars.IMAGE_NAME }}" >> .env
-            echo "DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}" >> .env
             
             # docker stop => pull, build, run, 필요없는(태그없는) 이미지 삭제
             docker compose down
