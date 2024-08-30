@@ -1,9 +1,10 @@
 import { CreatePostDto, PostLikeDto, UpdatePostDto } from './dto';
 import { CustomError } from '@utils/customError';
 import database from '@utils/database';
-import { deleteImage } from '@utils/filesystem';
+import { deleteImages } from '@utils/filesystem';
 import { Prisma } from '../../../prisma/prisma-client';
 import { UsersService } from '../users/users.service';
+import redisClient from '@utils/redis';
 
 export class PostsService {
     constructor(private readonly usersService: UsersService) {
@@ -34,42 +35,39 @@ export class PostsService {
                         connect: { id: user.id },
                     },
                     images: {
-                        createMany: {
-                            data: dto.images.map((image) => ({
-                                url: image.path,
-                            })),
-                        },
+                        createMany: { data: dto.images.map(url => ({ url })) },
                     },
                 },
             });
 
             // I. 태그 생성 및 연결
-            if (dto.tags) {
-                // I. 태그가 중복으로 들어왔을 경우 처리해야함
-                const set = new Set(dto.tags);
-                const tags = [...set];
-                for (const tagName of tags) {
-                    // I. 생성한 태그와 게시글을 연결, 태그가 없으면 생성, 있으면 연결
-                    // I. createMany 는 사용할 수 없음. => 일대다는 되는데, 다대다에는 제공되지 않음
-                    // I. createMany works only on a single entity and not on sub-entities.
-                    await database.postTag.create({
-                        data: {
-                            post: {
-                                connect: { id: post.id },
-                            },
-                            tag: {
-                                connectOrCreate: {
-                                    where: { name: tagName },
-                                    create: { name: tagName },
-                                },
+            // I. 태그가 중복으로 들어왔을 경우 처리해야함
+            const set = new Set(dto.tags);
+            const tags = [...set];
+            for (const tagName of tags) {
+                // I. 생성한 태그와 게시글을 연결, 태그가 없으면 생성, 있으면 연결
+                // I. createMany 는 사용할 수 없음. => 일대다는 되는데, 다대다에는 제공되지 않음
+                // I. createMany works only on a single entity and not on sub-entities.
+                await database.postTag.create({
+                    data: {
+                        post: {
+                            connect: { id: post.id },
+                        },
+                        tag: {
+                            connectOrCreate: {
+                                where: { name: tagName },
+                                create: { name: tagName },
                             },
                         },
-                    });
-                }
+                    },
+                });
             }
 
             return post;
         });
+
+        // I. Redis 에서 만료시간 제거
+        for (const path of dto.images) await redisClient.del(`image:${path}`);
 
         return newPost.id;
     }
@@ -102,25 +100,23 @@ export class PostsService {
             });
 
             // I. tags : postTag 새롭게 생성
-            if (dto.tags) {
-                // I. 태그가 중복으로 들어왔을 경우 처리해야함
-                const set = new Set(dto.tags);
-                const tags = [...set];
-                for (const tagName of tags) {
-                    await database.postTag.create({
-                        data: {
-                            post: {
-                                connect: { id: post.id },
-                            },
-                            tag: {
-                                connectOrCreate: {
-                                    where: { name: tagName },
-                                    create: { name: tagName },
-                                },
+            // I. 태그가 중복으로 들어왔을 경우 처리해야함
+            const set = new Set(dto.tags);
+            const tags = [...set];
+            for (const tagName of tags) {
+                await database.postTag.create({
+                    data: {
+                        post: {
+                            connect: { id: post.id },
+                        },
+                        tag: {
+                            connectOrCreate: {
+                                where: { name: tagName },
+                                create: { name: tagName },
                             },
                         },
-                    });
-                }
+                    },
+                });
             }
 
             await database.post.update({
@@ -139,11 +135,7 @@ export class PostsService {
                         },
                     },
                     images: {
-                        createMany: {
-                            data: dto.images.map((image) => ({
-                                url: image.path,
-                            })),
-                        },
+                        createMany: { data: dto.images.map(url => ({ url })) },
                     },
                     updatedAt: new Date().toISOString(),
                 },
@@ -163,7 +155,7 @@ export class PostsService {
         // I. 트랜젝션이 성공하면 로컬 파일에 존재했던 이전 이미지 또한 지워야 함.
         if (post.images.length > 0) {
             try {
-                await deleteImage(post.images);
+                await deleteImages(post.images);
             } catch (err) {
                 throw new CustomError(500, 'Internal Server Error', `${err}`);
             }
@@ -200,7 +192,7 @@ export class PostsService {
         // I. 로컬 이미지 삭제하기
         if (post.images.length > 0) {
             try {
-                await deleteImage(post.images);
+                await deleteImages(post.images);
             } catch (err) {
                 throw new CustomError(500, 'Internal Server Error', `${err}`);
             }
@@ -436,6 +428,21 @@ export class PostsService {
 
         throw new CustomError(400, 'Bad Request', '잘못된 요청입니다');
     }
+
+    // 이미지 업로드 ==========================================================================================
+    async uploadImage(file: Express.Multer.File | undefined) {
+        if (!file) {
+            throw new CustomError(400, 'Bad Request', '잘못된 요청입니다');
+        }
+
+        const imagePath = file.path;
+        const imageKey = `image:${imagePath}`;
+
+        // I. redis expire 1day 설정
+        await redisClient.set(imageKey, '', { EX: 60 * 60 * 24 });
+        return imagePath;
+    }
+
 
     /**
      * [Utils]

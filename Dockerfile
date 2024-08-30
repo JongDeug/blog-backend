@@ -34,11 +34,12 @@ COPY --from=builder /app/blog-backend-server/.yarn                     ./.yarn
 COPY --from=builder /app/blog-backend-server/yarn.lock                 ./yarn.lock
 COPY --from=builder /app/blog-backend-server/package.json              ./package.json
 COPY --from=builder /app/blog-backend-server/tsconfig.json             ./tsconfig.json
+COPY --from=builder /app/blog-backend-server/redis.conf                ./redis.conf
 COPY --from=builder /app/blog-backend-server/swagger.yaml              ./swagger.yaml
 COPY --from=builder /app/blog-backend-server/dist                      ./dist
 COPY --from=builder /app/blog-backend-server/prisma                    ./prisma
 
-# 컨테이터에 이미지 업로드 폴더 생성
+# 컨테이터에 이미지 업로드 폴더 생성, 있어도 오류 X
 RUN mkdir -p /app/blog-backend-server/uploads
 
 # 컨테이너가 사용할 포트

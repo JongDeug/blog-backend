@@ -6,16 +6,26 @@ import '@utils/loadEnv'; // dotenv 로드
 import { Router } from './domain';
 import { jwtVerify } from '@middleware/jwtVerify';
 import database from '@utils/database';
+import redisClient from '@utils/redis';
 import * as path from 'node:path';
 import { AuthService } from './domain/auth/auth.service';
 import swaggerUi from 'swagger-ui-express';
 import YAML from 'yamljs';
 import basicAuth from 'express-basic-auth';
+import { redisListener } from '@utils/redisListener';
 
 // --- 즉시 실행 함수
 (async () => {
     const app = express();
+    await redisClient.connect(); // connect redis
     await database.$connect(); // connect db
+    await redisClient.configSet('notify-keyspace-events', 'Ex'); // set event
+
+    // --- Redis 이미지 만료 이벤트 관리
+    const subscriber = redisClient.duplicate();
+    await subscriber.connect();
+    await subscriber.subscribe('__keyevent@0__:expired', redisListener);
+    // ---
 
     // --- Swagger
     const swaggerSpec = YAML.load(path.join(__dirname, '../swagger.yaml'));
@@ -26,7 +36,11 @@ import basicAuth from 'express-basic-auth';
             challenge: true,
         }),
         swaggerUi.serve,
-        swaggerUi.setup(swaggerSpec),
+        swaggerUi.setup(swaggerSpec, {
+            swaggerOptions: {
+                url: '/api/docs/swagger.yaml',
+            },
+        }),
     );
     // ---
 

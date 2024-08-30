@@ -2,11 +2,13 @@ import { PostsService } from '../../../../src/domain/posts/posts.service';
 import { prismaMock } from '../../../singleton';
 import { Image, Post, Prisma, User } from '../../../../prisma/prisma-client';
 import { CustomError } from '@utils/customError';
-import { deleteImage } from '@utils/filesystem';
+import { deleteImages } from '@utils/filesystem';
 import { UsersService } from '../../../../src/domain/users/users.service';
+import redisClientMock from '@utils/redis';
 
 jest.mock('../../../../src/domain/users/users.service');
 jest.mock('@utils/filesystem'); // 정확한 명칭으로 설정하니 에러가 사라짐.
+jest.mock('@utils/redis');
 
 describe('PostsService Main Functions', () => {
     let postsService: PostsService;
@@ -38,7 +40,7 @@ describe('PostsService Main Functions', () => {
                 title: 'Test Title',
                 content: 'Test Content',
                 category: 'TestCategory',
-                images: [{ path: 'images' }, { path: 'images' }],
+                images: ['images url', 'images url'],
                 tags: ['Tag1', 'Tag2'],
                 next: 'Next id',
                 prev: 'Prev id',
@@ -78,12 +80,13 @@ describe('PostsService Main Functions', () => {
                     },
                     images: {
                         createMany: {
-                            data: mockData.createPostDto.images.map((image: { path: any; }) => ({ url: image.path })),
+                            data: mockData.createPostDto.images.map((url: string) => ({ url })),
                         },
                     },
                 },
             });
-            expect(prismaMock.postTag.create).toHaveBeenCalledTimes(mockData.createPostDto.tags!.length);
+            expect(prismaMock.postTag.create).toHaveBeenCalledTimes(mockData.createPostDto.tags.length);
+            expect(redisClientMock.del as jest.Mock).toHaveBeenCalledTimes(mockData.createPostDto.images.length);
         });
 
         test('should throw error if user is not found', async () => {
@@ -115,6 +118,7 @@ describe('PostsService Main Functions', () => {
             expect(usersServiceMock.findUserById).toHaveBeenCalledWith(mockData.userId);
             expect(prismaMock.$transaction).toHaveBeenCalled();
             expect(prismaMock.post.create).toHaveBeenCalled();
+            expect(redisClientMock.del as jest.Mock).not.toHaveBeenCalled();
         });
     });
     // ---
@@ -127,7 +131,7 @@ describe('PostsService Main Functions', () => {
                 title: 'Test Title',
                 content: 'Test Content',
                 category: 'TestCategory',
-                images: [{ path: 'images' }, { path: 'images' }],
+                images: ['images url', 'images url'],
                 tags: ['Tag1', 'Tag2'],
                 next: 'Next id',
                 prev: 'Prev id',
@@ -142,7 +146,7 @@ describe('PostsService Main Functions', () => {
             prismaMock.$transaction.mockImplementation(async (callback) => {
                 return callback(prismaMock);
             });
-            (deleteImage as jest.Mock).mockResolvedValue([]);
+            (deleteImages as jest.Mock).mockResolvedValue([]);
             // when
             await postsService.updatePost(mockData.userId, mockData.postId, mockData.updatePostDto);
             // then
@@ -164,7 +168,7 @@ describe('PostsService Main Functions', () => {
                     },
                 },
             });
-            expect(deleteImage).toHaveBeenCalledWith(mockData.returnedpost.images);
+            expect(deleteImages).toHaveBeenCalledWith(mockData.returnedpost.images);
         });
 
         test('should throw error if user is not found', async () => {
@@ -239,7 +243,7 @@ describe('PostsService Main Functions', () => {
             prismaMock.$transaction.mockImplementation(async (callback) => {
                 return callback(prismaMock);
             });
-            (deleteImage as jest.Mock).mockRejectedValue(new Error('파일을 삭제하지 못했습니다'));
+            (deleteImages as jest.Mock).mockRejectedValue(new Error('파일을 삭제하지 못했습니다'));
             // when, then
             await expect(postsService.updatePost(mockData.userId, mockData.postId, mockData.updatePostDto)).rejects.toThrow(
                 new CustomError(500, 'Internal Server Error', `${new Error('파일을 삭제하지 못했습니다')}`),
@@ -249,7 +253,7 @@ describe('PostsService Main Functions', () => {
             expect(prismaMock.$transaction).toHaveBeenCalled();
             expect(prismaMock.post.update).toHaveBeenCalled();
             expect(prismaMock.tag.deleteMany).toHaveBeenCalled();
-            expect(deleteImage).toHaveBeenCalled();
+            expect(deleteImages).toHaveBeenCalled();
         });
     });
     // ---
@@ -261,14 +265,14 @@ describe('PostsService Main Functions', () => {
         test('should delete a post successfully', async () => {
             // given
             (postsService.findPostById as jest.Mock).mockResolvedValue(mockData.returnedpost as PostIncludingImageType);
-            (deleteImage as jest.Mock).mockResolvedValue([]);
+            (deleteImages as jest.Mock).mockResolvedValue([]);
             // when
             await postsService.deletePost(mockData.userId, mockData.postId);
             // then
             expect(postsService.findPostById).toHaveBeenCalledWith(mockData.postId, { images: true });
             expect(prismaMock.post.delete).toHaveBeenCalledWith({ where: { id: mockData.returnedpost.id } });
             expect(prismaMock.tag.deleteMany).toHaveBeenCalledWith({ where: { posts: { none: {} } } });
-            expect(deleteImage).toHaveBeenCalledWith(mockData.returnedpost.images);
+            expect(deleteImages).toHaveBeenCalledWith(mockData.returnedpost.images);
         });
 
         test('should throw error if post is not found', async () => {
@@ -299,7 +303,7 @@ describe('PostsService Main Functions', () => {
         test('should throw error if images fail to delete', async () => {
             // given
             (postsService.findPostById as jest.Mock).mockResolvedValue(mockData.returnedpost as PostIncludingImageType);
-            (deleteImage as jest.Mock).mockRejectedValue(new Error('파일을 삭제하지 못했습니다'));
+            (deleteImages as jest.Mock).mockRejectedValue(new Error('파일을 삭제하지 못했습니다'));
             // when, then
             await expect(postsService.deletePost(mockData.userId, mockData.postId)).rejects.toThrow(
                 new CustomError(500, 'Internal Server Error', `${new Error('파일을 삭제하지 못했습니다')}`),
@@ -307,7 +311,7 @@ describe('PostsService Main Functions', () => {
             expect(postsService.findPostById).toHaveBeenCalled();
             expect(prismaMock.post.delete).toHaveBeenCalled();
             expect(prismaMock.tag.deleteMany).toHaveBeenCalled();
-            expect(deleteImage).toHaveBeenCalled();
+            expect(deleteImages).toHaveBeenCalled();
         });
     });
     // ---
