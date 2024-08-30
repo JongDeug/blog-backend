@@ -40,15 +40,17 @@ import { redisListener } from '@utils/redisListener';
             swaggerOptions: {
                 url: '/api/docs/swagger.yaml',
             },
-        }),
+        })
     );
     // ---
 
     // --- 미들웨어
-    app.use(cors({
-        origin: 'https://jongdeug.port0.org',
-        credentials: true,
-    }));
+    app.use(
+        cors({
+            origin: 'https://jongdeug.port0.org',
+            credentials: true,
+        })
+    );
     app.use(express.json()); // JSON 형식
     app.use(express.urlencoded({ extended: true })); // HTML 폼
     app.use(cookieParser());
@@ -71,7 +73,7 @@ import { redisListener } from '@utils/redisListener';
     // ---
 
     app.listen(process.env.PORT, () =>
-        console.log(`Server running on port ${process.env.PORT}`),
+        console.log(`Server running on port ${process.env.PORT}`)
     );
 })();
 // ---

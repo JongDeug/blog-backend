@@ -671,6 +671,30 @@ describe('PostsService Main Functions', () => {
         });
     });
     // ---
+
+    // --- UploadImage
+    describe('uploadImage', () => {
+        beforeEach(() => {
+            mockData.file = { path: 'mock/url.jpg' };
+        });
+
+        test('should upload a image successfully', async () => {
+            // when
+            const result = await postsService.uploadImage(mockData.file);
+            // then
+            expect(result).toStrictEqual(mockData.file.path);
+            expect(redisClientMock.set).toHaveBeenCalledWith(`image:${mockData.file.path}`, '', { EX: 60 * 60 * 24 });
+        });
+
+        test('should throw error if file is undefined', async () => {
+            // when, then
+            await expect(postsService.uploadImage(undefined)).rejects.toThrow(
+                new CustomError(400, 'Bad Request', '잘못된 요청입니다'),
+            );
+            expect(redisClientMock.set).not.toHaveBeenCalled();
+        });
+    });
+    // ---
 });
 
 describe('PostsService Util Functions', () => {

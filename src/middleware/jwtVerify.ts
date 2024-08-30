@@ -40,8 +40,8 @@ export const jwtVerify = (authService: AuthService): RequestHandler => {
                     new CustomError(
                         401,
                         'Unauthorized',
-                        '토큰을 보내고 있지 않습니다',
-                    ),
+                        '토큰을 보내고 있지 않습니다'
+                    )
                 );
             }
 
@@ -54,8 +54,8 @@ export const jwtVerify = (authService: AuthService): RequestHandler => {
                     new CustomError(
                         401,
                         'Unauthorized',
-                        '서비스 이용은 access 토큰으로만 가능합니다',
-                    ),
+                        '서비스 이용은 access 토큰으로만 가능합니다'
+                    )
                 );
             }
 
@@ -73,7 +73,7 @@ export const jwtVerify = (authService: AuthService): RequestHandler => {
 
             if (!req.user) {
                 return next(
-                    new CustomError(404, 'Not Found', '유저를 찾을 수 없습니다'),
+                    new CustomError(404, 'Not Found', '유저를 찾을 수 없습니다')
                 );
             }
 

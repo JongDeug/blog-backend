@@ -24,6 +24,6 @@ export const deleteImages = async (images: Image[]) => {
                         reject(err);
                     }
                 })
-        ),
+        )
     );
 };
