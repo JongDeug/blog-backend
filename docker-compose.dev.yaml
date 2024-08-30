@@ -6,10 +6,24 @@ services:
     container_name: blog-backend-mysql
     restart: always
     ports:
-      - 3306:3306
+      - "3306:3306"
     environment:
       MYSQL_ROOT_PASSWORD: ${DATABASE_PWD}
     volumes:
       - mysql-data:/var/lib/mysql
+
+  redis:
+    image: redis:latest
+    container_name: blog-backend-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/redis/data
+      - ./redis.conf:/usr/local/etc/redis/redis.conf
+    environment:
+      - REDIS_PASSWORD=${REDIS_PWD}
+
 volumes:
   mysql-data:
+  redis-data:

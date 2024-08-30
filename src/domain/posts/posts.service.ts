@@ -1,9 +1,10 @@
 import { CreatePostDto, PostLikeDto, UpdatePostDto } from './dto';
 import { CustomError } from '@utils/customError';
 import database from '@utils/database';
-import { deleteImage } from '@utils/filesystem';
+import { deleteImages } from '@utils/filesystem';
 import { Prisma } from '../../../prisma/prisma-client';
 import { UsersService } from '../users/users.service';
+import redis from '@utils/redis';
 
 export class PostsService {
     constructor(private readonly usersService: UsersService) {
@@ -163,7 +164,7 @@ export class PostsService {
         // I. 트랜젝션이 성공하면 로컬 파일에 존재했던 이전 이미지 또한 지워야 함.
         if (post.images.length > 0) {
             try {
-                await deleteImage(post.images);
+                await deleteImages(post.images);
             } catch (err) {
                 throw new CustomError(500, 'Internal Server Error', `${err}`);
             }
@@ -200,7 +201,7 @@ export class PostsService {
         // I. 로컬 이미지 삭제하기
         if (post.images.length > 0) {
             try {
-                await deleteImage(post.images);
+                await deleteImages(post.images);
             } catch (err) {
                 throw new CustomError(500, 'Internal Server Error', `${err}`);
             }
@@ -436,6 +437,21 @@ export class PostsService {
 
         throw new CustomError(400, 'Bad Request', '잘못된 요청입니다');
     }
+
+    // 이미지 업로드 ==========================================================================================
+    async uploadImage(file: Express.Multer.File | undefined) {
+        if (!file) {
+            throw new CustomError(400, 'Bad Request', '잘못된 요청입니다');
+        }
+
+        const imagePath = file.path;
+        const imageKey = `image:${imagePath}`;
+
+        // I. redis expire 1day 설정
+        // 60 * 60 * 24
+        await redis.set(imageKey, '', { EX: 60 * 60 * 24 });
+    }
+
 
     /**
      * [Utils]

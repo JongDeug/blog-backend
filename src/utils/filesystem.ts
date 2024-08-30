@@ -4,7 +4,15 @@ import { Image } from '../../prisma/prisma-client';
 
 const filepath = path.join(__dirname, '../../');
 
-export const deleteImage = async (images: Image[]) => {
+export const deleteImage = (imagePath: string) => {
+    try {
+        fs.unlinkSync(`${filepath}/${imagePath}`);
+    } catch (err) {
+        console.error(err);
+    }
+};
+
+export const deleteImages = async (images: Image[]) => {
     return Promise.all(
         images.map(
             (file) =>
@@ -15,7 +23,7 @@ export const deleteImage = async (images: Image[]) => {
                     } catch (err) {
                         reject(err);
                     }
-                })
-        )
+                }),
+        ),
     );
 };

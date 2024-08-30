@@ -1,11 +1,12 @@
 import multer from 'multer';
 import fs from 'fs';
 import path from 'path';
+import { v4 as uuidv4 } from 'uuid';
 
 // Multer 설정
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        const dirPath = path.join(__dirname, '../../uploads');
+        const dirPath = path.join(__dirname, '../../uploads/temporary');
         try {
             // I. 디렉토리 존재여부 확인
             fs.accessSync(dirPath);
@@ -13,11 +14,14 @@ const storage = multer.diskStorage({
             // I. 디렉토리가 존재하지 않으면 생성
             fs.mkdirSync(dirPath, { recursive: true });
         }
-        cb(null, 'uploads/');
+        cb(null, 'uploads/temporary/');
     },
     filename: (req, file, cb) => {
-        // I. 같은 시간에 생성되는 이미도 있어서 Math.random 까지 추가함
-        cb(null, `${Date.now()}${Math.random()}-${file.originalname}`);
+        // I.Date.now() 충돌할 가능성 존재 => uuid 로 변경
+        const fileuuid = uuidv4();
+        const extension = file.originalname.split('.').pop();
+        const uuidFilename = fileuuid + '.' + extension;
+        cb(null, uuidFilename);
     },
 });
 

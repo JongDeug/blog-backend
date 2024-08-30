@@ -14,7 +14,6 @@ services:
     volumes:
       - mysql-data:/var/lib/mysql # /var/lib/docker/volumes/blog-backend_mysql-data/_data, 호스트:컨테이너
 
-
   server: # Server 컨테이너
     networks:
       - app
