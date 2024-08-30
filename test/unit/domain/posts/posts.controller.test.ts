@@ -5,6 +5,7 @@ import { PostsService } from '../../../../src/domain/posts/posts.service';
 import { Prisma, User } from '../../../../prisma/prisma-client';
 import { CustomError } from '@utils/customError';
 import { UsersService } from '../../../../src/domain/users/users.service';
+import process from 'node:process';
 
 jest.mock('../../../../src/domain/auth/auth.service');
 jest.mock('../../../../src/domain/users/users.service');
@@ -267,6 +268,49 @@ describe('PostsController', () => {
             // then
             expect(next).toHaveBeenCalledWith(new Error('데이터베이스: 게시글 좋아요 오류'));
         });
+    });
+    // ---
+
+    // --- UploadImage
+    describe('uploadImage', () => {
+        beforeEach(() => {
+            req.user = { id: 'mockUserId' } as User;
+            req.file = { path: 'mock/url.jpg' } as Express.Multer.File;
+        });
+
+        test('should upload a image successfully', async () => {
+            postsServiceMock.uploadImage.mockResolvedValue('mock/url.jpg');
+            // when
+            await postsController.uploadImage(req, res, next);
+            // then
+            expect(res.statusCode).toBe(200);
+            expect(res._getJSONData()).toStrictEqual({
+                success: 1,
+                file: { url: `${process.env.ORIGIN}/${req?.file?.path}` },
+            });
+            expect(res._isEndCalled()).toBeTruthy();
+            expect(postsServiceMock.uploadImage).toHaveBeenCalledWith(req.file);
+        });
+
+        test('should handle error if user is not authenticated', async () => {
+            // given
+            req.user = undefined;
+            // when
+            await postsController.uploadImage(req, res, next);
+            // then
+            expect(next).toHaveBeenCalledWith(new CustomError(401, 'Unauthorized', '로그인을 진행해주세요'));
+            expect(postsServiceMock.uploadImage).not.toHaveBeenCalled();
+        });
+
+        test('should handle error if postsService.uploadImage throws error', async () => {
+            // given
+            postsServiceMock.uploadImage.mockRejectedValue(new Error('이미지 업로드 오류'));
+            // when
+            await postsController.uploadImage(req, res, next);
+            // then
+            expect(next).toHaveBeenCalledWith(new Error('이미지 업로드 오류'));
+        });
+
     });
     // ---
 });
