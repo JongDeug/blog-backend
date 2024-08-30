@@ -29,9 +29,24 @@ services:
     volumes:
       - /home/uploads/blog-backend:/app/blog-backend-server/uploads # 왼쪽 호스트, 오른쪽 컨테이너 동기화
 
+  redis: # Redis 컨테이너
+    networks:
+      - app
+    image: redis:latest
+    container_name: blog-backend-redis
+    restart: always
+    ports:
+      - ${REDIS_PORT}:${REDIS_PORT}
+    command: redis-server --requirepass ${REDIS_PWD}
+    volumes:
+      - redis-data:/redis/data
+      - ./redis.conf:/usr/local/etc/redis/redis.conf
+
 networks:
   app:
     driver: bridge # 두 컨테이너가 동일한 네트워크에 있어야 함
 
 volumes:
   mysql-data:
+  redis-data:
+
