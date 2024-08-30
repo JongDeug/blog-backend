@@ -20,8 +20,8 @@ services:
     image: ${REGISTRY}/${IMAGE_NAME}:main
     restart: always
     container_name: blog-backend-server
-#    environment:
-#      DATABASE_URL: ${DATABASE_URL}
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
     depends_on: # Mysql 컨테이너 의존
       - db
     ports:
