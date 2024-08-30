@@ -57,41 +57,41 @@ jobs:
           echo "MAIL_ID=${{ secrets.MAIL_ID }}" >> .env
           echo "MAIL_PWD=${{ secrets.MAIL_PWD }}" >> .env
 
-      - name: Log in to Github Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ vars.REGISTRY_G }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+#      - name: Log in to Github Container Registry
+#        uses: docker/login-action@v3
+#        with:
+#          registry: ${{ vars.REGISTRY_G }}
+#          username: ${{ github.actor }}
+#          password: ${{ secrets.GITHUB_TOKEN }}
+#
+#      - name: Extract metadata (tags, labels) for Docker
+#        id: meta
+#        uses: docker/metadata-action@v5
+#        with:
+#          images: ${{vars.REGISTRY_G }}/${{ vars.IMAGE_NAME }}
+#
+#      - name: Build and push Docker image to ghcr.io
+#        id: push
+#        uses: docker/build-push-action@v6
+#        with:
+#          context: .
+#          push: true
+#          tags: ${{ steps.meta.outputs.tags }}
+#          labels: ${{ steps.meta.outputs.labels }}
 
-      - name: Extract metadata (tags, labels) for Docker
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{vars.REGISTRY_G }}/${{ vars.IMAGE_NAME }}
-
-      - name: Build and push Docker image to ghcr.io
-        id: push
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-
-      # 혹시 몰라 Docker Hub 에도 추가
+      # Ghcr.io 느리면 Docker.io 사용
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: build and push docker image to registry
+      - name: Build and push docker image to docker.io
         uses: docker/build-push-action@v6
         with:
           context: .
           push: true
-          tags: ${{ vars.REGISTRY_D }}/${{ secrets.DOCKERHUB_USERNAME }}/${{ vars.IMAGE_NAME }}:latest
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/${{ vars.IMAGE_NAME }}:latest
 
   deploy:
     runs-on: ubuntu-latest
