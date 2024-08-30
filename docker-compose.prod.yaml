@@ -17,7 +17,8 @@ services:
   server: # Server 컨테이너
     networks:
       - app
-    image: ${REGISTRY}/${IMAGE_NAME}:main
+    # image: ${REGISTRY_G}/${IMAGE_NAME}:main
+    image: ${REGISTRY_D}/${DOCKERHUB_USERNAME}/${IMAGE_NAME}:latest
     restart: always
     container_name: blog-backend-server
     environment:
