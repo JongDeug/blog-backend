@@ -49,6 +49,7 @@ jobs:
           echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> .env
           echo "DATABASE_PORT=${{ secrets.DATABASE_PORT }}" >> .env
           echo "DATABASE_PWD=${{ secrets.DATABASE_PWD }}" >> .env
+          echo "REDIS_URL=${{ secrets.REDIS_URL }}" >> .env
           echo "REDIS_PORT=${{ secrets.REDIS_PORT }}" >> .env
           echo "REDIS_PWD=${{ secrets.REDIS_PWD }}" >> .env
           echo "PASSWORD_SALT=${{ secrets.PASSWORD_SALT }}" >> .env
