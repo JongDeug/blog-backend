@@ -257,7 +257,6 @@ export class PostsController {
                 );
 
             // I. postsService.uploadImage 호출
-            console.log(req.file)
             const imagePath = await this.postsService.uploadImage(req.file);
 
             res.status(200).json({
