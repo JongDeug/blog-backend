@@ -443,6 +443,7 @@ describe('PostsService Main Functions', () => {
                     next: true,
                     draft: true,
                     summary: true,
+                    categoryName: true,
                     createdAt: true,
                     updatedAt: true,
                     author: {
