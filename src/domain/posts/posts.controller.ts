@@ -6,7 +6,6 @@ import {
     PostLikeDto,
     UpdatePostDto,
 } from './dto';
-import { validateDtoWithFiles } from '@middleware/validateDtoWithFiles';
 import { upload } from '@middleware/multer';
 import { CustomError } from '@utils/customError';
 import { UsersService } from '../users/users.service';
@@ -70,7 +69,7 @@ export class PostsController {
         this.router.post(
             '/upload',
             verifyRoles(ROLES.admin),
-            upload.single('file'),
+            upload.single('image'),
             this.uploadImage
         );
         // =====================================================================================
@@ -258,6 +257,7 @@ export class PostsController {
                 );
 
             // I. postsService.uploadImage 호출
+            console.log(req.file)
             const imagePath = await this.postsService.uploadImage(req.file);
 
             res.status(200).json({
