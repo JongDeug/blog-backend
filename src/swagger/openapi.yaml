@@ -400,7 +400,11 @@ components:
         summary:
           type: string
           description: 내용 요약
-          example: 이 게시글은 어떤 주제입니다k
+          example: 이 게시글은 어떤 주제입니다
+        categoryName:
+          type: string
+          description: 카테고리
+          example: Github
         prev:
           type: string
           format: uuid
