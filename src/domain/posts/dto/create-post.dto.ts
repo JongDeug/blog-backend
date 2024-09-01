@@ -20,6 +20,10 @@ export class CreatePostDto {
     category: string;
 
     @IsString()
+    @IsNotEmpty()
+    summary: string;
+
+    @IsString()
     @IsOptional()
     prev?: string;
 

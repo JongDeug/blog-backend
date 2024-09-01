@@ -45,6 +45,7 @@ describe('PostsService Main Functions', () => {
                 next: 'Next id',
                 prev: 'Prev id',
                 draft: 'false',
+                summary: 'Test summary',
             };
         });
 
@@ -69,6 +70,7 @@ describe('PostsService Main Functions', () => {
                     prev: mockData.createPostDto.prev,
                     next: mockData.createPostDto.next,
                     draft: mockData.createPostDto.draft,
+                    summary: mockData.createPostDto.summary,
                     category: {
                         connectOrCreate: {
                             where: { name: mockData.createPostDto.category },
@@ -136,6 +138,7 @@ describe('PostsService Main Functions', () => {
                 next: 'Next id',
                 prev: 'Prev id',
                 draft: 'false',
+                summary: 'Test Summary',
             };
         });
 
@@ -356,7 +359,7 @@ describe('PostsService Main Functions', () => {
                 select: {
                     id: true,
                     title: true,
-                    content: true,
+                    summary: true,
                     createdAt: true,
                     tags: {
                         select: {
@@ -399,7 +402,7 @@ describe('PostsService Main Functions', () => {
                 select: {
                     id: true,
                     title: true,
-                    content: true,
+                    summary: true,
                     createdAt: true,
                     tags: {
                         select: {
@@ -439,6 +442,7 @@ describe('PostsService Main Functions', () => {
                     prev: true,
                     next: true,
                     draft: true,
+                    summary: true,
                     createdAt: true,
                     updatedAt: true,
                     author: {

@@ -126,6 +126,8 @@ model Post {
   next      String?
   /// 초안
   draft     Boolean  @default(true)
+  /// 내용 요약
+  summary   String   @db.VarChar(400)
 
   /// ---
   /// RELATIONS

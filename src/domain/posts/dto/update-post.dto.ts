@@ -21,6 +21,10 @@ export class UpdatePostDto {
     category: string;
 
     @IsString()
+    @IsNotEmpty()
+    summary: string;
+
+    @IsString()
     @IsOptional()
     prev?: string;
 

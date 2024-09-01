@@ -37,6 +37,7 @@ erDiagram
   String prev "nullable"
   String next "nullable"
   Boolean draft
+  String summary
   String authorId FK
   String categoryName FK
 }
@@ -128,6 +129,7 @@ erDiagram
   - `prev`: 이전 게시글 id
   - `next`: 다음 게시글 id
   - `draft`: 초안
+  - `summary`: 내용 요약
   - `authorId`
     > Foreign Key
     > 

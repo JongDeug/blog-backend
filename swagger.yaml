@@ -825,6 +825,10 @@ components:
           type: string
           description: 내용
           example: 생성했습니다
+        summary:
+          type: string
+          description: 내용 요약
+          example: 이 게시글은 어떤 주제입니다
         prev:
           type: string
           format: uuid
@@ -872,6 +876,10 @@ components:
           type: string
           description: 내용
           example: 수정했습니다
+        summary:
+          type: string
+          description: 내용 요약
+          example: 이 게시글은 어떤 주제입니다
         prev:
           type: string
           format: uuid
@@ -1060,10 +1068,10 @@ components:
           type: string
           description: 제목
           example: 생성된 게시글
-        content:
+        summary:
           type: string
-          description: 내용
-          example: 생성했습니다
+          description: 내용 요약
+          example: 이 게시글은 어떤 주제입니다
         createdAt:
           type: string
           format: date-time
@@ -1093,6 +1101,10 @@ components:
           type: string
           description: 내용
           example: 내용
+        summary:
+          type: string
+          description: 내용 요약
+          example: 이 게시글은 어떤 주제입니다
         prev:
           type: string
           format: uuid
