@@ -400,7 +400,7 @@ components:
         summary:
           type: string
           description: 내용 요약
-          example: 이 게시글은 어떤 주제입니다
+          example: 이 게시글은 어떤 주제입니다k
         prev:
           type: string
           format: uuid
