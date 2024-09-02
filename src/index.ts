@@ -36,7 +36,7 @@ import { redisListener } from '@utils/redisListener';
             challenge: true,
         }),
         swaggerUi.serve,
-        swaggerUi.setup(swaggerSpec)
+        swaggerUi.setup(swaggerSpec),
     );
     // ---
 
@@ -45,17 +45,16 @@ import { redisListener } from '@utils/redisListener';
         cors({
             origin: 'https://jongdeug.port0.org',
             credentials: true,
-        })
+        }),
     );
     app.use(express.json()); // JSON 형식
     app.use(express.urlencoded({ extended: true })); // HTML 폼
     app.use(cookieParser());
-    app.use(jwtVerify(new AuthService()));
     // ---
 
-    // --- 라우터 등록
+    // --- 라우터 등록, JWT 미들웨어
     Router.forEach((el) => {
-        app.use(`${el.path}`, el.router);
+        app.use(`${el.path}`, jwtVerify(new AuthService()), el.router);
     });
     //
 
@@ -69,7 +68,7 @@ import { redisListener } from '@utils/redisListener';
     // ---
 
     app.listen(process.env.PORT, () =>
-        console.log(`Server running on port ${process.env.PORT}`)
+        console.log(`Server running on port ${process.env.PORT}`),
     );
 })();
 // ---
