@@ -133,7 +133,7 @@ describe('PostsService Main Functions', () => {
                 title: 'Test Title',
                 content: 'Test Content',
                 category: 'TestCategory',
-                images: ['b', 'c', 'd'],
+                images: ['b', 'c', 'e'],
                 tags: ['Tag1', 'Tag2'],
                 next: 'Next id',
                 prev: 'Prev id',
