@@ -15,6 +15,7 @@ const excludedUrls = [
 export const jwtVerify = (authService: AuthService): RequestHandler => {
     return async (req, res, next) => {
         try {
+            // I. 특정 URL 인증 제외
             const isExcludedUrl = excludedUrls.some((excludedUrl) => {
                 // I. all 이면서 path 로 시작하면 통과
                 if (

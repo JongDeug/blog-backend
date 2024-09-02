@@ -50,11 +50,12 @@ import { redisListener } from '@utils/redisListener';
     app.use(express.json()); // JSON 형식
     app.use(express.urlencoded({ extended: true })); // HTML 폼
     app.use(cookieParser());
+    app.use(jwtVerify(new AuthService()));
     // ---
 
-    // --- 라우터 등록, JWT 미들웨어
+    // --- 라우터 등록
     Router.forEach((el) => {
-        app.use(`${el.path}`, jwtVerify(new AuthService()), el.router);
+        app.use(`${el.path}`, el.router);
     });
     //
 
