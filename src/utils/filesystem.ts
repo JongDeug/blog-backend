@@ -18,12 +18,15 @@ export const deleteImages = async (images: Image[]) => {
             (file) =>
                 new Promise((resolve, reject) => {
                     try {
-                        fs.unlinkSync(`${dirPath}/${file.url}`);
+                        const url = file.url;
+                        const splitUrl = url.split('/uploads')[1];
+                        const imagePath = '/uploads' + splitUrl;
+                        fs.unlinkSync(`${dirPath}/${imagePath}`);
                         resolve(`${file.url} 파일이 성공적으로 삭제됨`);
                     } catch (err) {
                         reject(err);
                     }
-                })
-        )
+                }),
+        ),
     );
 };
