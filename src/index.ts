@@ -36,7 +36,7 @@ import { redisListener } from '@utils/redisListener';
             challenge: true,
         }),
         swaggerUi.serve,
-        swaggerUi.setup(swaggerSpec),
+        swaggerUi.setup(swaggerSpec)
     );
     // ---
 
@@ -45,7 +45,7 @@ import { redisListener } from '@utils/redisListener';
         cors({
             origin: 'https://jongdeug.port0.org',
             credentials: true,
-        }),
+        })
     );
     app.use(express.json()); // JSON 형식
     app.use(express.urlencoded({ extended: true })); // HTML 폼
@@ -69,7 +69,7 @@ import { redisListener } from '@utils/redisListener';
     // ---
 
     app.listen(process.env.PORT, () =>
-        console.log(`Server running on port ${process.env.PORT}`),
+        console.log(`Server running on port ${process.env.PORT}`)
     );
 })();
 // ---

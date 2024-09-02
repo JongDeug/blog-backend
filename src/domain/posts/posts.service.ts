@@ -7,8 +7,7 @@ import { UsersService } from '../users/users.service';
 import redisClient from '@utils/redis';
 
 export class PostsService {
-    constructor(private readonly usersService: UsersService) {
-    }
+    constructor(private readonly usersService: UsersService) {}
 
     async createPost(userId: string, dto: CreatePostDto) {
         // I. user 찾기, user 가 없다면 에러 반환
@@ -70,7 +69,11 @@ export class PostsService {
         });
 
         // I. Redis 에서 만료시간 제거
-        for (const path of dto.images) await redisClient.del(`image:${path}`);
+        for (const url of dto.images) {
+            const splitUrl = url.split('/uploads')[1];
+            const imagePath = 'uploads' + splitUrl;
+            await redisClient.del(`image:${imagePath}`);
+        }
 
         return newPost.id;
     }
@@ -86,7 +89,7 @@ export class PostsService {
             throw new CustomError(
                 403,
                 'Forbidden',
-                '게시글에 대한 권한이 없습니다',
+                '게시글에 대한 권한이 없습니다'
             );
         }
 
@@ -158,15 +161,18 @@ export class PostsService {
             });
         });
 
-        // I. 트랜젝션이 성공하면 로컬 파일에 존재했던 이전 이미지 또한 지워야 함.
+        // I. 트렌젝션이 성공하면 기본 이미지와 수정된 이미지를 비교해 사용되지 않는 이미지를 삭제해야 함.
         if (post.images.length > 0) {
+            const existingURL = post.images; // DB [{id, url}]
+            const newURL = new Set(dto.images); // DTO [string]
+
+            const result = existingURL.filter((obj) => !newURL.has(obj.url));
             try {
-                await deleteImages(post.images);
+                await deleteImages(result);
             } catch (err) {
                 throw new CustomError(500, 'Internal Server Error', `${err}`);
             }
         }
-
         // I. return 값 없음
     }
 
@@ -179,7 +185,7 @@ export class PostsService {
             throw new CustomError(
                 403,
                 'Forbidden',
-                '게시글에 대한 권한이 없습니다',
+                '게시글에 대한 권한이 없습니다'
             );
         }
 
@@ -209,7 +215,7 @@ export class PostsService {
         take: number,
         skip: number,
         search: string,
-        category: string,
+        category: string
     ) {
         // I. 카테고리 옵션 설정, 있으면 { name : ... } , 없으면 {}
         let categoryOptions = category ? { name: category } : {};
@@ -343,7 +349,7 @@ export class PostsService {
             throw new CustomError(
                 404,
                 'Not Found',
-                '게시글을 찾을 수 없습니다',
+                '게시글을 찾을 수 없습니다'
             );
 
         // I. 게시글 좋아요 여부
@@ -401,7 +407,7 @@ export class PostsService {
         if (dto.tryToLike && !isLiked) {
             // I. GuestLike 가 없으면 에러 발생함
             const guest = await this.usersService.findGuestLikeById(
-                dto.guestLikeId!,
+                dto.guestLikeId!
             );
 
             await database.postLike.create({
@@ -458,7 +464,7 @@ export class PostsService {
      */
     async findPostById(
         postId: string,
-        includeOptions: Prisma.PostInclude = {},
+        includeOptions: Prisma.PostInclude = {}
     ) {
         const post = await database.post.findUnique({
             where: { id: postId },
@@ -469,7 +475,7 @@ export class PostsService {
             throw new CustomError(
                 404,
                 'Not Found',
-                '게시글을 찾을 수 없습니다',
+                '게시글을 찾을 수 없습니다'
             );
 
         return post;

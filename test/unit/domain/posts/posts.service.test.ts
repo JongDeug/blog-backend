@@ -25,7 +25,7 @@ describe('PostsService Main Functions', () => {
         mockData.returnedpost = {
             id: 'mockPostId',
             authorId: 'mockUserId',
-            images: [{ url: 'images' }, { url: 'images' }],
+            images: [{ url: 'a' }, { url: 'b' }],
             postLikes: [{ postId: mockData.postId, guestId: mockData.guestId }],
             _count: { postLikes: 3 },
             tags: [{ tagId: 'hi' }, { tagId: 'hello' }],
@@ -133,7 +133,7 @@ describe('PostsService Main Functions', () => {
                 title: 'Test Title',
                 content: 'Test Content',
                 category: 'TestCategory',
-                images: ['images url', 'images url'],
+                images: ['b', 'c', 'd'],
                 tags: ['Tag1', 'Tag2'],
                 next: 'Next id',
                 prev: 'Prev id',
@@ -149,7 +149,7 @@ describe('PostsService Main Functions', () => {
             prismaMock.$transaction.mockImplementation(async (callback) => {
                 return callback(prismaMock);
             });
-            (deleteImages as jest.Mock).mockResolvedValue([]);
+            // (deleteImages as jest.Mock).mockResolvedValue([]);
             // when
             await postsService.updatePost(mockData.userId, mockData.postId, mockData.updatePostDto);
             // then
@@ -171,7 +171,7 @@ describe('PostsService Main Functions', () => {
                     },
                 },
             });
-            expect(deleteImages).toHaveBeenCalledWith(mockData.returnedpost.images);
+            expect(deleteImages).toHaveBeenCalledWith([{ url: 'a' }]);
         });
 
         test('should throw error if user is not found', async () => {
