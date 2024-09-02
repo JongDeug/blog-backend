@@ -172,6 +172,7 @@ describe('PostsService Main Functions', () => {
                 },
             });
             expect(deleteImages).toHaveBeenCalledWith([{ url: 'a' }]);
+            expect(redisClientMock.del as jest.Mock).toHaveBeenCalledTimes(mockData.updatePostDto.images.length);
         });
 
         test('should throw error if user is not found', async () => {
@@ -257,6 +258,8 @@ describe('PostsService Main Functions', () => {
             expect(prismaMock.post.update).toHaveBeenCalled();
             expect(prismaMock.tag.deleteMany).toHaveBeenCalled();
             expect(deleteImages).toHaveBeenCalled();
+            expect(redisClientMock.del as jest.Mock).not.toHaveBeenCalled();
+
         });
     });
     // ---

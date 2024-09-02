@@ -173,6 +173,14 @@ export class PostsService {
                 throw new CustomError(500, 'Internal Server Error', `${err}`);
             }
         }
+
+        // I. Redis 에서 만료시간 제거, Key 가 존재하지 않아도 에러 던지지 않음
+        for (const url of dto.images) {
+            const splitUrl = url.split('/uploads')[1];
+            const imagePath = 'uploads' + splitUrl;
+            await redisClient.del(`image:${imagePath}`);
+        }
+
         // I. return 값 없음
     }
 
