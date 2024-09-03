@@ -23,6 +23,7 @@ describe('AuthService Main Function', () => {
             password: 'hashedPassword',
             description: 'hello',
             refreshToken: 'mockToken',
+            role: 200,
         };
         mockData.accessToken = 'mockAccessToken';
         mockData.refreshToken = 'mockRefreshToken';
@@ -103,7 +104,12 @@ describe('AuthService Main Function', () => {
             // when
             const result = await authService.login(mockData.loginDto);
             // then
-            expect(result).toEqual({ accessToken: 'fakeAccessToken', refreshToken: 'fakeRefreshToken' });
+            expect(result).toEqual({
+                accessToken: 'fakeAccessToken',
+                refreshToken: 'fakeRefreshToken',
+                username: mockData.returnedUser.name,
+                role: mockData.returnedUser.role,
+            });
             expect(prismaMock.user.findUnique).toHaveBeenCalledWith({ where: { email: mockData.loginDto.email } });
             expect(bcrypt.compare).toHaveBeenCalledWith(mockData.loginDto.password, mockData.returnedUser.password);
             expect(authService.signToken).toHaveBeenCalledWith(mockData.returnedUser, false);

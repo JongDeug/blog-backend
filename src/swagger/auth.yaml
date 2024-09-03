@@ -54,9 +54,12 @@
             schema:
               type: object
               properties:
-                message:
+                username:
                   type: string
-                  example: 로그인 성공
+                  example: 유저이름
+                role:
+                  type: number
+                  example: 2000
       '404':
         description: Not Found
         content:

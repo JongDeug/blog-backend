@@ -82,7 +82,12 @@ export class AuthService {
             data: { refreshToken },
         });
 
-        return { accessToken, refreshToken };
+        return {
+            accessToken,
+            refreshToken,
+            username: user.name,
+            role: user.role,
+        };
     }
 
     // M. refresh 토큰으로 access 와 refresh 토큰을 발급해주는 함수

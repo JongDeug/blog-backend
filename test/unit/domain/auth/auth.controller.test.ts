@@ -68,6 +68,8 @@ describe('AuthController', () => {
             authServiceMock.login.mockResolvedValue({
                 accessToken: 'fakeAccessToken',
                 refreshToken: 'fakeRefreshToken',
+                username: 'mockUsername',
+                role: 200,
             });
             // when
             await authController.login(req, res, next);
@@ -77,7 +79,7 @@ describe('AuthController', () => {
             expect(res.cookies.accessToken.value).toEqual('fakeAccessToken');
             expect(res.cookies.refreshToken.value).toEqual('fakeRefreshToken');
             expect(res.statusCode).toBe(200);
-            expect(res._getJSONData()).toStrictEqual({ message: '로그인 성공' });
+            expect(res._getJSONData()).toStrictEqual({ username: 'mockUsername', role: 200 });
             expect(res._isEndCalled()).toBeTruthy();
             expect(authServiceMock.login).toHaveBeenCalledWith(req.body);
         });

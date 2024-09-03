@@ -52,9 +52,8 @@ export class AuthController {
     login = async (req: Request, res: Response, next: NextFunction) => {
         try {
             // I. authService.login 에 req.body 넣기
-            const { accessToken, refreshToken } = await this.authService.login(
-                req.body
-            );
+            const { accessToken, refreshToken, username, role } =
+                await this.authService.login(req.body);
 
             // I. Http Only Cookie 를 사용해 토큰 전송
             res.cookie('accessToken', accessToken, {
@@ -73,7 +72,7 @@ export class AuthController {
             });
 
             // I. 로그인 성공
-            res.status(200).json({ message: '로그인 성공' });
+            res.status(200).json({ username, role });
         } catch (err) {
             next(err);
         }
