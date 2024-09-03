@@ -216,9 +216,11 @@ model Category {
 /// @namespace Blog
 model Comment {
   /// Pirmary Key
-  id      String @id @default(uuid())
+  id        String   @id @default(uuid())
   /// 내용
-  content String @db.VarChar(200)
+  content   String   @db.VarChar(200)
+  /// 생성일
+  createdAt DateTime @default(now())
 
   /// ---
   /// RELATIONS

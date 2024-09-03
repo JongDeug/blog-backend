@@ -7,7 +7,8 @@ import { UsersService } from '../users/users.service';
 import redisClient from '@utils/redis';
 
 export class PostsService {
-    constructor(private readonly usersService: UsersService) {}
+    constructor(private readonly usersService: UsersService) {
+    }
 
     async createPost(userId: string, dto: CreatePostDto) {
         // I. user 찾기, user 가 없다면 에러 반환
@@ -89,7 +90,7 @@ export class PostsService {
             throw new CustomError(
                 403,
                 'Forbidden',
-                '게시글에 대한 권한이 없습니다'
+                '게시글에 대한 권한이 없습니다',
             );
         }
 
@@ -193,7 +194,7 @@ export class PostsService {
             throw new CustomError(
                 403,
                 'Forbidden',
-                '게시글에 대한 권한이 없습니다'
+                '게시글에 대한 권한이 없습니다',
             );
         }
 
@@ -223,7 +224,7 @@ export class PostsService {
         take: number,
         skip: number,
         search: string,
-        category: string
+        category: string,
     ) {
         // I. 카테고리 옵션 설정, 있으면 { name : ... } , 없으면 {}
         let categoryOptions = category ? { name: category } : {};
@@ -315,6 +316,9 @@ export class PostsService {
                     where: {
                         parentCommentId: null,
                     },
+                    orderBy: {
+                        createdAt: 'desc',
+                    },
                     select: {
                         id: true,
                         content: true,
@@ -357,7 +361,7 @@ export class PostsService {
             throw new CustomError(
                 404,
                 'Not Found',
-                '게시글을 찾을 수 없습니다'
+                '게시글을 찾을 수 없습니다',
             );
 
         // I. 게시글 좋아요 여부
@@ -415,7 +419,7 @@ export class PostsService {
         if (dto.tryToLike && !isLiked) {
             // I. GuestLike 가 없으면 에러 발생함
             const guest = await this.usersService.findGuestLikeById(
-                dto.guestLikeId!
+                dto.guestLikeId!,
             );
 
             await database.postLike.create({
@@ -472,7 +476,7 @@ export class PostsService {
      */
     async findPostById(
         postId: string,
-        includeOptions: Prisma.PostInclude = {}
+        includeOptions: Prisma.PostInclude = {},
     ) {
         const post = await database.post.findUnique({
             where: { id: postId },
@@ -483,7 +487,7 @@ export class PostsService {
             throw new CustomError(
                 404,
                 'Not Found',
-                '게시글을 찾을 수 없습니다'
+                '게시글을 찾을 수 없습니다',
             );
 
         return post;

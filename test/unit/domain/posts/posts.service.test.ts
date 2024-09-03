@@ -479,6 +479,9 @@ describe('PostsService Main Functions', () => {
                         where: {
                             parentCommentId: null,
                         },
+                        orderBy: {
+                            createdAt: 'desc',
+                        },
                         select: {
                             id: true,
                             content: true,

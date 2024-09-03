@@ -59,6 +59,7 @@ erDiagram
 "Comment" {
   String id PK
   String content
+  DateTime createdAt
   String parentCommentId FK "nullable"
   String postId FK
   String authorId FK "nullable"
@@ -181,6 +182,7 @@ erDiagram
 **Properties**
   - `id`: Pirmary Key
   - `content`: 내용
+  - `createdAt`: 생성일
   - `parentCommentId`
     > Foreign Key
     > 
