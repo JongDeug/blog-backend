@@ -36,11 +36,10 @@ import fs from 'fs';
     // --- Helmet
     app.use(helmet());
     // --- Morgan 로깅
+    const accessLogStream = fs.createWriteStream(path.join(__dirname, '../access.log'), { flags: 'a' });
     if (process.env.NODE_ENV === 'production') {
-        const accessLogStream = fs.createWriteStream(path.join(__dirname, 'access.log'), { flags: 'a' });
         app.use(morgan('combined', { stream: accessLogStream }));
     } else {
-        const accessLogStream = fs.createWriteStream(path.join(__dirname, '../access.log'), { flags: 'a' });
         app.use(morgan('tiny', { stream: accessLogStream }));
     }
     // --- Swagger
