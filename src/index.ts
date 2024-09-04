@@ -13,6 +13,10 @@ import swaggerUi from 'swagger-ui-express';
 import YAML from 'yamljs';
 import basicAuth from 'express-basic-auth';
 import { redisListener } from '@utils/redisListener';
+import morgan from 'morgan';
+import helmet from 'helmet';
+import fs from 'fs';
+
 
 // --- 즉시 실행 함수
 (async () => {
@@ -27,6 +31,13 @@ import { redisListener } from '@utils/redisListener';
     await subscriber.subscribe('__keyevent@0__:expired', redisListener);
     // ---
 
+
+    // --- 미들웨어
+    // --- Helmet
+    app.use(helmet());
+    // --- Morgan 로깅
+    const accessLogStream = fs.createWriteStream(path.join(__dirname, '../access.log'), { flags: 'a' });
+    app.use(morgan('combined', { stream: accessLogStream }));
     // --- Swagger
     const swaggerSpec = YAML.load(path.join(__dirname, '../swagger.yaml'));
     app.use(
@@ -36,16 +47,14 @@ import { redisListener } from '@utils/redisListener';
             challenge: true,
         }),
         swaggerUi.serve,
-        swaggerUi.setup(swaggerSpec)
+        swaggerUi.setup(swaggerSpec),
     );
-    // ---
-
-    // --- 미들웨어
+    // --- CORS
     app.use(
         cors({
             origin: 'https://jongdeug.port0.org',
             credentials: true,
-        })
+        }),
     );
     app.use(express.json()); // JSON 형식
     app.use(express.urlencoded({ extended: true })); // HTML 폼
@@ -69,7 +78,7 @@ import { redisListener } from '@utils/redisListener';
     // ---
 
     app.listen(process.env.PORT, () =>
-        console.log(`Server running on port ${process.env.PORT}`)
+        console.log(`Server running on port ${process.env.PORT}`),
     );
 })();
 // ---

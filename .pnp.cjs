@@ -34,6 +34,7 @@ const RAW_RUNTIME_STATE =
           ["@types/express", "npm:4.17.21"],\
           ["@types/jest", "npm:29.5.12"],\
           ["@types/jsonwebtoken", "npm:9.0.6"],\
+          ["@types/morgan", "npm:1.9.9"],\
           ["@types/multer", "npm:1.4.11"],\
           ["@types/node", "npm:20.14.15"],\
           ["@types/nodemailer", "npm:6.4.15"],\
@@ -49,9 +50,11 @@ const RAW_RUNTIME_STATE =
           ["dotenv", "npm:16.4.5"],\
           ["express", "npm:4.19.2"],\
           ["express-basic-auth", "npm:1.2.1"],\
+          ["helmet", "npm:7.1.0"],\
           ["jest", "virtual:702ce269f2bd39b7c19f258ea5d60f30107b26971155d06f4645f69ab342961659432dab03bc5d4385392678c6141f7844c961eaebf4273cfed007f96acd1c8f#npm:29.7.0"],\
           ["jest-mock-extended", "virtual:702ce269f2bd39b7c19f258ea5d60f30107b26971155d06f4645f69ab342961659432dab03bc5d4385392678c6141f7844c961eaebf4273cfed007f96acd1c8f#npm:3.0.7"],\
           ["jsonwebtoken", "npm:9.0.2"],\
+          ["morgan", "npm:1.10.0"],\
           ["multer", "npm:1.4.5-lts.1"],\
           ["node-mocks-http", "npm:1.15.1"],\
           ["nodemailer", "npm:6.9.14"],\
@@ -2054,6 +2057,16 @@ const RAW_RUNTIME_STATE =
         "linkType": "HARD"\
       }]\
     ]],\
+    ["@types/morgan", [\
+      ["npm:1.9.9", {\
+        "packageLocation": "./.yarn/cache/@types-morgan-npm-1.9.9-6cc99aae91-2b310c6f7c.zip/node_modules/@types/morgan/",\
+        "packageDependencies": [\
+          ["@types/morgan", "npm:1.9.9"],\
+          ["@types/node", "npm:22.2.0"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
     ["@types/multer", [\
       ["npm:1.4.11", {\
         "packageLocation": "./.yarn/cache/@types-multer-npm-1.4.11-a023fdbf13-ace8e9f5ac.zip/node_modules/@types/multer/",\
@@ -2801,6 +2814,7 @@ const RAW_RUNTIME_STATE =
           ["@types/express", "npm:4.17.21"],\
           ["@types/jest", "npm:29.5.12"],\
           ["@types/jsonwebtoken", "npm:9.0.6"],\
+          ["@types/morgan", "npm:1.9.9"],\
           ["@types/multer", "npm:1.4.11"],\
           ["@types/node", "npm:20.14.15"],\
           ["@types/nodemailer", "npm:6.4.15"],\
@@ -2816,9 +2830,11 @@ const RAW_RUNTIME_STATE =
           ["dotenv", "npm:16.4.5"],\
           ["express", "npm:4.19.2"],\
           ["express-basic-auth", "npm:1.2.1"],\
+          ["helmet", "npm:7.1.0"],\
           ["jest", "virtual:702ce269f2bd39b7c19f258ea5d60f30107b26971155d06f4645f69ab342961659432dab03bc5d4385392678c6141f7844c961eaebf4273cfed007f96acd1c8f#npm:29.7.0"],\
           ["jest-mock-extended", "virtual:702ce269f2bd39b7c19f258ea5d60f30107b26971155d06f4645f69ab342961659432dab03bc5d4385392678c6141f7844c961eaebf4273cfed007f96acd1c8f#npm:3.0.7"],\
           ["jsonwebtoken", "npm:9.0.2"],\
+          ["morgan", "npm:1.10.0"],\
           ["multer", "npm:1.4.5-lts.1"],\
           ["node-mocks-http", "npm:1.15.1"],\
           ["nodemailer", "npm:6.9.14"],\
@@ -4527,6 +4543,15 @@ const RAW_RUNTIME_STATE =
         "linkType": "HARD"\
       }]\
     ]],\
+    ["helmet", [\
+      ["npm:7.1.0", {\
+        "packageLocation": "./.yarn/cache/helmet-npm-7.1.0-0f9f70fa93-8c3370d074.zip/node_modules/helmet/",\
+        "packageDependencies": [\
+          ["helmet", "npm:7.1.0"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
     ["hexoid", [\
       ["npm:1.0.0", {\
         "packageLocation": "./.yarn/cache/hexoid-npm-1.0.0-2274609209-9c45e8ba67.zip/node_modules/hexoid/",\
@@ -6083,6 +6108,20 @@ const RAW_RUNTIME_STATE =
         "linkType": "HARD"\
       }]\
     ]],\
+    ["morgan", [\
+      ["npm:1.10.0", {\
+        "packageLocation": "./.yarn/cache/morgan-npm-1.10.0-a0da109b6b-684db061da.zip/node_modules/morgan/",\
+        "packageDependencies": [\
+          ["morgan", "npm:1.10.0"],\
+          ["basic-auth", "npm:2.0.1"],\
+          ["debug", "virtual:44738662cf800ff2863ba9baeabb817b24a959a14f86e20a31680e5dc79a4a738f7ceb7dca32753d579fae475aa061dffad8228a3391f3a9546b122f077e29a5#npm:2.6.9"],\
+          ["depd", "npm:2.0.0"],\
+          ["on-finished", "npm:2.3.0"],\
+          ["on-headers", "npm:1.0.2"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
     ["ms", [\
       ["npm:2.0.0", {\
         "packageLocation": "./.yarn/cache/ms-npm-2.0.0-9e1101a471-f8fda810b3.zip/node_modules/ms/",\
@@ -6327,11 +6366,28 @@ const RAW_RUNTIME_STATE =
       }]\
     ]],\
     ["on-finished", [\
+      ["npm:2.3.0", {\
+        "packageLocation": "./.yarn/cache/on-finished-npm-2.3.0-4ce92f72c6-c904f9e518.zip/node_modules/on-finished/",\
+        "packageDependencies": [\
+          ["on-finished", "npm:2.3.0"],\
+          ["ee-first", "npm:1.1.1"]\
+        ],\
+        "linkType": "HARD"\
+      }],\
       ["npm:2.4.1", {\
         "packageLocation": "./.yarn/cache/on-finished-npm-2.4.1-907af70f88-46fb11b906.zip/node_modules/on-finished/",\
         "packageDependencies": [\
           ["on-finished", "npm:2.4.1"],\
           ["ee-first", "npm:1.1.1"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
+    ["on-headers", [\
+      ["npm:1.0.2", {\
+        "packageLocation": "./.yarn/cache/on-headers-npm-1.0.2-e7cd3ea25e-f649e65c19.zip/node_modules/on-headers/",\
+        "packageDependencies": [\
+          ["on-headers", "npm:1.0.2"]\
         ],\
         "linkType": "HARD"\
       }]\
