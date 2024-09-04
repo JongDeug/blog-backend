@@ -196,6 +196,7 @@ export class PostsController {
             const { posts, postCount } = await this.postsService.getPosts(
                 req.body.take,
                 req.body.skip,
+                req.body.draft,
                 req.body.search,
                 req.body.category
             );

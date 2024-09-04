@@ -37,7 +37,6 @@ COPY --from=builder /app/blog-backend-server/tsconfig.json             ./tsconfi
 COPY --from=builder /app/blog-backend-server/swagger.yaml              ./swagger.yaml
 COPY --from=builder /app/blog-backend-server/dist                      ./dist
 COPY --from=builder /app/blog-backend-server/prisma                    ./prisma
-COPY --from=builder /app/blog-backend-server/access.log                ./access.log
 
 # 컨테이터에 이미지 업로드 폴더 생성, 있어도 오류 X
 RUN mkdir -p /app/blog-backend-server/uploads

@@ -223,6 +223,7 @@ export class PostsService {
     async getPosts(
         take: number,
         skip: number,
+        draft: boolean,
         search: string,
         category: string,
     ) {
@@ -237,6 +238,7 @@ export class PostsService {
                     { content: { contains: search } },
                 ],
                 category: categoryOptions,
+                draft,
             },
             select: {
                 id: true,

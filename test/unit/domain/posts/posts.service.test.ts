@@ -329,6 +329,7 @@ describe('PostsService Main Functions', () => {
             mockData.take = 10;
             mockData.category = 'mockCategory';
             mockData.search = 'mockSearch';
+            mockData.draft = true
 
             mockData.mockReturnedPosts = [
                 { id: 'mockId1', tags: [{ tagId: 'hi' }, { tagId: 'hello' }] },
@@ -340,7 +341,7 @@ describe('PostsService Main Functions', () => {
             // given
             prismaMock.post.findMany.mockResolvedValue(mockData.mockReturnedPosts);
             // when
-            const result = await postsService.getPosts(mockData.take, mockData.skip, mockData.search, mockData.category);
+            const result = await postsService.getPosts(mockData.take, mockData.skip, mockData.draft, mockData.search, mockData.category);
             // then
             const postList = mockData.mockReturnedPosts.map((post: any) => {
                 const { tags, ...restPost } = post;
@@ -358,6 +359,7 @@ describe('PostsService Main Functions', () => {
                         { content: { contains: mockData.search } },
                     ],
                     category: { name: mockData.category },
+                    draft: mockData.draft,
                 },
                 select: {
                     id: true,
@@ -383,7 +385,7 @@ describe('PostsService Main Functions', () => {
             mockData.category = '';
             prismaMock.post.findMany.mockResolvedValue(mockData.mockReturnedPosts);
             // when
-            const result = await postsService.getPosts(mockData.take, mockData.skip, mockData.search, mockData.category);
+            const result = await postsService.getPosts(mockData.take, mockData.skip, mockData.draft, mockData.search, mockData.category);
             // then
             const postList = mockData.mockReturnedPosts.map((post: any) => {
                 const { tags, ...restPost } = post;
@@ -401,6 +403,7 @@ describe('PostsService Main Functions', () => {
                         { content: { contains: mockData.search } },
                     ],
                     category: {}, // 만약 undefined 이라면
+                    draft: mockData.draft,
                 },
                 select: {
                     id: true,

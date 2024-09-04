@@ -16,6 +16,7 @@
 # chore
 .idea
 .env
+access.log
 nohup.out
 dist/
 coverage/

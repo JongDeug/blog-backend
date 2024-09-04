@@ -1,4 +1,4 @@
-import { IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
+import { IsBoolean, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
 import { Transform } from 'class-transformer';
 
 export class GetPostsQueryDto {
@@ -9,6 +9,11 @@ export class GetPostsQueryDto {
     @IsString()
     @IsOptional()
     category?: string;
+
+    @IsBoolean()
+    @IsOptional()
+    @Transform(({ value }) => value === 'true')
+    draft: boolean;
 
     @IsInt()
     @Min(1)

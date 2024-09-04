@@ -273,12 +273,19 @@ paths:
           required: false
           schema:
             type: string
+        - name: draft
+          in: query
+          description: 초안
+          required: false
+          schema:
+            type: string
+            default: true
         - name: page
           in: query
           description: 페이지
           required: false
           schema:
-            type: integer
+            type: string
             minimum: 1
             default: 1
         - name: limit
@@ -286,7 +293,7 @@ paths:
           description: 페이지당 게시글 수
           required: false
           schema:
-            type: integer
+            type: string
             minimum: 1
             maximum: 100
             default: 10

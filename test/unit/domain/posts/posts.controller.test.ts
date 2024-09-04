@@ -170,12 +170,14 @@ describe('PostsController', () => {
             req.query = {
                 search: '',
                 category: '',
+                draft: 'true',
                 page: '3',
                 limit: '10',
             };
             req.body = {
                 search: '',
                 category: '',
+                draft: true,
                 skip: 3,
                 take: 10,
             };
@@ -190,7 +192,7 @@ describe('PostsController', () => {
             expect(res.statusCode).toBe(200);
             expect(res._getJSONData()).toStrictEqual(mockReturnedPosts);
             expect(res._isEndCalled()).toBeTruthy();
-            expect(postsServiceMock.getPosts).toHaveBeenCalledWith(req.body.take, req.body.skip, req.body.search, req.body.category);
+            expect(postsServiceMock.getPosts).toHaveBeenCalledWith(req.body.take, req.body.skip, req.body.draft, req.body.search, req.body.category);
         });
 
         test('should handle error if postsService.getPosts throws error', async () => {

@@ -8,6 +8,7 @@ interface QueryDtoType {
     category: any;
     page: any;
     limit: any;
+    draft: any;
     guestLikeId: any;
 }
 
@@ -38,6 +39,7 @@ export function validateQueryDto(dtoClass: any) {
         req.body = {
             search: queryDto?.search ? queryDto.search : '',
             category: queryDto?.category ? queryDto.category : '',
+            draft: queryDto?.draft ? queryDto.draft : false,
             take: limitNum,
             skip: (pageNum - 1) * limitNum,
             guestLikeId: queryDto?.guestLikeId ? queryDto.guestLikeId : '',
