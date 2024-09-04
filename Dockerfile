@@ -24,6 +24,7 @@ RUN yarn install --immutable
 # ----------------------------------- Runner ----------------------------------- #
 FROM node:22-alpine AS runner
 
+ENV NODE_ENV=production
 WORKDIR /app/blog-backend-server
 
 # 원하는 파일 복사
