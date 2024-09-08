@@ -165,6 +165,7 @@ describe('CommentsService Main Functions', () => {
             expect(commentsService.sendMail).toHaveBeenCalledWith([process.env.MAIL_ID], {
                 nickName: mockData.returnedGuest.nickName,
                 postTitle: 'mockPostTitle',
+                postId: 'mockPostId',
             });
         });
 
@@ -278,6 +279,7 @@ describe('CommentsService Main Functions', () => {
             expect(commentsService.sendMail).toHaveBeenCalledWith(['mockEmail1', 'mockEmail2', 'mockEmail3'], {
                 nickName: 'Jongdeug',
                 postTitle: mockData.returnedParentComment.post.title,
+                postId: mockData.returnedParentComment.postId,
             });
         });
 
@@ -298,6 +300,7 @@ describe('CommentsService Main Functions', () => {
             expect(commentsService.sendMail).toHaveBeenCalledWith(['mockEmail2', 'mockEmail3'], {
                 nickName: 'Jongdeug',
                 postTitle: mockData.returnedParentComment.post.title,
+                postId: mockData.returnedParentComment.postId,
             });
         });
 
@@ -416,6 +419,7 @@ describe('CommentsService Main Functions', () => {
             expect(commentsService.sendMail).toHaveBeenCalledWith([process.env.MAIL_ID, 'mockEmail1', 'mockEmail2', 'mockEmail3'], {
                 nickName: mockData.returnedGuest.nickName,
                 postTitle: mockData.returnedParentComment.post.title,
+                postId: mockData.returnedParentComment.postId,
             });
         });
 
@@ -443,6 +447,7 @@ describe('CommentsService Main Functions', () => {
             expect(commentsService.sendMail).toHaveBeenCalledWith([process.env.MAIL_ID, 'mockEmail2', 'mockEmail3'], {
                 nickName: mockData.returnedGuest.nickName,
                 postTitle: mockData.returnedParentComment.post.title,
+                postId: mockData.returnedParentComment.postId,
             });
         });
 
@@ -835,7 +840,7 @@ describe('CommentsService Util Functions', () => {
     describe('sendMail', () => {
         beforeEach(() => {
             mockData.to = ['email1', 'email2', 'email3'];
-            mockData.payload = { nickName: 'mockNickName', postTitle: 'mockPostTitle' };
+            mockData.payload = { nickName: 'mockNickName', postTitle: 'mockPostTitle', postId: 'mockPostId' };
         });
 
         test('should send mails successfully if to.length more than 1', () => {
@@ -855,7 +860,7 @@ describe('CommentsService Util Functions', () => {
                     <h2 style="color: #4CAF50;">Jongdeug's Blog</h2>
                     <p>${mockData.payload.nickName}님이 "${mockData.payload.postTitle}" 게시물에 댓글을 달았습니다.</p>
                     <br>
-                    <p><a href="jongdeug">바로가기</a>.</p>
+                    <p><a href="https://jongdeug.port0.org/blog/${mockData.payload.postId}">바로가기</a>.</p>
                     </div>
                 </div>
             `,

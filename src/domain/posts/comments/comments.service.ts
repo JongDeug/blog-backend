@@ -104,6 +104,7 @@ export class CommentsService {
         this.sendMail([process.env.MAIL_ID!], {
             nickName: guest.nickName,
             postTitle: post.title,
+            postId: post.id,
         });
 
         return { newCommentId: newComment.id, guestCommentId: guest.id };
@@ -161,6 +162,7 @@ export class CommentsService {
         this.sendMail(mailList, {
             nickName: 'Jongdeug',
             postTitle: parentComment.post.title,
+            postId: parentComment.postId,
         });
 
         return newChildComment.id;
@@ -236,6 +238,7 @@ export class CommentsService {
         this.sendMail(mailList, {
             nickName: guest.nickName,
             postTitle: parentComment.post.title,
+            postId: parentComment.postId,
         });
 
         return {
@@ -393,7 +396,7 @@ export class CommentsService {
      * sendMail : 댓글 알림 메일 보내는 함수
      * findComment : 댓글 검색 함수
      */
-    sendMail(to: string[], payload: { nickName: string; postTitle: string }) {
+    sendMail(to: string[], payload: { nickName: string; postTitle: string, postId: string }) {
         if (to.length > 0) {
             const mailOptions = {
                 from: process.env.MAIL_ID,
@@ -404,7 +407,7 @@ export class CommentsService {
                     <h2 style="color: #4CAF50;">Jongdeug's Blog</h2>
                     <p>${payload.nickName}님이 "${payload.postTitle}" 게시물에 댓글을 달았습니다.</p>
                     <br>
-                    <p><a href="jongdeug">바로가기</a>.</p>
+                    <p><a href="https://jongdeug.port0.org/blog/${payload.postId}">바로가기</a>.</p>
                     </div>
                 </div>
             `,
