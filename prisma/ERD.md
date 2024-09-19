@@ -13,7 +13,6 @@ erDiagram
   String password
   String description "nullable"
   Int role
-  String refreshToken "nullable"
 }
 "GuestLike" {
   String id PK
@@ -88,7 +87,6 @@ erDiagram
   - `password`: 비밀번호
   - `description`: 간단한 소개
   - `role`: 역할
-  - `refreshToken`: refresh token
 
 ### `GuestLike`
 비회원 좋아요 테이블

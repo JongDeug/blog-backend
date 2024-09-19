@@ -5,6 +5,8 @@ import jwt, { Secret, VerifyOptions } from 'jsonwebtoken';
 import { LoginDto, RegisterDto } from './dto';
 import { User } from '../../../prisma/prisma-client';
 import { CustomJwtPayload } from '@custom-type/customJwtPayload';
+import redisClient from '@utils/redis';
+import { REFRESH_AGE } from './const/tokenAge';
 
 export class AuthService {
     async register(dto: RegisterDto) {
@@ -37,10 +39,9 @@ export class AuthService {
         const accessToken = this.signToken(user, false);
         const refreshToken = this.signToken(user, true);
 
-        // I. refreshToken DB에 저장
-        await database.user.update({
-            where: { id: user.id },
-            data: { refreshToken },
+        // I. Redis에 저장
+        await redisClient.set(refreshToken, user.id, {
+            EX: REFRESH_AGE,
         });
 
         return { accessToken, refreshToken };
@@ -76,10 +77,9 @@ export class AuthService {
         const accessToken = this.signToken(user, false);
         const refreshToken = this.signToken(user, true);
 
-        // I. refreshToken DB에 저장
-        await database.user.update({
-            where: { id: user.id },
-            data: { refreshToken },
+        // I. Redis에 저장
+        await redisClient.set(refreshToken, user.id, {
+            EX: REFRESH_AGE,
         });
 
         return {
@@ -103,54 +103,33 @@ export class AuthService {
                 '토큰 재발급은 refresh 토큰으로만 가능합니다'
             );
 
-        // I. DB 에서 해당 user 를 가져옴
-        const validRefresh = await database.user.findUnique({
-            where: { id: decoded.id, refreshToken: token },
-        });
-        // I. 만약 없거나 다르면 유효성 검증 에러
-        if (!validRefresh)
+        // I. Redis에서 get, 만약 없으면 유효성 검증 실패
+        const userId = await redisClient.get(token);
+        // I. 만약 다르면 유효성 검증 에러
+        if (decoded.id !== userId) {
             throw new CustomError(
                 401,
                 'Unauthorized',
                 '토큰 유효성 검증에 실패했습니다'
             );
+        }
 
         // I. refresh 토큰은 사용될 때마다 다시 rotation
         const accessToken = this.signToken({ ...decoded }, false);
         const refreshToken = this.signToken({ ...decoded }, true);
 
-        // I. refreshToken DB에 저장
-        await database.user.update({
-            where: { id: decoded.id },
-            data: { refreshToken },
+        // I. Redis에서 refresh 토큰 삭제 후 재발급
+        await redisClient.del(token);
+        await redisClient.set(refreshToken, decoded.id, {
+            EX: REFRESH_AGE,
         });
 
         return { accessToken, refreshToken };
     }
 
-    async logout(token: string) {
-        // I. verify(만료일 무시함) => decode
-        const decoded = this.verifyToken(token, { ignoreExpiration: true });
-
-        // I. 만약 토큰 타입이 access 아니라면
-        if (decoded.type !== 'access')
-            throw new CustomError(
-                401,
-                'Unauthorized',
-                '로그아웃은 access 토큰으로만 가능합니다'
-            );
-
-        // I. decoded 정보를 가지고 User 의 refresh field 삭제 => *유저가 없어도 에러 발생시키지 않아야 됨. // 없으면 null 반환
-        // R. 데이터베이스에 직접 접근하므로 효율적이지 못함 => 나중에 Redis 활용
-        const user = await database.user.findUnique({
-            where: { id: decoded.id },
-        });
-        if (user) {
-            await database.user.update({
-                where: { id: decoded.id },
-                data: { refreshToken: null },
-            });
-        }
+    async logout(refreshToken: string) {
+        // I. Redis 에서 refreshToken 제거
+        await redisClient.del(refreshToken);
     }
 
     /**
@@ -166,7 +145,7 @@ export class AuthService {
         };
 
         return jwt.sign(payload, process.env.JWT_SECRET as Secret, {
-            expiresIn: isRefreshToken ? '1d' : '1h',
+            expiresIn: isRefreshToken ? '7d' : '3m',
         });
     }
 

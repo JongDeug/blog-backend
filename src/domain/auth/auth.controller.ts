@@ -3,6 +3,7 @@ import { AuthService } from './auth.service';
 import { LoginDto, RegisterDto } from './dto';
 import { validateDto } from '@middleware/validateDto';
 import { CustomError } from '@utils/customError';
+import { REFRESH_AGE, ACCESS_AGE } from './const/tokenAge';
 
 export class AuthController {
     public path: string;
@@ -31,13 +32,13 @@ export class AuthController {
             // I. Http Only Cookie 를 사용해 토큰 전송
             res.cookie('accessToken', accessToken, {
                 httpOnly: true,
-                maxAge: 3 * 60 * 1000, // 3분
+                maxAge: ACCESS_AGE,
                 sameSite: 'strict', // sameSite 속성 설정
                 secure: true, // HTTPS 연결에서만 쿠키가 전송되도록 설정
             });
             res.cookie('refreshToken', refreshToken, {
                 httpOnly: true,
-                maxAge: 7 * 24 * 60 * 60 * 1000, // 7일
+                maxAge: REFRESH_AGE,
                 sameSite: 'strict', // sameSite 속성 설정
                 secure: true, // HTTPS 연결에서만 쿠키가 전송되도록 설정
             });
@@ -59,14 +60,14 @@ export class AuthController {
             res.cookie('accessToken', accessToken, {
                 path: '/',
                 httpOnly: true,
-                maxAge: 3 * 60 * 1000, // 3분
+                maxAge: ACCESS_AGE,
                 sameSite: 'strict', // sameSite 속성 설정
                 secure: true, // HTTPS 연결에서만 쿠키가 전송되도록 설정
             });
             res.cookie('refreshToken', refreshToken, {
                 path: '/',
                 httpOnly: true,
-                maxAge: 7 * 24 * 60 * 60 * 1000, // 7일
+                maxAge: REFRESH_AGE,
                 sameSite: 'strict', // sameSite 속성 설정
                 secure: true, // HTTPS 연결에서만 쿠키가 전송되도록 설정
             });
@@ -98,13 +99,13 @@ export class AuthController {
             // I. Http Only Cookie 를 사용해 토큰 전송
             res.cookie('accessToken', accessToken, {
                 httpOnly: true,
-                maxAge: 3 * 60 * 1000, // 3분
+                maxAge: ACCESS_AGE,
                 sameSite: 'strict', // sameSite 속성 설정
                 secure: true, // HTTPS 연결에서만 쿠키가 전송되도록 설정
             });
             res.cookie('refreshToken', refreshToken, {
                 httpOnly: true,
-                maxAge: 7 * 24 * 60 * 60 * 1000, // 7일
+                maxAge: REFRESH_AGE,
                 sameSite: 'strict', // sameSite 속성 설정
                 secure: true, // HTTPS 연결에서만 쿠키가 전송되도록 설정
             });
@@ -119,8 +120,8 @@ export class AuthController {
     logout = async (req: Request, res: Response, next: NextFunction) => {
         try {
             // I. access token 이 없으면 에러 발생
-            const token = req.cookies.accessToken;
-            if (!token)
+            const { accessToken, refreshToken } = req.cookies;
+            if (!accessToken || !refreshToken)
                 return next(
                     new CustomError(
                         401,
@@ -129,8 +130,8 @@ export class AuthController {
                     )
                 );
 
-            // I. authService logout 호출 => DB refresh 를 null 로 만듦
-            await this.authService.logout(token); // req.cookies?. 이것도 분기문에 속함
+            // I. authService logout 호출
+            await this.authService.logout(refreshToken);
 
             // I. cookie 데이터 삭제
             res.cookie('accessToken', null);
