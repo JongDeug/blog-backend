@@ -72,7 +72,7 @@ describe('AuthService Main Function', () => {
             });
             expect(authService.signToken).toHaveBeenCalledWith(mockData.returnedUser, false);
             expect(authService.signToken).toHaveBeenCalledWith(mockData.returnedUser, true);
-            expect(redisClientMock.set as jest.Mock).toHaveBeenCalledWith('fakeRefreshToken', mockData.returnedUser.id, {EX: REFRESH_AGE})
+            expect(redisClientMock.set as jest.Mock).toHaveBeenCalledWith(`${mockData.returnedUser.id}:fakeRefreshToken`, mockData.returnedUser.id, {EX: REFRESH_AGE})
         });
 
         test('should throw error if email already exists', async () => {
@@ -113,7 +113,7 @@ describe('AuthService Main Function', () => {
             expect(bcrypt.compare).toHaveBeenCalledWith(mockData.loginDto.password, mockData.returnedUser.password);
             expect(authService.signToken).toHaveBeenCalledWith(mockData.returnedUser, false);
             expect(authService.signToken).toHaveBeenCalledWith(mockData.returnedUser, true);
-            expect(redisClientMock.set as jest.Mock).toHaveBeenCalledWith('fakeRefreshToken', mockData.returnedUser.id, {EX: REFRESH_AGE})
+            expect(redisClientMock.set as jest.Mock).toHaveBeenCalledWith(`${mockData.returnedUser.id}:fakeRefreshToken`, mockData.returnedUser.id, {EX: REFRESH_AGE})
         });
 
         test('should throw error if email does not exist', async () => {
@@ -154,8 +154,8 @@ describe('AuthService Main Function', () => {
             expect(authService.verifyToken).toHaveBeenCalledWith(mockData.refreshToken);
             expect(authService.signToken).toHaveBeenCalledWith({ ...mockData.decodedRefresh }, false);
             expect(authService.signToken).toHaveBeenCalledWith({ ...mockData.decodedRefresh }, true);
-            expect(redisClientMock.del as jest.Mock).toHaveBeenCalledWith(mockData.refreshToken);
-            expect(redisClientMock.set as jest.Mock).toHaveBeenCalledWith('fakeRefreshToken', mockData.decodedRefresh.id, {EX: REFRESH_AGE});
+            expect(redisClientMock.del as jest.Mock).toHaveBeenCalledWith(`${mockData.decodedRefresh.id}:${mockData.refreshToken}`);
+            expect(redisClientMock.set as jest.Mock).toHaveBeenCalledWith(`${mockData.decodedRefresh.id}:fakeRefreshToken`, mockData.decodedRefresh.id, {EX: REFRESH_AGE});
         });
 
         test('should throw error if token verification fails', async () => {
@@ -189,7 +189,7 @@ describe('AuthService Main Function', () => {
             await expect(authService.refresh(mockData.refreshToken)).rejects.toThrow(new CustomError(401, 'Unauthorized', '토큰 유효성 검증에 실패했습니다'));
             // then
             expect(authService.verifyToken).toHaveBeenCalledWith(mockData.refreshToken);
-            expect(redisClientMock.get as jest.Mock).toHaveBeenCalledWith(mockData.refreshToken);
+            expect(redisClientMock.get as jest.Mock).toHaveBeenCalledWith(`${mockData.decodedRefresh.id}:${mockData.refreshToken}`);
             expect(authService.signToken).not.toHaveBeenCalled();
         });
     });
@@ -199,9 +199,9 @@ describe('AuthService Main Function', () => {
     describe('logout', () => {
         test('should logout successfully', async () => {
             // when
-            await authService.logout(mockData.accessToken);
+            await authService.logout(mockData.refreshToken);
             // then
-            expect(redisClientMock.del as jest.Mock).toHaveBeenCalledWith(mockData.accessToken);
+            expect(redisClientMock.del as jest.Mock).toHaveBeenCalledWith(mockData.refreshToken);
         });
     });
 });

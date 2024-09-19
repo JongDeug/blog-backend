@@ -40,9 +40,11 @@ export class AuthService {
         const refreshToken = this.signToken(user, true);
 
         // I. Redis에 저장
-        await redisClient.set(refreshToken, user.id, {
+        await redisClient.set(`${user.id}:${refreshToken}`, user.id, {
             EX: REFRESH_AGE,
         });
+        // 아니 음.. 오.. 아.. 예..
+        // redis 에 왜 저장함? => 무효화 할라고 =>
 
         return { accessToken, refreshToken };
     }
@@ -78,7 +80,7 @@ export class AuthService {
         const refreshToken = this.signToken(user, true);
 
         // I. Redis에 저장
-        await redisClient.set(refreshToken, user.id, {
+        await redisClient.set(`${user.id}:${refreshToken}`, user.id, {
             EX: REFRESH_AGE,
         });
 
@@ -104,7 +106,7 @@ export class AuthService {
             );
 
         // I. Redis에서 get, 만약 없으면 유효성 검증 실패
-        const userId = await redisClient.get(token);
+        const userId = await redisClient.get(`${decoded.id}:${token}`);
         // I. 만약 다르면 유효성 검증 에러
         if (decoded.id !== userId) {
             throw new CustomError(
@@ -119,8 +121,8 @@ export class AuthService {
         const refreshToken = this.signToken({ ...decoded }, true);
 
         // I. Redis에서 refresh 토큰 삭제 후 재발급
-        await redisClient.del(token);
-        await redisClient.set(refreshToken, decoded.id, {
+        await redisClient.del(`${decoded.id}:${token}`);
+        await redisClient.set(`${decoded.id}:${refreshToken}`, decoded.id, {
             EX: REFRESH_AGE,
         });
 
