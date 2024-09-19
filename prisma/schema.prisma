@@ -48,8 +48,6 @@ model User {
   description  String? @db.VarChar(300)
   /// 역할
   role         Int     @default(300)
-  /// refresh token
-  refreshToken String? @db.VarChar(1024)
 
   /// ---
   /// RELATIONS

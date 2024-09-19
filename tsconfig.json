@@ -129,10 +129,10 @@
     /* Skip type checking all .d.ts files. */
   },
   "include": [
-    "src/**/*",
+    "src/**/*", "test/**/*"
   ],
   "exclude": [
     "node_modules",
-    "src/test"
+    "dist"
   ]
 }

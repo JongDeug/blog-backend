@@ -144,6 +144,7 @@ describe('AuthController', () => {
     describe('logout', () => {
         beforeEach(() => {
             req.cookies.accessToken = 'fakeAccessToken';
+            req.cookies.refreshToken = 'fakeRefreshToken';
         });
 
         test('should logout successfully', async () => {
@@ -157,12 +158,12 @@ describe('AuthController', () => {
             expect(res.statusCode).toBe(200);
             expect(res._getJSONData()).toEqual({ message: '로그아웃 완료' });
             expect(res._isEndCalled()).toBeTruthy();
-            expect(authServiceMock.logout).toHaveBeenCalledWith(req.cookies.accessToken);
+            expect(authServiceMock.logout).toHaveBeenCalledWith(req.cookies.refreshToken);
         });
 
         test('should handle error if accessToken is missing', async () => {
             // given
-            req.cookies.accessToken = undefined;
+            req.cookies.refreshToken = undefined;
             // when
             await authController.logout(req, res, next);
             // then
