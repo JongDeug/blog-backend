@@ -1,4 +1,0 @@
--- AlterTable
-ALTER TABLE `Post` MODIFY `draft` BOOLEAN NOT NULL DEFAULT true,
-    MODIFY `next` VARCHAR(191) NULL,
-    MODIFY `prev` VARCHAR(191) NULL;
