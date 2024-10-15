@@ -1,0 +1,12 @@
+/// 태그 테이블
+///
+/// @namespace Blog
+model Tag {
+  /// Primary Key, 태그 이름
+  name String @id
+
+  /// ---
+  /// RELATIONS
+  /// ---
+  posts PostTag[]
+}

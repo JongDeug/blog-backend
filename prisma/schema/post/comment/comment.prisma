@@ -1,0 +1,47 @@
+/// 댓글 테이블
+///
+/// @namespace Blog
+model Comment {
+  /// Pirmary Key
+  id        String   @id @default(uuid())
+
+  /// 내용
+  content   String   @db.VarChar(200)
+
+  /// 생성일
+  createdAt DateTime @default(now())
+
+  /// 수정일
+  updatedAt    DateTime @updatedAt
+
+  /// ---
+  /// RELATIONS
+  /// ---
+  // [자식, "다"] parentCommentId 는 "다" 인 ChildComment 가 가지고 있음 => 그래서 자식 쪽에(parentComment가 있는 곳) @relation
+  childComments Comment[] @relation("ParentComment")
+
+  /// Foreign Key
+  ///
+  /// 부모 댓글 ID {@link Comment.id}
+  // [부모, "일"]
+  parentCommentId String? // 외래키(ParentComment)
+  parentComment   Comment? @relation("ParentComment", fields: [parentCommentId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+  /// Foreign Key
+  ///
+  /// 게시글 ID {@link Post.id}
+  postId String
+  post   Post   @relation(fields: [postId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+  /// Foreign Key
+  ///
+  /// 작성자(회원) ID {@link User.id}
+  authorId String?
+  author   User?   @relation(fields: [authorId], references: [id])
+
+  /// Foreign Key
+  ///
+  /// 작성자(비회원) ID {@link GuestComment.id}
+  guestId String?       @unique
+  guest   GuestComment? @relation(fields: [guestId], references: [id])
+}

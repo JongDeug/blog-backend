@@ -1,0 +1,21 @@
+/// 비회원 <=> 게시글 : 다대다, 게시글 좋아요 테이블
+///
+/// @namespace Blog
+model PostLike {
+  /// Foreign Key
+  ///
+  /// 게시글 ID {@link Post.id}
+  postId String
+  post   Post   @relation(fields: [postId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+  /// Foreign Key
+  ///
+  /// 비회원 ID {@link GuestLike.id}
+  guestId String
+  guest   GuestLike @relation(fields: [guestId], references: [id])
+
+  /// 좋아요가 눌린 날짜
+  createdAt DateTime @default(now())
+
+  @@id([postId, guestId])
+}

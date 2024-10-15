@@ -87,6 +87,9 @@ importers:
       prisma:
         specifier: ^5.20.0
         version: 5.20.0
+      prisma-markdown:
+        specifier: ^1.0.9
+        version: 1.0.9(@prisma/client@5.20.0(prisma@5.20.0))(prisma@5.20.0)
       source-map-support:
         specifier: ^0.5.21
         version: 0.5.21
@@ -588,6 +591,9 @@ packages:
 
   '@prisma/fetch-engine@5.20.0':
     resolution: {integrity: sha512-JVcaPXC940wOGpCOwuqQRTz6I9SaBK0c1BAyC1pcz9xBi+dzFgUu3G/p9GV1FhFs9OKpfSpIhQfUJE9y00zhqw==}
+
+  '@prisma/generator-helper@5.20.0':
+    resolution: {integrity: sha512-37Aibw0wVRQgQVtCdNAIN71YFnSQfvetok7vd95KKkYkQRbEx94gsvPDpyN9Mw7p3IwA3nFgPfLc3jBRztUkKw==}
 
   '@prisma/get-platform@5.20.0':
     resolution: {integrity: sha512-8/+CehTZZNzJlvuryRgc77hZCWrUDYd/PmlZ7p2yNXtmf2Una4BWnTbak3us6WVdqoz5wmptk6IhsXdG2v5fmA==}
@@ -2273,6 +2279,13 @@ packages:
     resolution: {integrity: sha512-Pdlw/oPxN+aXdmM9R00JVC9WVFoCLTKJvDVLgmJ+qAffBMxsV85l/Lu7sNx4zSzPyoL2euImuEwHhOXdEgNFZQ==}
     engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
 
+  prisma-markdown@1.0.9:
+    resolution: {integrity: sha512-Y/aWUgDnzYt7JFjhUOmLzNs+09eoITq8ZK9CmG3L6TTKc/prYr+2EClD4jRcfEgyElfJlvH2/4QeZponu9D92Q==}
+    hasBin: true
+    peerDependencies:
+      '@prisma/client': '>= 5.0.0'
+      prisma: '>= 5.0.0'
+
   prisma@5.20.0:
     resolution: {integrity: sha512-6obb3ucKgAnsGS9x9gLOe8qa51XxvJ3vLQtmyf52CTey1Qcez3A6W6ROH5HIz5Q5bW+0VpmZb8WBohieMFGpig==}
     engines: {node: '>=16.13'}
@@ -3508,6 +3521,10 @@ snapshots:
       '@prisma/debug': 5.20.0
       '@prisma/engines-version': 5.20.0-12.06fc58a368dc7be9fbbbe894adf8d445d208c284
       '@prisma/get-platform': 5.20.0
+
+  '@prisma/generator-helper@5.20.0':
+    dependencies:
+      '@prisma/debug': 5.20.0
 
   '@prisma/get-platform@5.20.0':
     dependencies:
@@ -5465,6 +5482,12 @@ snapshots:
       '@jest/schemas': 29.6.3
       ansi-styles: 5.2.0
       react-is: 18.3.1
+
+  prisma-markdown@1.0.9(@prisma/client@5.20.0(prisma@5.20.0))(prisma@5.20.0):
+    dependencies:
+      '@prisma/client': 5.20.0(prisma@5.20.0)
+      '@prisma/generator-helper': 5.20.0
+      prisma: 5.20.0
 
   prisma@5.20.0:
     dependencies:

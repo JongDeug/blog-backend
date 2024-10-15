@@ -1,0 +1,16 @@
+/// 이미지 테이블
+///
+/// @namespace Blog
+model Image {
+  /// Pirmary Key
+  id  String @id @default(uuid())
+
+  /// 이미지 url
+  url String @db.VarChar(500)
+
+  /// Foreign Key
+  ///
+  /// 게시글 ID {@link Post.id}
+  postId String
+  post   Post   @relation(fields: [postId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+}

@@ -1,0 +1,51 @@
+/// 게시글 테이블
+///
+/// @namespace Blog
+model Post {
+  /// Pirmary Key
+  id        String   @id @default(uuid())
+
+  /// 제목
+  title     String   @db.VarChar(200)
+
+  /// 내용
+  content   String   @db.LongText
+
+  /// 생성일
+  createdAt DateTime @default(now())
+
+  /// 수정일
+  updatedAt DateTime @updatedAt
+
+  /// 이전 게시글 Id
+  prevId      String?
+
+  /// 다음 게시글 Id
+  nextId      String?
+
+  /// 초안
+  draft     Boolean  @default(true)
+
+  /// 내용 요약
+  summary   String   @db.VarChar(400)
+
+  /// ---
+  /// RELATIONS
+  /// ---
+  comments  Comment[]
+  images    Image[]
+  tags      PostTag[]
+  postLikes PostLike[]
+
+  /// Foreign Key
+  ///
+  /// 작성자 ID {@link User.id}
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id])
+
+  /// Foreign Key
+  ///
+  /// 작성자 ID {@link Category.id}
+  categoryName String
+  category     Category @relation(fields: [categoryName], references: [name], onUpdate: Cascade, onDelete: Restrict)
+}

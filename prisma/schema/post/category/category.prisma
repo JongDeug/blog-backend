@@ -1,0 +1,18 @@
+/// 카테고리 테이블
+///
+/// @namespace Blog
+model Category {
+  /// Primary Key, 카테고리 이름
+  name String @id 
+
+  /// 생성일
+  createdAt DateTime @default(now())
+
+  /// 수정일
+  updatedAt DateTime @updatedAt
+
+  /// ---
+  /// RELATIONS
+  /// ---
+  posts Post[]
+}

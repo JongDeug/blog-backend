@@ -1,0 +1,12 @@
+/// 비회원 좋아요 테이블
+///
+/// @namespace Blog
+model GuestLike {
+  /// Pirmary Key
+  id String @id @default(uuid())
+
+  /// ---
+  /// RELATIONS
+  /// ---
+  postLikes PostLike[]
+}

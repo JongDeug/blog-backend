@@ -1,0 +1,33 @@
+/// 회원 테이블
+///
+/// @namespace Blog
+model User {
+  /// Pirmary Key
+  id           String  @id @default(uuid())
+
+  /// 이름
+  name         String  @db.VarChar(100)
+
+  /// 이메일
+  email        String  @unique @db.VarChar(200)
+
+  /// 비밀번호(해시값)
+  password     String  @db.VarChar(255)
+
+  /// 간단한 소개
+  description  String? @db.VarChar(300)
+
+  /// 역할
+  role         Role    @default(USER)
+
+  /// ---
+  /// RELATIONS
+  /// ---
+  posts    Post[]
+  comments Comment[]
+}
+
+enum Role {
+  USER 
+  ADMIN
+}
