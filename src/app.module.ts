@@ -5,6 +5,7 @@ import * as Joi from 'joi';
 
 @Module({
   imports: [
+    // 환경 변수 유효성 검사
     ConfigModule.forRoot({
       validationSchema: Joi.object({
         ENV: Joi.string().valid('dev', 'prod').required(),
