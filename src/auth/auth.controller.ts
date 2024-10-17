@@ -1,7 +1,8 @@
-import { Body, Controller, Headers, Post, Res } from '@nestjs/common';
+import { Body, Controller, Headers, Post, Req, Res } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { Response } from 'express';
+import { Public } from './decorator/public.decorator';
 
 const cookieOptions = {
   path: '/',
@@ -14,11 +15,13 @@ const cookieOptions = {
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @Public()
   @Post('register')
   registerUser(@Body() body: RegisterDto) {
     return this.authService.register(body);
   }
 
+  @Public()
   @Post('login')
   async loginUser(
     @Headers('authorization') token: string,
