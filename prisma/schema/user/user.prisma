@@ -14,11 +14,11 @@ model User {
   /// 비밀번호(해시값)
   password     String  @db.VarChar(255)
 
-  /// 간단한 소개
-  description  String? @db.VarChar(300)
-
   /// 역할
   role         Role    @default(USER)
+
+  /// 생성일
+  createdAt DateTime @default(now())
 
   /// ---
   /// RELATIONS
@@ -28,6 +28,6 @@ model User {
 }
 
 enum Role {
-  USER 
   ADMIN
+  USER
 }

@@ -65,8 +65,8 @@ erDiagram
   String name
   String email UK
   String password
-  String description "nullable"
   Role role
+  DateTime createdAt
 }
 "Comment" }o--o| "Comment" : parentComment
 "Comment" }o--|| "Post" : post
@@ -203,5 +203,5 @@ erDiagram
   - `name`: 이름
   - `email`: 이메일
   - `password`: 비밀번호(해시값)
-  - `description`: 간단한 소개
   - `role`: 역할
+  - `createdAt`: 생성일
