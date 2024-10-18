@@ -25,21 +25,19 @@ export class AuthGuard implements CanActivate {
     // Public 데코레이터가 달려있으면 통과
     if (isPublic) return true;
 
-    // 토큰 가져오기
     const req = context.switchToHttp().getRequest();
     const { accessToken } = req.cookies;
 
     try {
-      // 토큰 타입 확인
-      const decodedPayload = await this.jwtService.decode(accessToken);
-      if (decodedPayload.type !== 'access') {
-        throw new UnauthorizedException('잘못된 토큰입니다');
-      }
-
       // 토큰 인증
       const payload = await this.jwtService.verifyAsync(accessToken, {
         secret: this.configService.get(envVariableKeys.accessTokenSecret),
       });
+
+      // 토큰 타입 확인
+      if (payload.type !== 'access') {
+        throw new UnauthorizedException('잘못된 토큰입니다');
+      }
 
       req.user = payload;
 

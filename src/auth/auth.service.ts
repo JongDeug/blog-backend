@@ -3,6 +3,7 @@ import {
   ConflictException,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
@@ -86,6 +87,8 @@ export class AuthService {
     // 인증
     const user = await this.authenticate(email, password);
 
+    // REDIS 로직 나중에 구현
+
     // 토큰 발급
     return {
       accessToken: await this.issueToken(user, false),
@@ -130,5 +133,37 @@ export class AuthService {
         expiresIn: isRefresh ? '24h' : 180,
       },
     );
+  }
+
+  async rotate(cookies: Record<string, any>) {
+    const { refreshToken } = cookies;
+
+    if (!refreshToken) {
+      throw new UnauthorizedException('잘못된 토큰입니다');
+    }
+
+    try {
+      // 토큰 인증
+      const payload = await this.jwtService.verifyAsync(refreshToken, {
+        secret: this.configService.get(envVariableKeys.refresTokenSecret),
+      });
+
+      // 토큰 타입 확인
+      if (payload.type !== 'refresh') {
+        throw new UnauthorizedException('잘못된 토큰입니다');
+      }
+
+      // REDIS 로직 나중에 구현
+
+      // 토큰 재발급
+      return {
+        accessToken: await this.issueToken(payload, false),
+        refreshToken: await this.issueToken(payload, true),
+      };
+    } catch (e) {
+      if (e.name === 'TokenExpiredError') {
+        throw new UnauthorizedException('만료된 토큰입니다');
+      }
+    }
   }
 }

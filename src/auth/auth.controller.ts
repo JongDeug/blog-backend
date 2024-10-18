@@ -1,7 +1,7 @@
-import { Body, Controller, Headers, Post, Req, Res } from '@nestjs/common';
+import { Body, Controller, Get, Headers, Post, Req, Res } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { Public } from './decorator/public.decorator';
 
 const cookieOptions = {
@@ -25,11 +25,25 @@ export class AuthController {
   @Post('login')
   async loginUser(
     @Headers('authorization') token: string,
-    @Res({ passthrough: true }) response: Response,
+    @Res({ passthrough: true }) res: Response,
   ) {
     const { accessToken, refreshToken } = await this.authService.login(token);
 
-    response.cookie('accessToken', accessToken, cookieOptions);
-    response.cookie('refreshToken', refreshToken, cookieOptions);
+    res.cookie('accessToken', accessToken, cookieOptions);
+    res.cookie('refreshToken', refreshToken, cookieOptions);
+  }
+
+  @Public()
+  @Get('token/refresh')
+  async rotateToken(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const { accessToken, refreshToken } = await this.authService.rotate(
+      req.cookies,
+    );
+
+    res.cookie('accessToken', accessToken, cookieOptions);
+    res.cookie('refreshToken', refreshToken, cookieOptions);
   }
 }
