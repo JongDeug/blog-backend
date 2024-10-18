@@ -46,4 +46,10 @@ export class AuthController {
     res.cookie('accessToken', accessToken, cookieOptions);
     res.cookie('refreshToken', refreshToken, cookieOptions);
   }
+
+  @Public()
+  @Get('logout')
+  logout() {
+    // REDIS
+  }
 }
