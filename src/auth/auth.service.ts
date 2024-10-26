@@ -208,4 +208,10 @@ export class AuthService {
     await this.cacheManager.del(`REFRESH_TOKEN_${user.sub}`);
     return true;
   }
+
+  async invalidToken(userId: string) {
+    // refresh_token_userId 값제거만하면 되는거아닌가
+    await this.cacheManager.del(`REFRESH_TOKEN_${userId}`);
+    return true;
+  }
 }

@@ -47,6 +47,12 @@ export class AuthController {
     res.cookie('refreshToken', refreshToken, cookieOptions);
   }
 
+  // RBAC() 필요
+  @Post('token/invalid')
+  invalid(@Body('userId') userId: string) {
+    return this.authService.invalidToken(userId);
+  }
+
   @Get('logout')
   async logoutUser(@Req() req, @Res({ passthrough: true }) res: Response) {
     await this.authService.logout(req.user);
