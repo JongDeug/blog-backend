@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
+  Inject,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -13,6 +14,8 @@ import { RegisterDto } from './dto/register.dto';
 import { excludeFromObject } from 'src/prisma/util/exclude.util';
 import { JwtService } from '@nestjs/jwt';
 import { Role } from '@prisma/client';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
 
 @Injectable()
 export class AuthService {
@@ -20,7 +23,10 @@ export class AuthService {
     private readonly prismaService: PrismaService,
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
+    @Inject(CACHE_MANAGER)
+    private readonly cacheManager: Cache,
   ) {}
+
   async register(registerDto: RegisterDto) {
     // 유저 검색
     const user = await this.prismaService.user.findUnique({
@@ -87,12 +93,20 @@ export class AuthService {
     // 인증
     const user = await this.authenticate(email, password);
 
-    // REDIS 로직 나중에 구현
-
     // 토큰 발급
+    const accessToken = await this.issueToken(user, false);
+    const refreshToken = await this.issueToken(user, true);
+
+    // 캐시 저장
+    await this.cacheManager.set(
+      `REFRESH_TOKEN_${user.id}`,
+      refreshToken,
+      1000 * 60 * 60 * 24,
+    );
+
     return {
-      accessToken: await this.issueToken(user, false),
-      refreshToken: await this.issueToken(user, true),
+      accessToken,
+      refreshToken,
     };
   }
 
@@ -119,7 +133,7 @@ export class AuthService {
       envVariableKeys.accessTokenSecret,
     );
     const refreshTokenSecret = this.configService.get(
-      envVariableKeys.refresTokenSecret,
+      envVariableKeys.refreshTokenSecret,
     );
 
     return this.jwtService.signAsync(
@@ -135,17 +149,17 @@ export class AuthService {
     );
   }
 
-  async rotate(cookies: Record<string, any>) {
-    const { refreshToken } = cookies;
+  async rotateToken(cookies: Record<string, any>) {
+    const token = cookies?.refreshToken;
 
-    if (!refreshToken) {
+    if (!token) {
       throw new UnauthorizedException('잘못된 토큰입니다');
     }
 
     try {
       // 토큰 인증
-      const payload = await this.jwtService.verifyAsync(refreshToken, {
-        secret: this.configService.get(envVariableKeys.refresTokenSecret),
+      const payload = await this.jwtService.verifyAsync(token, {
+        secret: this.configService.get(envVariableKeys.refreshTokenSecret),
       });
 
       // 토큰 타입 확인
@@ -153,17 +167,40 @@ export class AuthService {
         throw new UnauthorizedException('잘못된 토큰입니다');
       }
 
-      // REDIS 로직 나중에 구현
+      // 캐시값과 비교
+      // const cachedRefreshToken = await this.cacheManager.get(
+      //   `REFRESH_TOKEN_${payload.sub}`,
+      // );
+      // if (cachedRefreshToken !== token) {
+      //   throw new UnauthorizedException('잘못된 토큰입니다');
+      // }
 
       // 토큰 재발급
+      const accessToken = await this.issueToken(
+        { id: payload.sub, role: payload.role },
+        false,
+      );
+      const refreshToken = await this.issueToken(
+        { id: payload.sub, role: payload.role },
+        true,
+      );
+
+      // 캐시값 재설정
+      // await this.cacheManager.set(
+      //   `REFRESH_TOKEN_${payload.sub}`,
+      //   refreshToken,
+      //   1000 * 60 * 60 * 24,
+      // );
+
       return {
-        accessToken: await this.issueToken(payload, false),
-        refreshToken: await this.issueToken(payload, true),
+        accessToken,
+        refreshToken,
       };
     } catch (e) {
       if (e.name === 'TokenExpiredError') {
         throw new UnauthorizedException('만료된 토큰입니다');
       }
+      throw e;
     }
   }
 }

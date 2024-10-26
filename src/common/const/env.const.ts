@@ -8,7 +8,7 @@ const redisPwd = 'REDIS_PWD';
 const redisPort = 'REDIS_PORT';
 const hashRounds = 'HASH_ROUNDS';
 const accessTokenSecret = 'ACCESS_TOKEN_SECRET';
-const refresTokenSecret = 'REFRESH_TOKEN_SECRET';
+const refreshTokenSecret = 'REFRESH_TOKEN_SECRET';
 const mailId = 'MAIL_ID';
 const mailPwd = 'MAIL_PWD';
 
@@ -23,7 +23,7 @@ export const envVariableKeys = {
   redisPort,
   hashRounds,
   accessTokenSecret,
-  refresTokenSecret,
+  refreshTokenSecret,
   mailId,
   mailPwd,
 };

@@ -35,11 +35,11 @@ export class AuthController {
 
   @Public()
   @Get('token/refresh')
-  async rotateToken(
+  async refresh(
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const { accessToken, refreshToken } = await this.authService.rotate(
+    const { accessToken, refreshToken } = await this.authService.rotateToken(
       req.cookies,
     );
 
