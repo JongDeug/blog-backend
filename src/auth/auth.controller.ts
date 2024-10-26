@@ -48,7 +48,11 @@ export class AuthController {
   }
 
   @Get('logout')
-  logoutUser(@Req() req) {
-    return this.authService.logout(req.user);
+  async logoutUser(@Req() req, @Res({ passthrough: true }) res: Response) {
+    await this.authService.logout(req.user);
+
+    res.cookie('accessToken', '');
+    res.cookie('refreshToken', '');
+    return true;
   }
 }

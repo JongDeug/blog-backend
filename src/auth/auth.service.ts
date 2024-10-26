@@ -172,7 +172,7 @@ export class AuthService {
         `REFRESH_TOKEN_${payload.sub}`,
       );
       if (cachedRefreshToken !== token) {
-        throw new UnauthorizedException('잘못된 토큰입니다');
+        throw new UnauthorizedException('유효하지 않는 토큰입니다');
       }
 
       // 토큰 재발급

@@ -28,6 +28,10 @@ export class AuthGuard implements CanActivate {
     const req = context.switchToHttp().getRequest();
     const { accessToken } = req.cookies;
 
+    if (!accessToken) {
+      throw new UnauthorizedException('잘못된 토큰입니다');
+    }
+
     try {
       // 토큰 인증
       const payload = await this.jwtService.verifyAsync(accessToken, {
