@@ -168,12 +168,12 @@ export class AuthService {
       }
 
       // 캐시값과 비교
-      // const cachedRefreshToken = await this.cacheManager.get(
-      //   `REFRESH_TOKEN_${payload.sub}`,
-      // );
-      // if (cachedRefreshToken !== token) {
-      //   throw new UnauthorizedException('잘못된 토큰입니다');
-      // }
+      const cachedRefreshToken = await this.cacheManager.get(
+        `REFRESH_TOKEN_${payload.sub}`,
+      );
+      if (cachedRefreshToken !== token) {
+        throw new UnauthorizedException('잘못된 토큰입니다');
+      }
 
       // 토큰 재발급
       const accessToken = await this.issueToken(
@@ -186,11 +186,11 @@ export class AuthService {
       );
 
       // 캐시값 재설정
-      // await this.cacheManager.set(
-      //   `REFRESH_TOKEN_${payload.sub}`,
-      //   refreshToken,
-      //   1000 * 60 * 60 * 24,
-      // );
+      await this.cacheManager.set(
+        `REFRESH_TOKEN_${payload.sub}`,
+        refreshToken,
+        1000 * 60 * 60 * 24,
+      );
 
       return {
         accessToken,
