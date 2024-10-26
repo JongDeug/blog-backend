@@ -47,9 +47,8 @@ export class AuthController {
     res.cookie('refreshToken', refreshToken, cookieOptions);
   }
 
-  @Public()
   @Get('logout')
-  logout() {
-    // REDIS
+  logoutUser(@Req() req) {
+    return this.authService.logout(req.user);
   }
 }

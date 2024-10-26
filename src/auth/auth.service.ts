@@ -203,4 +203,9 @@ export class AuthService {
       throw e;
     }
   }
+
+  async logout(user: any) {
+    await this.cacheManager.del(`REFRESH_TOKEN_${user.sub}`);
+    return true;
+  }
 }
