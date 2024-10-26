@@ -7,6 +7,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { AuthGuard } from './auth/guard/auth.guard';
 import { CacheModule } from '@nestjs/cache-manager';
 // import { redisStore } from 'cache-manager-redis-store';
+import { UserModule } from './user/user.module';
 // import KeyvRedis from '@keyv/redis';
 
 @Module({
@@ -33,6 +34,7 @@ import { CacheModule } from '@nestjs/cache-manager';
     CacheModule.register({ isGlobal: true }),
     PrismaModule,
     AuthModule,
+    UserModule,
   ],
   controllers: [],
   providers: [
