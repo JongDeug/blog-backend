@@ -22,11 +22,13 @@ export class UserController {
   }
 
   @Get(':id')
+  @RBAC(Role.ADMIN)
   findOne(@Param('id') id: string) {
     return this.userService.findOne(id);
   }
 
   @Delete(':id')
+  @RBAC(Role.ADMIN)
   remove(@Param('id') id: string) {
     return this.userService.remove(id);
   }

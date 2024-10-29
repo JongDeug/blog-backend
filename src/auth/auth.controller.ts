@@ -3,6 +3,7 @@ import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { Request, Response } from 'express';
 import { Public } from './decorator/public.decorator';
+import { UserId } from 'src/user/decorator/user-id.decorator';
 
 const cookieOptions = {
   path: '/',
@@ -54,8 +55,11 @@ export class AuthController {
   }
 
   @Get('logout')
-  async logoutUser(@Req() req, @Res({ passthrough: true }) res: Response) {
-    await this.authService.logout(req.user);
+  async logoutUser(
+    @UserId() userId: string, // 커스텀 데코레이터
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    await this.authService.logout(userId);
 
     res.cookie('accessToken', '');
     res.cookie('refreshToken', '');
