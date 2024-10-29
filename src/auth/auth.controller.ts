@@ -59,10 +59,8 @@ export class AuthController {
     @UserId() userId: string, // 커스텀 데코레이터
     @Res({ passthrough: true }) res: Response,
   ) {
-    await this.authService.logout(userId);
-
     res.cookie('accessToken', '');
     res.cookie('refreshToken', '');
-    return true;
+    return await this.authService.logout(userId);
   }
 }

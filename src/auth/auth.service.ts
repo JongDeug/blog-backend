@@ -49,9 +49,12 @@ export class AuthService {
         ...registerDto,
         password: hash,
       },
+      omit: {
+        password: true,
+      },
     });
 
-    return excludeFromObject(newUser, ['password']);
+    return newUser;
   }
 
   parseBasicToken(rawToken: string) {
