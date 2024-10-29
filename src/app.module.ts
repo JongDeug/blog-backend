@@ -8,6 +8,7 @@ import { AuthGuard } from './auth/guard/auth.guard';
 import { CacheModule } from '@nestjs/cache-manager';
 // import { redisStore } from 'cache-manager-redis-store';
 import { UserModule } from './user/user.module';
+import { RBACGuard } from './auth/guard/rbac.guard';
 // import KeyvRedis from '@keyv/redis';
 
 @Module({
@@ -41,6 +42,10 @@ import { UserModule } from './user/user.module';
     {
       provide: APP_GUARD,
       useClass: AuthGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: RBACGuard,
     },
   ],
 })
