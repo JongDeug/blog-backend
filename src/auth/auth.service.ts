@@ -213,7 +213,14 @@ export class AuthService {
   }
 
   async invalidToken(userId: string) {
-    // refresh_token_userId 값제거만하면 되는거아닌가
+    const user = await this.prismaService.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new NotFoundException('해당 유저가 없습니다');
+    }
+
     await this.cacheManager.del(`REFRESH_TOKEN_${userId}`);
     return true;
   }
