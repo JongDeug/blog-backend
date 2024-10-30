@@ -1,6 +1,7 @@
 import {
   CanActivate,
   ExecutionContext,
+  Inject,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -9,6 +10,8 @@ import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import { envVariableKeys } from 'src/common/const/env.const';
 import { Public } from '../decorator/public.decorator';
+import { Cache } from 'cache-manager';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -16,6 +19,8 @@ export class AuthGuard implements CanActivate {
     private readonly reflector: Reflector,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    @Inject(CACHE_MANAGER)
+    private readonly cacheManager: Cache,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -32,6 +37,15 @@ export class AuthGuard implements CanActivate {
       throw new UnauthorizedException('잘못된 토큰입니다');
     }
 
+    // 캐시 검색
+    const cachedPayload = await this.cacheManager.get(
+      `ACCESS_TOKEN_${accessToken}`,
+    );
+    if (cachedPayload) {
+      req.user = cachedPayload;
+      return true;
+    }
+
     try {
       // 토큰 인증
       const payload = await this.jwtService.verifyAsync(accessToken, {
@@ -42,6 +56,17 @@ export class AuthGuard implements CanActivate {
       if (payload.type !== 'access') {
         throw new UnauthorizedException('잘못된 토큰입니다');
       }
+
+      // 캐시 생성
+      const expiryDate = payload['exp'] * 1000; // unix timestamp, 초 단위
+      const now = Date.now(); // unix timestamp, 밀리초 단위
+      const differenceInMilliSeconds = expiryDate - now;
+
+      await this.cacheManager.set(
+        `ACCESS_TOKEN_${accessToken}`,
+        payload,
+        Math.max(differenceInMilliSeconds - 20, 1),
+      );
 
       req.user = payload;
 

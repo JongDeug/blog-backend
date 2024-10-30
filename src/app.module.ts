@@ -9,6 +9,7 @@ import { CacheModule } from '@nestjs/cache-manager';
 // import { redisStore } from 'cache-manager-redis-store';
 import { UserModule } from './user/user.module';
 import { RBACGuard } from './auth/guard/rbac.guard';
+import { PostModule } from './post/post.module';
 // import KeyvRedis from '@keyv/redis';
 
 @Module({
@@ -36,6 +37,7 @@ import { RBACGuard } from './auth/guard/rbac.guard';
     PrismaModule,
     AuthModule,
     UserModule,
+    PostModule,
   ],
   controllers: [],
   providers: [
