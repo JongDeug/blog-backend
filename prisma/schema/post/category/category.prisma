@@ -2,8 +2,11 @@
 ///
 /// @namespace Blog
 model Category {
-  /// Primary Key, 카테고리 이름
-  name String @id 
+  /// Pirmary Key
+  id           Int     @id @default(autoincrement())
+
+  /// 카테고리 이름
+  name String @unique
 
   /// 생성일
   createdAt DateTime @default(now())

@@ -131,7 +131,7 @@ export class AuthService {
     return user;
   }
 
-  async issueToken(payload: { id: string; role: Role }, isRefresh: boolean) {
+  async issueToken(payload: { id: number; role: Role }, isRefresh: boolean) {
     const accessTokenSecret = this.configService.get(
       envVariableKeys.accessTokenSecret,
     );
@@ -207,12 +207,12 @@ export class AuthService {
     }
   }
 
-  async logout(userId: string) {
+  async logout(userId: number) {
     await this.cacheManager.del(`REFRESH_TOKEN_${userId}`);
     return true;
   }
 
-  async invalidToken(userId: string) {
+  async invalidToken(userId: number) {
     const user = await this.prismaService.user.findUnique({
       where: { id: userId },
     });

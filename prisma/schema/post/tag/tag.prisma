@@ -2,11 +2,14 @@
 ///
 /// @namespace Blog
 model Tag {
-  /// Primary Key, 태그 이름
-  name String @id
+  /// Pirmary Key
+  id           Int     @id @default(autoincrement())
+
+  /// 태그 이름
+  name String @unique
 
   /// ---
   /// RELATIONS
   /// ---
-  posts PostTag[]
+  posts Post[]
 }

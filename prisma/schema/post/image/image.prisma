@@ -3,7 +3,7 @@
 /// @namespace Blog
 model Image {
   /// Pirmary Key
-  id  String @id @default(uuid())
+  id           Int     @id @default(autoincrement())
 
   /// 이미지 url
   url String @db.VarChar(500)
@@ -11,6 +11,6 @@ model Image {
   /// Foreign Key
   ///
   /// 게시글 ID {@link Post.id}
-  postId String
+  postId Int 
   post   Post   @relation(fields: [postId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 }

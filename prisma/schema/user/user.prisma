@@ -3,7 +3,7 @@
 /// @namespace Blog
 model User {
   /// Pirmary Key
-  id           String  @id @default(uuid())
+  id           Int     @id @default(autoincrement())
 
   /// 이름
   name         String  @db.VarChar(100)

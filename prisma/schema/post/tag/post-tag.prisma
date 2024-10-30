@@ -1,18 +1,18 @@
-/// 포스트, 태그 다대다 테이블
-///
-/// @namespace Blog
-model PostTag {
-  /// Foreign Key
-  ///
-  /// 게시글 ID {@link Post.id}
-  postId String
-  post   Post   @relation(fields: [postId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+// /// 포스트, 태그 다대다 테이블 => 삭제
+// ///
+// /// @namespace Blog
+// model PostTag {
+//   /// Foreign Key
+//   ///
+//   /// 게시글 ID {@link Post.id}
+//   postId String
+//   post   Post   @relation(fields: [postId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
-  /// Foreign Key
-  ///
-  /// 태그 ID {@link Tag.id}
-  tagId String
-  tag   Tag    @relation(fields: [tagId], references: [name], onUpdate: Cascade, onDelete: Cascade)
+//   /// Foreign Key
+//   ///
+//   /// 태그 ID {@link Tag.id}
+//   tagId String
+//   tag   Tag    @relation(fields: [tagId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
-  @@id([postId, tagId])
-}
+//   @@id([postId, tagId])
+// }

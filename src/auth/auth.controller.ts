@@ -1,9 +1,20 @@
-import { Body, Controller, Get, Headers, Post, Req, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Headers,
+  ParseIntPipe,
+  Post,
+  Req,
+  Res,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { Request, Response } from 'express';
 import { Public } from './decorator/public.decorator';
 import { UserId } from 'src/user/decorator/user-id.decorator';
+import { RBAC } from './decorator/rbac.decorator';
+import { Role } from '@prisma/client';
 
 const cookieOptions = {
   path: '/',
@@ -48,15 +59,15 @@ export class AuthController {
     res.cookie('refreshToken', refreshToken, cookieOptions);
   }
 
-  // RBAC() 필요
+  @RBAC(Role.ADMIN)
   @Post('token/invalid')
-  invalid(@Body('userId') userId: string) {
+  invalid(@Body('userId') userId: number) {
     return this.authService.invalidToken(userId);
   }
 
   @Get('logout')
   async logoutUser(
-    @UserId() userId: string, // 커스텀 데코레이터
+    @UserId() userId: number,
     @Res({ passthrough: true }) res: Response,
   ) {
     res.cookie('accessToken', '');

@@ -3,7 +3,7 @@
 /// @namespace Blog
 model Post {
   /// Pirmary Key
-  id        String   @id @default(uuid())
+  id        Int      @id @default(autoincrement())
 
   /// 제목
   title     String   @db.VarChar(200)
@@ -34,18 +34,18 @@ model Post {
   /// ---
   comments  Comment[]
   images    Image[]
-  tags      PostTag[]
+  tags      Tag[]
   postLikes PostLike[]
 
   /// Foreign Key
   ///
   /// 작성자 ID {@link User.id}
-  authorId String
+  authorId Int
   author   User   @relation(fields: [authorId], references: [id])
 
   /// Foreign Key
   ///
   /// 작성자 ID {@link Category.id}
-  categoryName String
-  category     Category @relation(fields: [categoryName], references: [name], onUpdate: Cascade, onDelete: Restrict)
+  categoryName Int 
+  category     Category @relation(fields: [categoryName], references: [id], onUpdate: Cascade, onDelete: Restrict)
 }

@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { RBAC } from 'src/auth/decorator/rbac.decorator';
@@ -23,13 +24,13 @@ export class UserController {
 
   @Get(':id')
   @RBAC(Role.ADMIN)
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', ParseIntPipe) id: number) {
     return this.userService.findOne(id);
   }
 
   @Delete(':id')
   @RBAC(Role.ADMIN)
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ParseIntPipe) id: number) {
     return this.userService.remove(id);
   }
 }

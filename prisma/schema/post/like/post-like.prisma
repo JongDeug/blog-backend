@@ -5,13 +5,13 @@ model PostLike {
   /// Foreign Key
   ///
   /// 게시글 ID {@link Post.id}
-  postId String
+  postId Int 
   post   Post   @relation(fields: [postId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   /// Foreign Key
   ///
   /// 비회원 ID {@link GuestLike.id}
-  guestId String
+  guestId Int 
   guest   GuestLike @relation(fields: [guestId], references: [id])
 
   /// 좋아요가 눌린 날짜

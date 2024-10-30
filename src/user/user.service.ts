@@ -13,14 +13,14 @@ export class UserService {
     });
   }
 
-  findOne(id: string) {
+  findOne(id: number) {
     return this.prismaService.user.findUnique({
       where: { id },
       omit: { password: true },
     });
   }
 
-  remove(id: string) {
+  remove(id: number) {
     return this.prismaService.user.delete({ where: { id } });
   }
 }

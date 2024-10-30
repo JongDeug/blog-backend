@@ -7,41 +7,42 @@
 ```mermaid
 erDiagram
 "GuestComment" {
-  String id PK
+  Int id PK
   String nickName
   String email
   String password
 }
 "GuestLike" {
-  String id PK
+  Int id PK
 }
 "Category" {
-  String name PK
+  Int id PK
+  String name UK
   DateTime createdAt
   DateTime updatedAt
 }
 "Comment" {
-  String id PK
+  Int id PK
   String content
   DateTime createdAt
   DateTime updatedAt
-  String parentCommentId FK "nullable"
-  String postId FK
-  String authorId FK "nullable"
-  String guestId FK "nullable"
+  Int parentCommentId FK "nullable"
+  Int postId FK
+  Int authorId FK "nullable"
+  Int guestId FK "nullable"
 }
 "Image" {
-  String id PK
+  Int id PK
   String url
-  String postId FK
+  Int postId FK
 }
 "PostLike" {
-  String postId FK
-  String guestId FK
+  Int postId FK
+  Int guestId FK
   DateTime createdAt
 }
 "Post" {
-  String id PK
+  Int id PK
   String title
   String content
   DateTime createdAt
@@ -50,23 +51,24 @@ erDiagram
   String nextId "nullable"
   Boolean draft
   String summary
-  String authorId FK
-  String categoryName FK
-}
-"PostTag" {
-  String postId FK
-  String tagId FK
+  Int authorId FK
+  Int categoryName FK
 }
 "Tag" {
-  String name PK
+  Int id PK
+  String name UK
 }
 "User" {
-  String id PK
+  Int id PK
   String name
   String email UK
   String password
   Role role
   DateTime createdAt
+}
+"_PostToTag" {
+  String A FK
+  String B FK
 }
 "Comment" }o--o| "Comment" : parentComment
 "Comment" }o--|| "Post" : post
@@ -77,8 +79,8 @@ erDiagram
 "PostLike" }o--|| "GuestLike" : guest
 "Post" }o--|| "User" : author
 "Post" }o--|| "Category" : category
-"PostTag" }o--|| "Post" : post
-"PostTag" }o--|| "Tag" : tag
+"_PostToTag" }o--|| "Post" : Post
+"_PostToTag" }o--|| "Tag" : Tag
 ```
 
 ### `GuestComment`
@@ -100,7 +102,8 @@ erDiagram
 카테고리 테이블
 
 **Properties**
-  - `name`: Primary Key, 카테고리 이름
+  - `id`: Pirmary Key
+  - `name`: 카테고리 이름
   - `createdAt`: 생성일
   - `updatedAt`: 수정일
 
@@ -176,24 +179,12 @@ erDiagram
     > 
     > 작성자 ID [Category.id](#Category)
 
-### `PostTag`
-포스트, 태그 다대다 테이블
-
-**Properties**
-  - `postId`
-    > Foreign Key
-    > 
-    > 게시글 ID [Post.id](#Post)
-  - `tagId`
-    > Foreign Key
-    > 
-    > 태그 ID [Tag.id](#Tag)
-
 ### `Tag`
 태그 테이블
 
 **Properties**
-  - `name`: Primary Key, 태그 이름
+  - `id`: Pirmary Key
+  - `name`: 태그 이름
 
 ### `User`
 회원 테이블
@@ -205,3 +196,10 @@ erDiagram
   - `password`: 비밀번호(해시값)
   - `role`: 역할
   - `createdAt`: 생성일
+
+### `_PostToTag`
+Pair relationship table between [Post](#Post) and [Tag](#Tag)
+
+**Properties**
+  - `A`: 
+  - `B`: 
