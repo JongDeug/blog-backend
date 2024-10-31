@@ -33,7 +33,7 @@ erDiagram
 }
 "Image" {
   Int id PK
-  String url
+  String url UK
   Int postId FK
 }
 "PostLike" {

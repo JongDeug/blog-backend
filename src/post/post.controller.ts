@@ -38,11 +38,11 @@ export class PostController {
   @Patch(':id')
   @RBAC(Role.ADMIN)
   update(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseIntPipe) postId: number,
     @UserId() userId: number,
     @Body() updatePostDto: UpdatePostDto,
   ) {
-    return this.postService.update(id, userId, updatePostDto);
+    return this.postService.update(postId, userId, updatePostDto);
   }
 
   @Delete(':id')

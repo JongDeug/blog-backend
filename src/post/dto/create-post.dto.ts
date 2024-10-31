@@ -3,6 +3,7 @@ import {
   IsArray,
   IsBoolean,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   IsString,
   IsUUID,
@@ -36,13 +37,15 @@ export class CreatePostDto {
   summary: string;
 
   @IsArray()
-  @ArrayNotEmpty()
+  // @ArrayNotEmpty()
+  @IsNotEmpty()
   @IsString({ each: true })
   @IsOptional()
   images?: string[] = [];
 
   @IsArray()
-  @ArrayNotEmpty()
+  // @ArrayNotEmpty()
+  @IsNotEmpty()
   @IsString({ each: true })
   @IsOptional()
   tags?: string[] = [];

@@ -6,7 +6,7 @@ model Image {
   id           Int     @id @default(autoincrement())
 
   /// 이미지 url
-  url String @db.VarChar(500)
+  url String @db.VarChar(500) @unique
 
   /// Foreign Key
   ///
