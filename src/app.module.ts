@@ -10,7 +10,10 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { UserModule } from './user/user.module';
 import { RBACGuard } from './auth/guard/rbac.guard';
 import { PostModule } from './post/post.module';
-// import KeyvRedis from '@keyv/redis';
+import { CommonController } from './common/common.controller';
+import { CommonModule } from './common/common.module';
+import { MulterModule } from '@nestjs/platform-express';
+import { MulterConfigService } from './common/config/multer-config.service';
 
 @Module({
   imports: [
@@ -34,12 +37,16 @@ import { PostModule } from './post/post.module';
       isGlobal: true,
     }),
     CacheModule.register({ isGlobal: true }),
+    MulterModule.registerAsync({
+      useClass: MulterConfigService,
+    }),
     PrismaModule,
     AuthModule,
     UserModule,
     PostModule,
+    CommonModule,
   ],
-  controllers: [],
+  controllers: [CommonController],
   providers: [
     {
       provide: APP_GUARD,

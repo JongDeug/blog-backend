@@ -64,8 +64,8 @@ export class PostService {
     return `This action returns all post`;
   }
 
-  findOne(id: number) {
-    return this.prismaService.post.findUnique({
+  async findOne(id: number) {
+    const post = await this.prismaService.post.findUnique({
       where: { id },
       include: {
         comments: true,
@@ -81,6 +81,10 @@ export class PostService {
         },
       },
     });
+
+    if (!post) throw new NotFoundException('게시글이 존재하지 않습니다');
+
+    return post;
   }
 
   async update(postId: number, userId: number, updatePostDto: UpdatePostDto) {
