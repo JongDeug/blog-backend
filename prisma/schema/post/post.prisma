@@ -6,7 +6,7 @@ model Post {
   id        Int      @id @default(autoincrement())
 
   /// 제목
-  title     String   @db.VarChar(200)
+  title     String   @db.VarChar(200) @unique
 
   /// 내용
   content   String   @db.LongText

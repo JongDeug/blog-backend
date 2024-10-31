@@ -43,7 +43,7 @@ erDiagram
 }
 "Post" {
   Int id PK
-  String title
+  String title UK
   String content
   DateTime createdAt
   DateTime updatedAt

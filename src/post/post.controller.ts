@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { PostService } from './post.service';
 import { CreatePostDto } from './dto/create-post.dto';
@@ -35,8 +36,13 @@ export class PostController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePostDto: UpdatePostDto) {
-    return this.postService.update(+id, updatePostDto);
+  @RBAC(Role.ADMIN)
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @UserId() userId: number,
+    @Body() updatePostDto: UpdatePostDto,
+  ) {
+    return this.postService.update(id, userId, updatePostDto);
   }
 
   @Delete(':id')

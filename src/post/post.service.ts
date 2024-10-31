@@ -23,7 +23,6 @@ export class PostService {
       const transactionResult = await this.prismaService.$transaction(
         async (database) => {
           const { category, images, tags, ...restFields } = createPostDto;
-          const deduplicatedTags = [...new Set(tags)];
 
           const newPost = await database.post.create({
             data: {
@@ -45,7 +44,7 @@ export class PostService {
               // Implicit Many To Many
               // https://www.prisma.io/docs/orm/prisma-schema/data-model/relations/many-to-many-relations#implicit-many-to-many-relations
               tags: {
-                connectOrCreate: deduplicatedTags.map((name: string) => ({
+                connectOrCreate: tags.map((name: string) => ({
                   where: { name },
                   create: { name },
                 })),
@@ -71,7 +70,7 @@ export class PostService {
     return `This action returns a #${id} post`;
   }
 
-  update(id: number, updatePostDto: UpdatePostDto) {
+  update(id: number, userId: number, updatePostDto: UpdatePostDto) {
     return `This action updates a #${id} post`;
   }
 
