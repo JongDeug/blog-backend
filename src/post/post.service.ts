@@ -18,47 +18,40 @@ export class PostService {
 
     if (!user) throw new NotFoundException('유저를 찾을 수 없습니다');
 
+    const { category, images, tags, ...restFields } = createPostDto;
+
     try {
-      // 트랜잭션
-      const transactionResult = await this.prismaService.$transaction(
-        async (database) => {
-          const { category, images, tags, ...restFields } = createPostDto;
-
-          const newPost = await database.post.create({
-            data: {
-              ...restFields,
-              author: {
-                connect: { id: user.id },
-              },
-              category: {
-                connectOrCreate: {
-                  where: { name: category },
-                  create: { name: category },
-                },
-              },
-              images: {
-                createMany: {
-                  data: images.map((url) => ({ url })),
-                },
-              },
-              // Implicit Many To Many
-              // https://www.prisma.io/docs/orm/prisma-schema/data-model/relations/many-to-many-relations#implicit-many-to-many-relations
-              tags: {
-                connectOrCreate: tags.map((name: string) => ({
-                  where: { name },
-                  create: { name },
-                })),
-              },
+      const newPost = await this.prismaService.post.create({
+        data: {
+          ...restFields,
+          author: {
+            connect: { id: user.id },
+          },
+          category: {
+            connectOrCreate: {
+              where: { name: category },
+              create: { name: category },
             },
-          });
-
-          return newPost;
+          },
+          images: {
+            createMany: {
+              data: images.map((url) => ({ url })),
+            },
+          },
+          // Implicit Many To Many
+          // https://www.prisma.io/docs/orm/prisma-schema/data-model/relations/many-to-many-relations#implicit-many-to-many-relations
+          tags: {
+            connectOrCreate: tags.map((name: string) => ({
+              where: { name },
+              create: { name },
+            })),
+          },
         },
-      );
+      });
 
-      return transactionResult.id;
+      return newPost.id;
     } catch (e) {
-      throw new InternalServerErrorException(e);
+      throw new InternalServerErrorException(`Prisma ORM 에러: ${e.code}`);
     }
   }
 
@@ -71,6 +64,11 @@ export class PostService {
   }
 
   update(id: number, userId: number, updatePostDto: UpdatePostDto) {
+    // user 확인
+    // post.user 확인
+    // 비교
+
+    // update 하면됨
     return `This action updates a #${id} post`;
   }
 
