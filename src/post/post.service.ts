@@ -65,7 +65,22 @@ export class PostService {
   }
 
   findOne(id: number) {
-    return `This action returns a #${id} post`;
+    return this.prismaService.post.findUnique({
+      where: { id },
+      include: {
+        comments: true,
+        category: true,
+        tags: true,
+        images: true,
+        author: {
+          omit: {
+            password: true,
+            role: true,
+            createdAt: true,
+          },
+        },
+      },
+    });
   }
 
   async update(postId: number, userId: number, updatePostDto: UpdatePostDto) {
