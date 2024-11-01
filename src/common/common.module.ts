@@ -6,6 +6,5 @@ import { MulterConfigService } from './config/multer-config.service';
 @Module({
   controllers: [CommonController],
   providers: [CommonService, MulterConfigService],
-  exports: [CommonService],
 })
 export class CommonModule {}

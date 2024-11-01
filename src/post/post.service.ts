@@ -15,15 +15,14 @@ import { ConfigService } from '@nestjs/config';
 import { envVariableKeys } from 'src/common/const/env.const';
 import { unlink } from 'fs/promises';
 import { GetPostsDto } from './dto/get-posts.dto';
-import { CommonService } from 'src/common/common.service';
-import { Post } from '@prisma/client';
+import { Post, Prisma } from '@prisma/client';
+import { CursorPaginationDto } from './dto/cursor-pagination.dto';
 
 @Injectable()
 export class PostService {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly configService: ConfigService,
-    private readonly commonService: CommonService,
   ) {}
 
   async create(userId: number, createPostDto: CreatePostDto) {
@@ -83,41 +82,27 @@ export class PostService {
   }
 
   async findAll(getPostsDto: GetPostsDto) {
-    let { cursor, search, take, order, draft } = getPostsDto;
+    const { search, draft } = getPostsDto;
 
-    const decodedCursor = this.commonService.decodeCursor(cursor);
-    // 있으면 cursor order로 덮어쓰기
-    if (decodedCursor) order = decodedCursor.order;
+    const whereCondition = {
+      ...(search
+        ? {
+            OR: [
+              { title: { contains: search } },
+              { content: { contains: search } },
+            ],
+          }
+        : {}),
+      draft,
+    };
 
-    // order: ['id_desc'] 파싱
-    const parseOrder = this.commonService.parseOrder(order);
-
-    const posts = await this.prismaService.post.findMany({
-      where: {
-        ...(search
-          ? {
-              OR: [
-                { title: { contains: search } },
-                { content: { contains: search } },
-              ],
-            }
-          : {}),
-        // draft,
-      },
-      orderBy: parseOrder,
-      skip: 1,
-      take,
-      cursor: decodedCursor?.values,
-    });
-
-    // 다음 커서 생성 base64
-    const nextCursor = this.commonService.generateNextCursor<Post>(
-      posts,
-      order,
+    const { results, nextCursor } = await this.applyCursorPaginationToPost(
+      getPostsDto,
+      whereCondition,
     );
 
     return {
-      posts,
+      posts: results,
       cursor: nextCursor,
     };
   }
@@ -267,7 +252,8 @@ export class PostService {
     }
   }
 
-  // =================== Utils ===================
+  // ====================================== Utils ======================================
+
   async movieFiles(files: string[]) {
     const tempFolder = join('public', 'temp');
     const imageFolder = join('public', 'images');
@@ -301,5 +287,85 @@ export class PostService {
     } catch (e) {
       throw e;
     }
+  }
+
+  async applyCursorPaginationToPost(
+    dto: CursorPaginationDto,
+    whereCondition: Prisma.PostWhereInput,
+  ) {
+    let { cursor, order, take } = dto;
+    let cursorCondition;
+    let orderByCondition;
+
+    if (cursor) {
+      /**
+       * {
+       *  values: {
+       *   id: 27,
+       *  },
+       *  order: ['id_desc'],
+       * }
+       */
+      const decodedCursor = Buffer.from(cursor, 'base64').toString('utf-8');
+      const cursorObj = JSON.parse(decodedCursor);
+      // values 적용
+      cursorCondition = cursorObj.values;
+      // order 덮어쓰기
+      order = cursorObj.order;
+    }
+
+    orderByCondition = this.parseOrder(order);
+
+    const results = await this.prismaService.post.findMany({
+      where: whereCondition,
+      orderBy: orderByCondition,
+      skip: cursorCondition ? 1 : 0,
+      take,
+      cursor: cursorCondition,
+    });
+
+    // 다음 커서 생성
+    const nextCursor = this.generateNextCursor<Post>(results, order);
+
+    return {
+      results,
+      nextCursor,
+    };
+  }
+
+  // order 파싱
+  parseOrder(order: string[]): {} {
+    return Object.fromEntries(
+      order.map((item) => {
+        return item.split('_');
+      }),
+    );
+  }
+
+  // 커서를 생성하는 함수
+  generateNextCursor<T>(results: T[], order: string[]): string | null {
+    if (!results.length) return null;
+    /**
+     * {
+     *  values : {
+     *   id: 27
+     *  },
+     *  order: ["id_DESC"]
+     * }
+     */
+
+    const lastItem = results[results.length - 1];
+
+    // create values
+    const values = {};
+    order.forEach((item) => {
+      const [key, _] = item.split('_');
+      values[key] = lastItem[key];
+    });
+
+    const nextCursor = { values, order };
+    const base64 = Buffer.from(JSON.stringify(nextCursor)).toString('base64');
+
+    return base64;
   }
 }

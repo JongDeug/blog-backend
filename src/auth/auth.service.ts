@@ -146,7 +146,7 @@ export class AuthService {
       },
       {
         secret: isRefresh ? refreshTokenSecret : accessTokenSecret,
-        expiresIn: isRefresh ? '24h' : 180,
+        expiresIn: isRefresh ? '24h' : 1800, // 변경해야됨
       },
     );
   }

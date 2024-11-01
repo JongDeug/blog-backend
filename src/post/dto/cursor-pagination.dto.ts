@@ -1,4 +1,11 @@
-import { IsArray, IsInt, IsOptional, IsString } from 'class-validator';
+import {
+  IsArray,
+  IsInt,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class CursorPaginationDto {
   @IsString()
@@ -10,7 +17,7 @@ export class CursorPaginationDto {
   @IsOptional()
   order: string[] = [`id_desc`]; // [id_desc, likeCount_asc]
 
-  @IsInt()
+  @IsNumber()
   @IsOptional()
   take: number = 4;
 }

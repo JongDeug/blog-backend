@@ -12,6 +12,9 @@ async function bootstrap() {
     new ValidationPipe({
       whitelist: true,
       forbidNonWhitelisted: true, // 에러 발생 시킴
+      transformOptions: {
+        enableImplicitConversion: true,
+      },
     }),
   );
   app.use(cookieParser());
