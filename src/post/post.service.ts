@@ -81,6 +81,7 @@ export class PostService {
   }
 
   findAll() {
+    // cursor pagination 적용
     return `This action returns all post`;
   }
 
@@ -206,12 +207,30 @@ export class PostService {
     }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} post`;
+  async remove(id: number) {
+    // 게시글 찾기
+    const post = await this.prismaService.post.findUnique({
+      where: { id },
+      include: { images: true },
+    });
+
+    if (!post) {
+      throw new NotFoundException('게시글이 존재하지 않습니다');
+    }
+
+    // 이미지 삭제
+    if (post.images.length > 0) {
+      const filesToDelete = post.images.map(
+        (obj) =>
+          obj.url.split(
+            `${this.configService.get(envVariableKeys.serverOrigin)}/public/images/`,
+          )[1],
+      );
+      await this.deleteFiles(filesToDelete);
+    }
   }
 
-  // utils
-
+  // =================== Utils ===================
   async movieFiles(files: string[]) {
     const tempFolder = join('public', 'temp');
     const imageFolder = join('public', 'images');
