@@ -30,10 +30,7 @@ export class PostService {
             connect: { id: user.id },
           },
           category: {
-            connectOrCreate: {
-              where: { name: category },
-              create: { name: category },
-            },
+            connect: { name: category },
           },
           images: {
             createMany: {
