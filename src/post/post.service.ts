@@ -30,7 +30,10 @@ export class PostService {
             connect: { id: user.id },
           },
           category: {
-            connect: { name: category },
+            connectOrCreate: {
+              where: { name: category },
+              create: { name: category },
+            },
           },
           images: {
             createMany: {
@@ -117,7 +120,10 @@ export class PostService {
           data: {
             ...restFields,
             category: {
-              connect: { name: category },
+              connectOrCreate: {
+                where: { name: category },
+                create: { name: category },
+              },
             },
             images: {
               createMany: {
