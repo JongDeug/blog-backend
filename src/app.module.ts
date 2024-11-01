@@ -6,7 +6,6 @@ import * as Joi from 'joi';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthGuard } from './auth/guard/auth.guard';
 import { CacheModule } from '@nestjs/cache-manager';
-// import { redisStore } from 'cache-manager-redis-store';
 import { UserModule } from './user/user.module';
 import { RBACGuard } from './auth/guard/rbac.guard';
 import { PostModule } from './post/post.module';
@@ -22,6 +21,7 @@ import { CategoryModule } from './category/category.module';
     ConfigModule.forRoot({
       validationSchema: Joi.object({
         ENV: Joi.string().valid('dev', 'prod').required(),
+        SERVER_ORIGIN: Joi.string().required(),
         SERVER_PORT: Joi.number().required(),
         DB_URL: Joi.string().required(),
         DB_PORT: Joi.number().required(),

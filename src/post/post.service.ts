@@ -13,10 +13,16 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { rename } from 'fs/promises';
 import { join } from 'path';
 import { mkdir } from 'fs/promises';
+import { ConfigService } from '@nestjs/config';
+import { envVariableKeys } from 'src/common/const/env.const';
+import { unlink } from 'fs/promises';
 
 @Injectable()
 export class PostService {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly configService: ConfigService,
+  ) {}
 
   async create(userId: number, createPostDto: CreatePostDto) {
     const user = await this.prismaService.user.findUnique({
@@ -26,6 +32,9 @@ export class PostService {
     if (!user) throw new NotFoundException('유저를 찾을 수 없습니다');
 
     const { category, images, tags, ...restFields } = createPostDto;
+    const baseURL = new URL(
+      `${this.configService.get(envVariableKeys.serverOrigin)}/public/images/`,
+    );
 
     try {
       const newPost = await this.prismaService.post.create({
@@ -42,7 +51,9 @@ export class PostService {
           },
           images: {
             createMany: {
-              data: images.map((url) => ({ url })),
+              data: images.map((fileName: string) => ({
+                url: new URL(fileName, baseURL).toString(),
+              })),
             },
           },
           // Implicit Many To Many
@@ -56,33 +67,17 @@ export class PostService {
           },
         },
       });
+
       // 이미지 이동 temp -> images
       await this.movieFiles(images);
 
       return newPost.id;
     } catch (e) {
       if (e.code === 'P2002' && e.meta.target.includes('title')) {
-        throw new ConflictException('이미 존재하는 게시글 title 입니다');
+        throw new ConflictException('이미 존재하는 게시글의 title 입니다');
       }
       throw new InternalServerErrorException(e);
     }
-  }
-
-  async movieFiles(images: string[]) {
-    const tempFolder = join('public', 'temp');
-    const imageFolder = join('public', 'images');
-
-    // 폴더 없으면 생성
-    await mkdir(imageFolder, { recursive: true });
-
-    // 폴더 이동
-    const renamePromises = images.map((fileName: string) => {
-      return rename(
-        join(process.cwd(), tempFolder, fileName),
-        join(process.cwd(), imageFolder, fileName),
-      );
-    });
-    await Promise.all(renamePromises);
   }
 
   findAll() {
@@ -122,7 +117,7 @@ export class PostService {
 
     const post = await this.prismaService.post.findUnique({
       where: { id: postId },
-      include: { tags: true },
+      include: { images: true },
     });
     if (!post) throw new NotFoundException('게시글을 찾을 수 없습니다');
 
@@ -132,6 +127,9 @@ export class PostService {
     }
 
     const { images, tags, category, ...restFields } = updatePostDto;
+    const baseURL = new URL(
+      `${this.configService.get(envVariableKeys.serverOrigin)}/public/images/`,
+    );
 
     try {
       // 트랜잭션
@@ -154,7 +152,9 @@ export class PostService {
             },
             images: {
               createMany: {
-                data: images.map((url: string) => ({ url })),
+                data: images.map((fileName: string) => ({
+                  url: new URL(fileName, baseURL).toString(),
+                })),
               },
             },
             tags: {
@@ -172,17 +172,77 @@ export class PostService {
         return newPost;
       });
 
-      // 업데이트할 때 새롭게 들어온 이미지만 이동 temp -> images
-      // 기존에 있던 놈과 새로운놈이랑 비교해서 쓰이지 않는 놈은 제거 (images 폴더에서 제거)
-      // await this.movieFiles(images);
+      if (post.images.length > 0) {
+        // fileName 분리
+        const existingImages: string[] = post.images.map(
+          (obj) =>
+            obj.url.split(
+              `${this.configService.get(envVariableKeys.serverOrigin)}/public/images/`,
+            )[1],
+        );
+        const existingImagesSet: Set<string> = new Set(existingImages);
+        const newImages: string[] = images;
+        const newImagesSet: Set<string> = new Set(newImages);
+
+        // updatePostDto.images 중 새롭게 temp에 들어온 놈 images로 이동
+        const imagesToMove = newImages.filter(
+          (fileName: string) => !existingImagesSet.has(fileName),
+        );
+        await this.movieFiles(imagesToMove);
+
+        // 기존에 있던 놈 vs 새로운 놈 -> 기존에 있는 놈 중 쓰이지 않으면 images 폴더에서 제거
+        const imagesToDelete = existingImages.filter(
+          (fileName: string) => !newImagesSet.has(fileName),
+        );
+        await this.deleteFiles(imagesToDelete);
+      }
 
       return result;
     } catch (e) {
-      throw new InternalServerErrorException(`Prisma ORM 에러: ${e.code}`);
+      if (e.code === 'P2002' && e.meta.target.includes('title')) {
+        throw new ConflictException('이미 존재하는 게시글의 title 입니다');
+      }
+      throw new InternalServerErrorException(e);
     }
   }
 
   remove(id: number) {
     return `This action removes a #${id} post`;
+  }
+
+  // utils
+
+  async movieFiles(files: string[]) {
+    const tempFolder = join('public', 'temp');
+    const imageFolder = join('public', 'images');
+
+    try {
+      // 폴더 없으면 생성
+      await mkdir(imageFolder, { recursive: true });
+
+      // 폴더 이동
+      const renamePromises = files.map((fileName: string) => {
+        return rename(
+          join(process.cwd(), tempFolder, fileName),
+          join(process.cwd(), imageFolder, fileName),
+        );
+      });
+      await Promise.all(renamePromises);
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  async deleteFiles(files: string[]) {
+    try {
+      const imageFolder = join(process.cwd(), 'public', 'images');
+      const deletePromises = files.map((fileName: string) => {
+        unlink(join(imageFolder, fileName));
+      });
+
+      await Promise.all(deletePromises);
+    } catch (e) {
+      throw e;
+    }
   }
 }

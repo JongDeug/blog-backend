@@ -1,4 +1,5 @@
 const env = 'ENV';
+const serverOrigin = 'SERVER_ORIGIN';
 const serverPort = 'SERVER_PORT';
 const dbUrl = 'DB_URL';
 const dbPort = 'DB_PORT';
@@ -14,6 +15,7 @@ const mailPwd = 'MAIL_PWD';
 
 export const envVariableKeys = {
   env,
+  serverOrigin,
   serverPort,
   dbUrl,
   dbPort,
