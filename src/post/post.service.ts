@@ -1,4 +1,6 @@
 import {
+  BadRequestException,
+  ConflictException,
   ForbiddenException,
   Injectable,
   InternalServerErrorException,
@@ -8,6 +10,9 @@ import {
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { rename } from 'fs/promises';
+import { join } from 'path';
+import { mkdir } from 'fs/promises';
 
 @Injectable()
 export class PostService {
@@ -51,13 +56,33 @@ export class PostService {
           },
         },
       });
-
-      // 이미지 위치 조정
+      // 이미지 이동 temp -> images
+      await this.movieFiles(images);
 
       return newPost.id;
     } catch (e) {
-      throw new InternalServerErrorException(`Prisma ORM 에러: ${e.code}`);
+      if (e.code === 'P2002' && e.meta.target.includes('title')) {
+        throw new ConflictException('이미 존재하는 게시글 title 입니다');
+      }
+      throw new InternalServerErrorException(e);
     }
+  }
+
+  async movieFiles(images: string[]) {
+    const tempFolder = join('public', 'temp');
+    const imageFolder = join('public', 'images');
+
+    // 폴더 없으면 생성
+    await mkdir(imageFolder, { recursive: true });
+
+    // 폴더 이동
+    const renamePromises = images.map((fileName: string) => {
+      return rename(
+        join(process.cwd(), tempFolder, fileName),
+        join(process.cwd(), imageFolder, fileName),
+      );
+    });
+    await Promise.all(renamePromises);
   }
 
   findAll() {
@@ -112,12 +137,12 @@ export class PostService {
       // 트랜잭션
       const result = await this.prismaService.$transaction(async (database) => {
         // 게시글을 참조하고 있는 이미지 정보 삭제
-        await this.prismaService.image.deleteMany({
+        await database.image.deleteMany({
           where: { post: { id: postId } },
         });
 
         // 게시글 업데이트
-        const newPost = await this.prismaService.post.update({
+        const newPost = await database.post.update({
           where: { id: postId },
           data: {
             ...restFields,
@@ -147,7 +172,9 @@ export class PostService {
         return newPost;
       });
 
-      // 이미지 위치 조정
+      // 업데이트할 때 새롭게 들어온 이미지만 이동 temp -> images
+      // 기존에 있던 놈과 새로운놈이랑 비교해서 쓰이지 않는 놈은 제거 (images 폴더에서 제거)
+      // await this.movieFiles(images);
 
       return result;
     } catch (e) {
