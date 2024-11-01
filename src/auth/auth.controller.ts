@@ -20,7 +20,7 @@ import { Role } from '@prisma/client';
 const cookieOptions = {
   path: '/',
   httpOnly: true,
-  sameSite: 'strict' as 'strict',
+  sameSite: 'strict' as const,
   secure: true,
 };
 

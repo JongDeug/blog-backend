@@ -1,12 +1,9 @@
 import {
-  ArrayNotEmpty,
   IsArray,
   IsBoolean,
   IsNotEmpty,
-  IsNumber,
   IsOptional,
   IsString,
-  IsUUID,
 } from 'class-validator';
 
 export class CreatePostDto {

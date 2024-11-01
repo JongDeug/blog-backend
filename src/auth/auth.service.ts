@@ -11,7 +11,6 @@ import * as bcrypt from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
 import { envVariableKeys } from 'src/common/const/env.const';
 import { RegisterDto } from './dto/register.dto';
-import { excludeFromObject } from 'src/prisma/util/exclude.util';
 import { JwtService } from '@nestjs/jwt';
 import { Role } from '@prisma/client';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';

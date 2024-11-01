@@ -1,11 +1,9 @@
 import {
-  BadRequestException,
   ConflictException,
   ForbiddenException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
-  UnauthorizedException,
 } from '@nestjs/common';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
@@ -253,8 +251,9 @@ export class PostService {
   }
 
   async deleteFiles(files: string[]) {
+    const imageFolder = join(process.cwd(), 'public', 'images');
+
     try {
-      const imageFolder = join(process.cwd(), 'public', 'images');
       const deletePromises = files.map((fileName: string) => {
         unlink(join(imageFolder, fileName));
       });

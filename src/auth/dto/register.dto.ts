@@ -3,18 +3,17 @@ import {
   IsNotEmpty,
   IsString,
   registerDecorator,
-  ValidationArguments,
   ValidationOptions,
 } from 'class-validator';
 
 function IsPassword(validationOptions?: ValidationOptions) {
-  return function (object: Object, propertyName: string) {
+  return function (object: object, propertyName: string) {
     registerDecorator({
       target: object.constructor,
       propertyName: propertyName,
       options: validationOptions,
       validator: {
-        validate(value: any, args: ValidationArguments) {
+        validate(value: any) {
           return value && value.length >= 4 && value.length <= 14;
         },
         defaultMessage() {
