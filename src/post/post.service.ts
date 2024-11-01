@@ -117,10 +117,7 @@ export class PostService {
           data: {
             ...restFields,
             category: {
-              connectOrCreate: {
-                where: { name: category },
-                create: { name: category },
-              },
+              connect: { name: category },
             },
             images: {
               createMany: {
