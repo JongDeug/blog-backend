@@ -14,12 +14,16 @@ import { mkdir } from 'fs/promises';
 import { ConfigService } from '@nestjs/config';
 import { envVariableKeys } from 'src/common/const/env.const';
 import { unlink } from 'fs/promises';
+import { GetPostsDto } from './dto/get-posts.dto';
+import { CommonService } from 'src/common/common.service';
+import { Post } from '@prisma/client';
 
 @Injectable()
 export class PostService {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly configService: ConfigService,
+    private readonly commonService: CommonService,
   ) {}
 
   async create(userId: number, createPostDto: CreatePostDto) {
@@ -78,9 +82,44 @@ export class PostService {
     }
   }
 
-  findAll() {
-    // cursor pagination 적용
-    return `This action returns all post`;
+  async findAll(getPostsDto: GetPostsDto) {
+    let { cursor, search, take, order, draft } = getPostsDto;
+
+    const decodedCursor = this.commonService.decodeCursor(cursor);
+    // 있으면 cursor order로 덮어쓰기
+    if (decodedCursor) order = decodedCursor.order;
+
+    // order: ['id_desc'] 파싱
+    const parseOrder = this.commonService.parseOrder(order);
+
+    const posts = await this.prismaService.post.findMany({
+      where: {
+        ...(search
+          ? {
+              OR: [
+                { title: { contains: search } },
+                { content: { contains: search } },
+              ],
+            }
+          : {}),
+        // draft,
+      },
+      orderBy: parseOrder,
+      skip: 1,
+      take,
+      cursor: decodedCursor?.values,
+    });
+
+    // 다음 커서 생성 base64
+    const nextCursor = this.commonService.generateNextCursor<Post>(
+      posts,
+      order,
+    );
+
+    return {
+      posts,
+      cursor: nextCursor,
+    };
   }
 
   async findOne(id: number) {

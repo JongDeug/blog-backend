@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   ParseIntPipe,
+  Query,
 } from '@nestjs/common';
 import { PostService } from './post.service';
 import { CreatePostDto } from './dto/create-post.dto';
@@ -14,6 +15,7 @@ import { UpdatePostDto } from './dto/update-post.dto';
 import { UserId } from 'src/user/decorator/user-id.decorator';
 import { RBAC } from 'src/auth/decorator/rbac.decorator';
 import { Role } from '@prisma/client';
+import { GetPostsDto } from './dto/get-posts.dto';
 
 @Controller('post')
 export class PostController {
@@ -26,8 +28,8 @@ export class PostController {
   }
 
   @Get()
-  findAll() {
-    return this.postService.findAll();
+  findAll(@Query() getPostsDto: GetPostsDto) {
+    return this.postService.findAll(getPostsDto);
   }
 
   @Get(':id')
