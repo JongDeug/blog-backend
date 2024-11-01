@@ -46,7 +46,8 @@ export class PostController {
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.postService.remove(+id);
+  @RBAC(Role.ADMIN)
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.postService.remove(id);
   }
 }

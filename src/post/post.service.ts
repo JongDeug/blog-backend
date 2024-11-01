@@ -71,7 +71,9 @@ export class PostService {
         comments: true,
         category: true,
         tags: true,
-        images: true,
+        images: {
+          omit: { postId: true },
+        },
         author: {
           omit: {
             password: true,

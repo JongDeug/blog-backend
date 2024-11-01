@@ -37,10 +37,6 @@ export class CategoryService {
           select: { posts: true },
         },
       },
-      omit: {
-        createdAt: true,
-        updatedAt: true,
-      },
     });
   }
 
@@ -79,10 +75,6 @@ export class CategoryService {
       where: { id },
       data: {
         name: updateCategoryDto.name,
-      },
-      omit: {
-        createdAt: true,
-        updatedAt: true,
       },
     });
 

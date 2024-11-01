@@ -3,15 +3,16 @@ import { PrismaClient, User } from '@prisma/client';
 
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit {
-  // constructor() {
-  //   super({
-  //     omit: {
-  //       user: {
-  //         password: true,
-  //       },
-  //     },
-  //   });
-  // }
+  constructor() {
+    super({
+      omit: {
+        category: {
+          createdAt: true,
+          updatedAt: true,
+        },
+      },
+    });
+  }
 
   async onModuleInit() {
     await this.$connect();
