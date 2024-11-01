@@ -209,7 +209,6 @@ export class AuthService {
 
   async logout(userId: number) {
     await this.cacheManager.del(`REFRESH_TOKEN_${userId}`);
-    return true;
   }
 
   async invalidToken(userId: number) {
@@ -222,6 +221,5 @@ export class AuthService {
     }
 
     await this.cacheManager.del(`REFRESH_TOKEN_${userId}`);
-    return true;
   }
 }

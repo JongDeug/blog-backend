@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Headers,
+  Param,
   ParseIntPipe,
   Post,
   Req,
@@ -59,19 +60,19 @@ export class AuthController {
     res.cookie('refreshToken', refreshToken, cookieOptions);
   }
 
-  @RBAC(Role.ADMIN)
-  @Post('token/invalid')
-  invalid(@Body('userId') userId: number) {
-    return this.authService.invalidToken(userId);
-  }
-
   @Get('logout')
-  async logoutUser(
+  logoutUser(
     @UserId() userId: number,
     @Res({ passthrough: true }) res: Response,
   ) {
     res.cookie('accessToken', '');
     res.cookie('refreshToken', '');
-    return await this.authService.logout(userId);
+    return this.authService.logout(userId);
+  }
+
+  @RBAC(Role.ADMIN)
+  @Get('token/invalid/:id')
+  invalid(@Param('id', ParseIntPipe) userId: number) {
+    return this.authService.invalidToken(userId);
   }
 }
