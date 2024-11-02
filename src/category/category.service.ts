@@ -47,7 +47,7 @@ export class CategoryService {
     });
 
     if (!category) {
-      throw new NotFoundException('카테고리가 존재하지 않습니다');
+      throw new NotFoundException('존재하지 않는 카테고리입니다');
     }
 
     return category;
@@ -59,10 +59,10 @@ export class CategoryService {
       where: { id },
     });
     if (!category) {
-      throw new NotFoundException('카테고리가 존재하지 않습니다');
+      throw new NotFoundException('존재하지 않는 카테고리입니다');
     }
 
-    // 업데이트하려는 카테고리 검색
+    // 업데이트 하려는 카테고리 검색
     const isExist = await this.prismaService.category.findUnique({
       where: { name: updateCategoryDto.name },
     });
@@ -88,7 +88,7 @@ export class CategoryService {
     });
 
     if (!category) {
-      throw new NotFoundException('카테고리가 존재하지 않습니다');
+      throw new NotFoundException('존재하지 않는 카테고리입니다');
     }
 
     // onDelete: Restrict (게시글 many 쪽에서 설정)

@@ -248,6 +248,8 @@ export class PostService {
       throw new NotFoundException('게시글이 존재하지 않습니다');
     }
 
+    await this.prismaService.post.delete({ where: { id } });
+
     // 이미지 삭제
     if (post.images.length > 0) {
       const filesToDelete = post.images.map(
@@ -321,7 +323,7 @@ export class PostService {
       });
       await Promise.all(renamePromises);
     } catch (e) {
-      throw e;
+      throw new InternalServerErrorException(e.message);
     }
   }
 
@@ -330,12 +332,12 @@ export class PostService {
 
     try {
       const deletePromises = files.map((fileName: string) => {
-        unlink(join(imageFolder, fileName));
+        return unlink(join(imageFolder, fileName));
       });
 
       await Promise.all(deletePromises);
     } catch (e) {
-      throw e;
+      throw new InternalServerErrorException(e.message);
     }
   }
 

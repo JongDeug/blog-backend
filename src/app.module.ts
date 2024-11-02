@@ -14,6 +14,7 @@ import { CommonModule } from './common/common.module';
 import { MulterModule } from '@nestjs/platform-express';
 import { MulterConfigService } from './common/config/multer-config.service';
 import { CategoryModule } from './category/category.module';
+import { TagModule } from './tag/tag.module';
 
 @Module({
   imports: [
@@ -47,6 +48,7 @@ import { CategoryModule } from './category/category.module';
     PostModule,
     CommonModule,
     CategoryModule,
+    TagModule,
   ],
   controllers: [CommonController],
   providers: [
