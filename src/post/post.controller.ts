@@ -43,9 +43,9 @@ export class PostController {
   @Public()
   findOne(
     @Param('id', ParseIntPipe) id: number,
-    @Query('guestLikeId') guestLikeId: string,
+    @Cookies('guestId') guestId: string,
   ) {
-    return this.postService.findOne(id, guestLikeId);
+    return this.postService.findOne(id, guestId);
   }
 
   @Patch(':id')

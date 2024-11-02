@@ -15,7 +15,7 @@ import { ConfigService } from '@nestjs/config';
 import { envVariableKeys } from 'src/common/const/env.const';
 import { unlink } from 'fs/promises';
 import { GetPostsDto } from './dto/get-posts.dto';
-import { Post, Prisma } from '@prisma/client';
+import { Post, PostLike, Prisma } from '@prisma/client';
 import { CursorPaginationDto } from './dto/cursor-pagination.dto';
 
 @Injectable()
@@ -107,7 +107,7 @@ export class PostService {
     };
   }
 
-  async findOne(id: number, guestLikeId: string) {
+  async findOne(id: number, guestId: string) {
     const post = await this.prismaService.post.findUnique({
       where: { id },
       include: {
@@ -130,7 +130,14 @@ export class PostService {
 
     if (!post) throw new NotFoundException('게시글이 존재하지 않습니다');
 
-    return post;
+    const isLiked = post.postLikes.some(
+      (postLike: PostLike) => guestId === postLike.guestId,
+    );
+
+    return {
+      post,
+      isLiked,
+    };
   }
 
   async update(postId: number, userId: number, updatePostDto: UpdatePostDto) {
@@ -156,7 +163,7 @@ export class PostService {
     );
 
     try {
-      // 트랜잭션
+      // 트랜잭션으로 묶음
       const result = await this.prismaService.$transaction(async (database) => {
         // 게시글을 참조하고 있는 이미지 정보 삭제
         await database.image.deleteMany({
@@ -269,14 +276,13 @@ export class PostService {
       },
     });
 
-    // 좋아요 O => 좋아요 취소
+    // 좋아요 O -> 삭제
+    // 좋아요 X -> 생성
     if (isLiked) {
       await this.prismaService.postLike.delete({
         where: { postId_guestId: { postId, guestId } },
       });
-    }
-    // 좋아요 X => 좋아요 !!!
-    else {
+    } else {
       await this.prismaService.postLike.create({
         data: {
           post: { connect: { id: postId } },
@@ -292,7 +298,7 @@ export class PostService {
     });
 
     return {
-      isLike: !!result,
+      isLiked: !!result,
     };
   }
 
