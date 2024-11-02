@@ -12,6 +12,7 @@ import { envVariableKeys } from 'src/common/const/env.const';
 import { Public } from '../decorator/public.decorator';
 import { Cache } from 'cache-manager';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -19,6 +20,7 @@ export class AuthGuard implements CanActivate {
     private readonly reflector: Reflector,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly prismaService: PrismaService,
     @Inject(CACHE_MANAGER)
     private readonly cacheManager: Cache,
   ) {}
@@ -56,6 +58,12 @@ export class AuthGuard implements CanActivate {
       if (payload.type !== 'access') {
         throw new UnauthorizedException('잘못된 토큰입니다');
       }
+
+      // 유저 확인
+      const user = await this.prismaService.user.findUnique({
+        where: { id: payload.sub },
+      });
+      if (!user) throw new UnauthorizedException('유저 정보가 없습니다');
 
       // 캐시 생성
       const expiryDate = payload['exp'] * 1000; // unix timestamp, 초 단위
