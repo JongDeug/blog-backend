@@ -21,6 +21,7 @@ import { Role } from '@prisma/client';
 import { GetPostsDto } from './dto/get-posts.dto';
 import { Public } from 'src/auth/decorator/public.decorator';
 import { Request } from 'express';
+import { Cookies } from 'src/common/decorator/cookies.decorator';
 
 @Controller('post')
 export class PostController {
@@ -65,13 +66,10 @@ export class PostController {
 
   @Get('like/:id')
   @Public()
-  async like(@Param('id', ParseIntPipe) id: number, @Req() req: Request) {
-    const { guestId } = req.cookies;
-
-    if (!guestId) {
-      throw new BadRequestException('쿠키에 guestId가 없습니다');
-    }
-
+  async like(
+    @Param('id', ParseIntPipe) id: number,
+    @Cookies('guestId') guestId: string,
+  ) {
     return this.postService.togglePostLike(id, guestId);
   }
 }

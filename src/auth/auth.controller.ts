@@ -16,6 +16,7 @@ import { Public } from './decorator/public.decorator';
 import { UserId } from 'src/user/decorator/user-id.decorator';
 import { RBAC } from './decorator/rbac.decorator';
 import { Role } from '@prisma/client';
+import { Cookies } from 'src/common/decorator/cookies.decorator';
 
 const cookieOptions = {
   path: '/',
@@ -49,15 +50,13 @@ export class AuthController {
   @Public()
   @Get('token/refresh')
   async refresh(
-    @Req() req: Request,
+    @Cookies('refreshToken') refreshToken: string,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const { accessToken, refreshToken } = await this.authService.rotateToken(
-      req.cookies,
-    );
+    const newTokens = await this.authService.rotateToken(refreshToken);
 
-    res.cookie('accessToken', accessToken, cookieOptions);
-    res.cookie('refreshToken', refreshToken, cookieOptions);
+    res.cookie('accessToken', newTokens.accessToken, cookieOptions);
+    res.cookie('refreshToken', newTokens.refreshToken, cookieOptions);
   }
 
   @Get('logout')

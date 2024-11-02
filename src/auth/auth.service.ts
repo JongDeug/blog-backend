@@ -151,13 +151,7 @@ export class AuthService {
     );
   }
 
-  async rotateToken(cookies: Record<string, any>) {
-    const token = cookies?.refreshToken;
-
-    if (!token) {
-      throw new UnauthorizedException('잘못된 토큰입니다');
-    }
-
+  async rotateToken(token: string) {
     try {
       // 토큰 인증
       const payload = await this.jwtService.verifyAsync(token, {
