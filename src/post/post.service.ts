@@ -17,6 +17,7 @@ import { unlink } from 'fs/promises';
 import { GetPostsDto } from './dto/get-posts.dto';
 import { Post, PostLike, Prisma } from '@prisma/client';
 import { CursorPaginationDto } from './dto/cursor-pagination.dto';
+import { error } from 'console';
 
 @Injectable()
 export class PostService {
@@ -323,7 +324,11 @@ export class PostService {
       });
       await Promise.all(renamePromises);
     } catch (e) {
-      throw new InternalServerErrorException(e.message);
+      throw new InternalServerErrorException({
+        message: '파일 이동 에러',
+        error: e.code,
+        statusCode: 500,
+      });
     }
   }
 
@@ -337,7 +342,11 @@ export class PostService {
 
       await Promise.all(deletePromises);
     } catch (e) {
-      throw new InternalServerErrorException(e.message);
+      throw new InternalServerErrorException({
+        message: '파일 삭제 에러',
+        error: e.code,
+        statusCode: 500,
+      });
     }
   }
 
