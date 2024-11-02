@@ -1,12 +1,12 @@
-/// 비회원 좋아요 테이블
-///
-/// @namespace Blog
-model GuestLike {
-  /// Pirmary Key
-  id           Int     @id @default(autoincrement())
+// /// 비회원 좋아요 테이블
+// ///
+// /// @namespace Blog
+// model GuestLike {
+//   /// Pirmary Key
+//   id           Int     @id @default(autoincrement())
 
-  /// ---
-  /// RELATIONS
-  /// ---
-  postLikes PostLike[]
-}
+//   /// ---
+//   /// RELATIONS
+//   /// ---
+//   postLikes PostLike[]
+// }

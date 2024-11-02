@@ -107,7 +107,7 @@ export class PostService {
     };
   }
 
-  async findOne(id: number) {
+  async findOne(id: number, guestLikeId: string) {
     const post = await this.prismaService.post.findUnique({
       where: { id },
       include: {
@@ -124,6 +124,7 @@ export class PostService {
             createdAt: true,
           },
         },
+        postLikes: true,
       },
     });
 
@@ -250,6 +251,49 @@ export class PostService {
       );
       await this.deleteFiles(filesToDelete);
     }
+  }
+
+  async togglePostLike(postId: number, guestId: string) {
+    const post = this.prismaService.post.findUnique({
+      where: { id: postId },
+    });
+
+    if (!post) throw new NotFoundException('게시글이 존재하지 않습니다');
+
+    const isLiked = await this.prismaService.postLike.findUnique({
+      where: {
+        postId_guestId: {
+          postId,
+          guestId,
+        },
+      },
+    });
+
+    // 좋아요 O => 좋아요 취소
+    if (isLiked) {
+      await this.prismaService.postLike.delete({
+        where: { postId_guestId: { postId, guestId } },
+      });
+    }
+    // 좋아요 X => 좋아요 !!!
+    else {
+      await this.prismaService.postLike.create({
+        data: {
+          post: { connect: { id: postId } },
+          guest: {
+            connectOrCreate: { where: { guestId }, create: { guestId } },
+          },
+        },
+      });
+    }
+
+    const result = await this.prismaService.postLike.findUnique({
+      where: { postId_guestId: { postId, guestId } },
+    });
+
+    return {
+      isLike: !!result,
+    };
   }
 
   // ====================================== Utils ======================================

@@ -8,6 +8,9 @@ import {
   Delete,
   ParseIntPipe,
   Query,
+  Req,
+  Res,
+  BadRequestException,
 } from '@nestjs/common';
 import { PostService } from './post.service';
 import { CreatePostDto } from './dto/create-post.dto';
@@ -16,6 +19,8 @@ import { UserId } from 'src/user/decorator/user-id.decorator';
 import { RBAC } from 'src/auth/decorator/rbac.decorator';
 import { Role } from '@prisma/client';
 import { GetPostsDto } from './dto/get-posts.dto';
+import { Public } from 'src/auth/decorator/public.decorator';
+import { Request } from 'express';
 
 @Controller('post')
 export class PostController {
@@ -28,13 +33,18 @@ export class PostController {
   }
 
   @Get()
+  @Public()
   findAll(@Query() getPostsDto: GetPostsDto) {
     return this.postService.findAll(getPostsDto);
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.postService.findOne(id);
+  @Public()
+  findOne(
+    @Param('id', ParseIntPipe) id: number,
+    @Query('guestLikeId') guestLikeId: string,
+  ) {
+    return this.postService.findOne(id, guestLikeId);
   }
 
   @Patch(':id')
@@ -51,5 +61,17 @@ export class PostController {
   @RBAC(Role.ADMIN)
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.postService.remove(id);
+  }
+
+  @Get('like/:id')
+  @Public()
+  async like(@Param('id', ParseIntPipe) id: number, @Req() req: Request) {
+    const { guestId } = req.cookies;
+
+    if (!guestId) {
+      throw new BadRequestException('쿠키에 guestId가 없습니다');
+    }
+
+    return this.postService.togglePostLike(id, guestId);
   }
 }

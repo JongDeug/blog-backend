@@ -10,9 +10,9 @@ model PostLike {
 
   /// Foreign Key
   ///
-  /// 비회원 ID {@link GuestLike.id}
-  guestId Int 
-  guest   GuestLike @relation(fields: [guestId], references: [id])
+  /// 비회원 ID {@link Guest.guestId}
+  guestId String
+  guest   Guest @relation(fields: [guestId], references: [guestId])
 
   /// 좋아요가 눌린 날짜
   createdAt DateTime @default(now())
