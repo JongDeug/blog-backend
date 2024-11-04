@@ -13,16 +13,17 @@ import { join } from 'path';
 import { mkdir } from 'fs/promises';
 import { ConfigService } from '@nestjs/config';
 import { envVariableKeys } from 'src/common/const/env.const';
-import { unlink } from 'fs/promises';
 import { GetPostsDto } from './dto/get-posts.dto';
-import { Post, PostLike, Prisma } from '@prisma/client';
+import { Post, Prisma } from '@prisma/client';
 import { CursorPaginationDto } from './dto/cursor-pagination.dto';
+import { TaskService } from 'src/common/task.service';
 
 @Injectable()
 export class PostService {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly configService: ConfigService,
+    private readonly taskService: TaskService,
   ) {}
 
   async create(userId: number, createPostDto: CreatePostDto) {
@@ -70,7 +71,11 @@ export class PostService {
       });
 
       // 이미지 이동 temp -> images
-      await this.movieFiles(images);
+      await this.taskService.movieFiles(
+        join(process.cwd(), 'public', 'temp'),
+        join(process.cwd(), 'public', 'images'),
+        images,
+      );
 
       return newPost.id;
     } catch (e) {
@@ -219,13 +224,20 @@ export class PostService {
         const imagesToMove = newImages.filter(
           (fileName: string) => !existingImagesSet.has(fileName),
         );
-        await this.movieFiles(imagesToMove);
+        await this.taskService.movieFiles(
+          join(process.cwd(), 'public', 'temp'),
+          join(process.cwd(), 'public', 'images'),
+          imagesToMove,
+        );
 
         // 기존에 있던 놈 vs 새로운 놈 -> 기존에 있는 놈 중 쓰이지 않으면 images 폴더에서 제거
         const imagesToDelete = existingImages.filter(
           (fileName: string) => !newImagesSet.has(fileName),
         );
-        await this.deleteFiles(imagesToDelete);
+        await this.taskService.deleteFiles(
+          join(process.cwd(), 'public', 'images'),
+          imagesToDelete,
+        );
       }
 
       return result;
@@ -258,7 +270,10 @@ export class PostService {
             `${this.configService.get(envVariableKeys.serverOrigin)}/public/images/`,
           )[1],
       );
-      await this.deleteFiles(filesToDelete);
+      await this.taskService.deleteFiles(
+        join(process.cwd(), 'public', 'images'),
+        filesToDelete,
+      );
     }
   }
 
@@ -305,49 +320,6 @@ export class PostService {
   }
 
   // ====================================== Utils ======================================
-
-  async movieFiles(files: string[]) {
-    const tempFolder = join('public', 'temp');
-    const imageFolder = join('public', 'images');
-
-    try {
-      // 폴더 없으면 생성
-      await mkdir(imageFolder, { recursive: true });
-
-      // 폴더 이동
-      const renamePromises = files.map((fileName: string) => {
-        return rename(
-          join(process.cwd(), tempFolder, fileName),
-          join(process.cwd(), imageFolder, fileName),
-        );
-      });
-      await Promise.all(renamePromises);
-    } catch (e) {
-      throw new InternalServerErrorException({
-        message: '파일 이동 에러',
-        error: e.code,
-        statusCode: 500,
-      });
-    }
-  }
-
-  async deleteFiles(files: string[]) {
-    const imageFolder = join(process.cwd(), 'public', 'images');
-
-    try {
-      const deletePromises = files.map((fileName: string) => {
-        return unlink(join(imageFolder, fileName));
-      });
-
-      await Promise.all(deletePromises);
-    } catch (e) {
-      throw new InternalServerErrorException({
-        message: '파일 삭제 에러',
-        error: e.code,
-        statusCode: 500,
-      });
-    }
-  }
 
   async applyCursorPaginationToPost(
     dto: CursorPaginationDto,

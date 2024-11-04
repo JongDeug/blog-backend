@@ -15,6 +15,7 @@ import { MulterModule } from '@nestjs/platform-express';
 import { MulterConfigService } from './common/config/multer-config.service';
 import { CategoryModule } from './category/category.module';
 import { TagModule } from './tag/tag.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { TagModule } from './tag/tag.module';
       }),
       isGlobal: true,
     }),
+    ScheduleModule.forRoot(),
     CacheModule.register({ isGlobal: true }),
     MulterModule.registerAsync({
       useClass: MulterConfigService,
