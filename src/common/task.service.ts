@@ -31,10 +31,10 @@ export class TaskService {
     );
   }
 
-  async deleteFiles(folder: string, files: string[]) {
+  async deleteFiles(folderPath: string, files: string[]) {
     try {
       const deletePromises = files.map((fileName: string) => {
-        return unlink(join(folder, fileName));
+        return unlink(join(folderPath, fileName));
       });
 
       // 병렬 실행
@@ -48,14 +48,14 @@ export class TaskService {
     }
   }
 
-  async movieFiles(fromFolder: string, toFolder: string, files: string[]) {
+  async movieFiles(oldPath: string, newPath: string, files: string[]) {
     try {
       // 폴더 없으면 생성
-      await mkdir(toFolder, { recursive: true });
+      await mkdir(oldPath, { recursive: true });
 
       // 폴더 이동
       const renamePromises = files.map((fileName: string) => {
-        return rename(join(fromFolder, fileName), join(toFolder, fileName));
+        return rename(join(oldPath, fileName), join(newPath, fileName));
       });
 
       // 병렬 실행

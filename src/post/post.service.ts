@@ -134,6 +134,7 @@ export class PostService {
             guestId, // unique
           },
         },
+        _count: { select: { postLikes: true } },
       },
     });
 
