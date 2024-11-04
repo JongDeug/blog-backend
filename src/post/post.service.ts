@@ -17,7 +17,6 @@ import { unlink } from 'fs/promises';
 import { GetPostsDto } from './dto/get-posts.dto';
 import { Post, PostLike, Prisma } from '@prisma/client';
 import { CursorPaginationDto } from './dto/cursor-pagination.dto';
-import { error } from 'console';
 
 @Injectable()
 export class PostService {
@@ -109,7 +108,7 @@ export class PostService {
   }
 
   async findOne(id: number, guestId: string) {
-    const post = await this.prismaService.post.findUnique({
+    let foundPost = await this.prismaService.post.findUnique({
       where: { id },
       include: {
         comments: true,
@@ -125,20 +124,20 @@ export class PostService {
             createdAt: true,
           },
         },
-        postLikes: true,
+        postLikes: {
+          where: {
+            guestId, // unique
+          },
+        },
       },
     });
 
-    if (!post) throw new NotFoundException('게시글이 존재하지 않습니다');
+    if (!foundPost) throw new NotFoundException('게시글이 존재하지 않습니다');
 
-    const isLiked = post.postLikes.some(
-      (postLike: PostLike) => guestId === postLike.guestId,
-    );
+    let { postLikes, ...newPost } = foundPost;
+    let post = { ...newPost, isLiked: postLikes.length > 0 };
 
-    return {
-      post,
-      isLiked,
-    };
+    return post;
   }
 
   async update(postId: number, userId: number, updatePostDto: UpdatePostDto) {
