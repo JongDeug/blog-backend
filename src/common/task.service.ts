@@ -37,6 +37,7 @@ export class TaskService {
         return unlink(join(folder, fileName));
       });
 
+      // 병렬 실행
       await Promise.all(deletePromises);
     } catch (e) {
       throw new InternalServerErrorException({
@@ -57,6 +58,7 @@ export class TaskService {
         return rename(join(fromFolder, fileName), join(toFolder, fileName));
       });
 
+      // 병렬 실행
       await Promise.all(renamePromises);
     } catch (e) {
       throw new InternalServerErrorException({
