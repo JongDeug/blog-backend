@@ -13,11 +13,10 @@ export class TagService {
   constructor(private readonly prismaService: PrismaService) {}
 
   async create(createTagDto: CreateTagDto) {
-    const isExist = await this.prismaService.tag.findUnique({
+    const tagExists = await this.prismaService.tag.findUnique({
       where: { name: createTagDto.name },
     });
-
-    if (isExist) throw new ConflictException('이미 존재하는 태그입니다');
+    if (tagExists) throw new ConflictException('이미 존재하는 태그입니다');
 
     const newTag = await this.prismaService.tag.create({
       data: { name: createTagDto.name },
@@ -31,28 +30,28 @@ export class TagService {
   }
 
   findOne(id: number) {
-    const tag = this.prismaService.tag.findUnique({
+    const foundTag = this.prismaService.tag.findUnique({
       where: { id },
       include: { posts: true },
     });
 
-    if (!tag) {
+    if (!foundTag) {
       throw new NotFoundException('존재하지 않는 태그입니다');
     }
 
-    return tag;
+    return foundTag;
   }
 
   async update(id: number, updateTagDto: UpdateTagDto) {
-    // 태그 검색
-    const tag = await this.prismaService.tag.findUnique({ where: { id } });
-    if (!tag) throw new NotFoundException('존재하지 않는 태그입니다');
+    const foundTag = await this.prismaService.tag.findUnique({ where: { id } });
+    if (!foundTag) throw new NotFoundException('존재하지 않는 태그입니다');
 
     // 업데이트 하려는 태그 검색
-    const isExist = await this.prismaService.tag.findUnique({
+    const targetTagExists = await this.prismaService.tag.findUnique({
       where: { name: updateTagDto.name },
     });
-    if (isExist) throw new ConflictException('이미 존재하는 태그입니다');
+    if (targetTagExists)
+      throw new ConflictException('이미 존재하는 태그입니다');
 
     // 태그 업데이트
     const newTag = await this.prismaService.tag.update({
@@ -66,14 +65,14 @@ export class TagService {
   }
 
   async remove(id: number) {
-    const tag = await this.prismaService.tag.findUnique({
+    const foundTag = await this.prismaService.tag.findUnique({
       where: { id },
       include: { posts: true },
     });
 
-    if (!tag) throw new NotFoundException('존재하지 않는 태그입니다');
+    if (!foundTag) throw new NotFoundException('존재하지 않는 태그입니다');
 
-    if (tag.posts.length > 0) {
+    if (foundTag.posts.length > 0) {
       throw new BadRequestException('태그를 참조하고 있는 게시글이 있습니다');
     }
 
