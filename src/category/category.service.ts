@@ -13,13 +13,11 @@ export class CategoryService {
   constructor(private readonly prismaService: PrismaService) {}
 
   async create(createCategoryDto: CreateCategoryDto) {
-    const isExist = await this.prismaService.category.findUnique({
+    const categoryExists = await this.prismaService.category.findUnique({
       where: { name: createCategoryDto.name },
     });
-
-    if (isExist) {
+    if (categoryExists)
       throw new ConflictException('이미 존재하는 카테고리입니다');
-    }
 
     const newCategory = await this.prismaService.category.create({
       data: {
@@ -41,34 +39,31 @@ export class CategoryService {
   }
 
   async findOne(id: number) {
-    const category = await this.prismaService.category.findUnique({
+    const foundCategory = await this.prismaService.category.findUnique({
       where: { id },
       include: { posts: true },
     });
 
-    if (!category) {
+    if (!foundCategory) {
       throw new NotFoundException('존재하지 않는 카테고리입니다');
     }
 
-    return category;
+    return foundCategory;
   }
 
   async update(id: number, updateCategoryDto: UpdateCategoryDto) {
-    // 카테고리 검색
-    const category = await this.prismaService.category.findUnique({
+    const foundCategory = await this.prismaService.category.findUnique({
       where: { id },
     });
-    if (!category) {
+    if (!foundCategory)
       throw new NotFoundException('존재하지 않는 카테고리입니다');
-    }
 
     // 업데이트 하려는 카테고리 검색
-    const isExist = await this.prismaService.category.findUnique({
+    const targetCategoryExits = await this.prismaService.category.findUnique({
       where: { name: updateCategoryDto.name },
     });
-    if (isExist) {
+    if (targetCategoryExits)
       throw new ConflictException('이미 존재하는 카테고리입니다');
-    }
 
     // 카테고리 업데이트
     const newCategory = await this.prismaService.category.update({
@@ -82,17 +77,15 @@ export class CategoryService {
   }
 
   async remove(id: number) {
-    const category = await this.prismaService.category.findUnique({
+    const foundCategory = await this.prismaService.category.findUnique({
       where: { id },
       include: { posts: true },
     });
-
-    if (!category) {
+    if (!foundCategory)
       throw new NotFoundException('존재하지 않는 카테고리입니다');
-    }
 
-    // onDelete: Restrict (게시글 many 쪽에서 설정)
-    if (category.posts.length > 0) {
+    // DB 설정 해놓긴 함. Post.category: (onDelete: Restrict)
+    if (foundCategory.posts.length > 0) {
       throw new BadRequestException(
         '카테고리를 참조하고 있는 게시글이 있습니다',
       );
