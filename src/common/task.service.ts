@@ -16,13 +16,13 @@ export class TaskService {
     private readonly logger: LoggerService,
   ) {}
 
-  // 00:00 자정마다 실행
+  // 자정(00:00)마다 실행
   @Cron('* * 0 * * *')
   async eraseOrphanFiles() {
     const files = await readdir(join(process.cwd(), 'public', 'temp'));
 
     const fileArrayToDelete = files.filter((file) => {
-      const filename = parse(file).name; // 확장자 제거
+      const filename = parse(file).name; // 확장자 제거 후 이름만 뽑기
       const split = filename.split('_');
 
       if (split.length !== 2) return true;
@@ -31,6 +31,7 @@ export class TaskService {
       const nowInMillisecond = Date.now();
       const aDayInMillisecond = 24 * 60 * 60 * 1000;
 
+      // 24시간이 지났다면
       return nowInMillisecond - dateInMillisecond > aDayInMillisecond;
     });
 
@@ -52,7 +53,7 @@ export class TaskService {
         return unlink(join(folderPath, fileName));
       });
 
-      // 병렬 실행
+      // unlink 병렬 실행
       await Promise.all(deletePromises);
     } catch (e) {
       throw new InternalServerErrorException({
@@ -68,12 +69,11 @@ export class TaskService {
       // 폴더 없으면 생성
       await mkdir(oldPath, { recursive: true });
 
-      // 폴더 이동
       const renamePromises = files.map((fileName: string) => {
         return rename(join(oldPath, fileName), join(newPath, fileName));
       });
 
-      // 병렬 실행
+      // rename 병렬 실행
       await Promise.all(renamePromises);
     } catch (e) {
       throw new InternalServerErrorException({
