@@ -219,7 +219,7 @@ export class PostService {
         const newImageSet: Set<string> = new Set(newImageArray);
 
         // 이미지 파일 이동
-        // updatePostDto.images 중 새롭게 들어온 놈 images 폴더로 이동
+        // oldImage와 newImage를 비교해 새롭게 들어온 놈을 public/images 폴더로 이동
         const imagesToMove = newImageArray.filter(
           (fileName: string) => !oldImageSet.has(fileName),
         );
@@ -230,7 +230,7 @@ export class PostService {
         );
 
         // 이미지 파일 삭제
-        // 기존에 있던 놈 vs 새로운 놈 비교 -> 기존에 있는 놈 중 쓰이지 않으면, images 폴더에서 제거
+        // oldImage와 newImage를 비교해 더 이상 쓰이지 않는 oldImage를 public/images 폴더에서 제거
         const imagesToDelete = oldImageArray.filter(
           (fileName: string) => !newImageSet.has(fileName),
         );
