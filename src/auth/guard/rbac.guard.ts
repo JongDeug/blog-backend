@@ -10,16 +10,17 @@ export class RBACGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean {
     const role = this.reflector.get(RBAC, context.getHandler());
 
-    // 애초에 포함하고 있지 않으면 PASS
-    if (!Object.values(Role).includes(role)) return true;
+    const includesRole = Object.values(Role).includes(role);
+    if (!includesRole) return true;
 
     const req = context.switchToHttp().getRequest();
 
-    // 유저 체크
+    // authGuard -> rbacGuard : req.user 확인
     if (!req?.user) return false;
 
-    const parseNum = (role: string): number => (role === Role.ADMIN ? 0 : 1);
+    const parseRoleToInt = (role: string): number =>
+      role === Role.ADMIN ? 0 : 1;
 
-    return parseNum(req.user.role) <= parseNum(role);
+    return parseRoleToInt(req.user.role) <= parseRoleToInt(role);
   }
 }
