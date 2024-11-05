@@ -15,6 +15,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Role } from '@prisma/client';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
+import { tokenAge } from './const/token-age';
 
 @Injectable()
 export class AuthService {
@@ -27,26 +28,20 @@ export class AuthService {
   ) {}
 
   async register(registerDto: RegisterDto) {
-    // 유저 검색
-    const user = await this.prismaService.user.findUnique({
+    const foundUser = await this.prismaService.user.findUnique({
       where: { email: registerDto.email },
     });
+    if (foundUser) throw new ConflictException('이미 가입한 이메일입니다');
 
-    if (user) {
-      throw new ConflictException('이미 가입한 이메일입니다');
-    }
-
-    // 비밀번호 해시
-    const hash = await bcrypt.hash(
+    const hashedPassword = await bcrypt.hash(
       registerDto.password,
       this.configService.get(envVariableKeys.hashRounds),
     );
 
-    // 유저 생성
     const newUser = await this.prismaService.user.create({
       data: {
         ...registerDto,
-        password: hash,
+        password: hashedPassword,
       },
       omit: {
         password: true,
@@ -92,18 +87,16 @@ export class AuthService {
   async login(rawToken: string) {
     const { email, password } = this.parseBasicToken(rawToken);
 
-    // 인증
-    const user = await this.authenticate(email, password);
+    const authenticatedUser = await this.authenticate(email, password);
 
-    // 토큰 발급
-    const accessToken = await this.issueToken(user, false);
-    const refreshToken = await this.issueToken(user, true);
+    const accessToken = await this.issueToken(authenticatedUser, false);
+    const refreshToken = await this.issueToken(authenticatedUser, true);
 
-    // 캐시 저장
+    // 캐시 생성(refresh)
     await this.cacheManager.set(
-      `REFRESH_TOKEN_${user.id}`,
+      `REFRESH_TOKEN_${authenticatedUser.id}`,
       refreshToken,
-      1000 * 60 * 60 * 24,
+      tokenAge.REFRESH_TOKEN_INT,
     );
 
     return {
@@ -113,21 +106,16 @@ export class AuthService {
   }
 
   async authenticate(email: string, password: string) {
-    // 유저 검색
-    const user = await this.prismaService.user.findUnique({ where: { email } });
-
-    if (!user) {
-      throw new NotFoundException('가입되지 않은 이메일입니다');
-    }
+    const foundUser = await this.prismaService.user.findUnique({
+      where: { email },
+    });
+    if (!foundUser) throw new NotFoundException('가입되지 않은 이메일입니다');
 
     // 비밀번호 확인
-    const isCorrect = await bcrypt.compare(password, user.password);
+    const isCorrect = await bcrypt.compare(password, foundUser.password);
+    if (!isCorrect) throw new BadRequestException('잘못된 로그인 정보입니다');
 
-    if (!isCorrect) {
-      throw new BadRequestException('잘못된 로그인 정보입니다');
-    }
-
-    return user;
+    return foundUser;
   }
 
   async issueToken(payload: { id: number; role: Role }, isRefresh: boolean) {
@@ -146,7 +134,9 @@ export class AuthService {
       },
       {
         secret: isRefresh ? refreshTokenSecret : accessTokenSecret,
-        expiresIn: isRefresh ? '24h' : 1800, // 변경해야됨
+        expiresIn: isRefresh
+          ? tokenAge.REFRESH_TOKEN_STRING
+          : tokenAge.ACCESS_TOKEN_INT,
       },
     );
   }
@@ -158,7 +148,6 @@ export class AuthService {
         secret: this.configService.get(envVariableKeys.refreshTokenSecret),
       });
 
-      // 토큰 타입 확인
       if (payload.type !== 'refresh') {
         throw new UnauthorizedException('잘못된 토큰입니다');
       }
@@ -181,11 +170,11 @@ export class AuthService {
         true,
       );
 
-      // 캐시값 재설정
+      // 캐시 재설정(refresh)
       await this.cacheManager.set(
         `REFRESH_TOKEN_${payload.sub}`,
         refreshToken,
-        1000 * 60 * 60 * 24,
+        tokenAge.REFRESH_TOKEN_INT,
       );
 
       return {
@@ -205,14 +194,15 @@ export class AuthService {
   }
 
   async invalidToken(userId: number) {
-    const user = await this.prismaService.user.findUnique({
+    const foundUser = await this.prismaService.user.findUnique({
       where: { id: userId },
     });
 
-    if (!user) {
+    if (!foundUser) {
       throw new NotFoundException('해당 유저가 없습니다');
     }
 
+    // 캐시 삭제
     await this.cacheManager.del(`REFRESH_TOKEN_${userId}`);
   }
 }
