@@ -49,25 +49,23 @@ export class AuthGuard implements CanActivate {
     }
 
     try {
-      // 토큰 인증
       const payload = await this.jwtService.verifyAsync(accessToken, {
         secret: this.configService.get(envVariableKeys.accessTokenSecret),
       });
 
-      // 토큰 타입 확인
       if (payload.type !== 'access') {
         throw new UnauthorizedException('잘못된 토큰입니다');
       }
 
-      // 유저 확인
+      // 유저가 없을 경우를 대비함
       const user = await this.prismaService.user.findUnique({
         where: { id: payload.sub },
       });
       if (!user) throw new UnauthorizedException('유저 정보가 없습니다');
 
       // 캐시 생성
-      const expiryDate = payload['exp'] * 1000; // unix timestamp, 초 단위
-      const now = Date.now(); // unix timestamp, 밀리초 단위
+      const expiryDate = payload['exp'] * 1000; // ['exp']: unix timestamp, second
+      const now = Date.now(); // Date.now(): unix timestamp, millisecond
       const differenceInMilliSeconds = expiryDate - now;
 
       await this.cacheManager.set(

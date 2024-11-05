@@ -19,8 +19,7 @@ export class LoggingInterceptor implements NestInterceptor {
     next: CallHandler<any>,
   ): Observable<any> | Promise<Observable<any>> {
     const req = context.switchToHttp().getRequest();
-    const { ip, method, path } = req;
-    const userAgent = req.headers['user-agent']; // User-Agent 헤더를 가져옵니다.
+    const { ip, method, path, headers } = req;
 
     const requestTime = Date.now();
 
@@ -30,7 +29,7 @@ export class LoggingInterceptor implements NestInterceptor {
         const duration = responseTime - requestTime;
 
         this.logger.log(
-          `[${method}] ${path} ${duration}ms ${ip} ${userAgent} `,
+          `[${method}] ${path} ${duration}ms ${ip} ${headers['user-agent']}`,
           LoggingInterceptor.name,
         );
       }),
