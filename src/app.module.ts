@@ -1,9 +1,9 @@
-import { Module } from '@nestjs/common';
+import { Module, LoggerService } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import * as Joi from 'joi';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { AuthGuard } from './auth/guard/auth.guard';
 import { CacheModule } from '@nestjs/cache-manager';
 import { UserModule } from './user/user.module';
@@ -16,6 +16,10 @@ import { MulterConfigService } from './common/config/multer-config.service';
 import { CategoryModule } from './category/category.module';
 import { TagModule } from './tag/tag.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { WinstonModule } from 'nest-winston';
+import * as winston from 'winston';
+import { LoggingInterceptor } from './common/interceptor/logging.interceptor';
+import { join } from 'path';
 
 @Module({
   imports: [
@@ -39,6 +43,33 @@ import { ScheduleModule } from '@nestjs/schedule';
       }),
       isGlobal: true,
     }),
+    WinstonModule.forRoot({
+      transports: [
+        new winston.transports.Console({
+          format: winston.format.combine(
+            winston.format.colorize({
+              all: true,
+            }),
+            winston.format.timestamp(),
+            winston.format.printf(
+              ({ level, message, context, timestamp }) =>
+                `${new Date(timestamp).toLocaleString()} [${context}] ${level} ${message}`,
+            ),
+          ),
+        }),
+        new winston.transports.File({
+          dirname: join(process.cwd(), 'logs'),
+          filename: 'logs.log',
+          format: winston.format.combine(
+            winston.format.timestamp(),
+            winston.format.printf(
+              ({ level, message, context, timestamp }) =>
+                `${new Date(timestamp).toLocaleString()} [${context}] ${level} ${message}`,
+            ),
+          ),
+        }),
+      ],
+    }),
     ScheduleModule.forRoot(),
     CacheModule.register({ isGlobal: true }),
     MulterModule.registerAsync({
@@ -61,6 +92,10 @@ import { ScheduleModule } from '@nestjs/schedule';
     {
       provide: APP_GUARD,
       useClass: RBACGuard,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: LoggingInterceptor,
     },
   ],
 })

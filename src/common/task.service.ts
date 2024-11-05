@@ -1,11 +1,20 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  InternalServerErrorException,
+  LoggerService,
+} from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { mkdir, readdir, rename, unlink } from 'fs/promises';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { join, parse } from 'path';
 
 @Injectable()
 export class TaskService {
-  constructor() {}
+  constructor(
+    @Inject(WINSTON_MODULE_NEST_PROVIDER)
+    private readonly logger: LoggerService,
+  ) {}
 
   // 00:00 자정마다 실행
   @Cron('* * 0 * * *')
@@ -30,6 +39,12 @@ export class TaskService {
       fileArrayToDelete,
     );
   }
+
+  // TEST
+  // @Cron('* * * * * *')
+  // print() {
+  //   this.logger.warn('안녕', TaskService.name);
+  // }
 
   async deleteFiles(folderPath: string, files: string[]) {
     try {
