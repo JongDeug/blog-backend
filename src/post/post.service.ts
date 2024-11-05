@@ -8,13 +8,11 @@ import {
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { rename } from 'fs/promises';
 import { join } from 'path';
-import { mkdir } from 'fs/promises';
 import { ConfigService } from '@nestjs/config';
 import { envVariableKeys } from 'src/common/const/env.const';
 import { GetPostsDto } from './dto/get-posts.dto';
-import { Post, Prisma } from '@prisma/client';
+import { Image, Post, Prisma } from '@prisma/client';
 import { CursorPaginationDto } from './dto/cursor-pagination.dto';
 import { TaskService } from 'src/common/task.service';
 
@@ -27,11 +25,10 @@ export class PostService {
   ) {}
 
   async create(userId: number, createPostDto: CreatePostDto) {
-    const user = await this.prismaService.user.findUnique({
+    const foundUser = await this.prismaService.user.findUnique({
       where: { id: userId },
     });
-
-    if (!user) throw new NotFoundException('유저를 찾을 수 없습니다');
+    if (!foundUser) throw new NotFoundException('유저를 찾을 수 없습니다');
 
     const { category, images, tags, ...restFields } = createPostDto;
     const baseURL = new URL(
@@ -43,7 +40,7 @@ export class PostService {
         data: {
           ...restFields,
           author: {
-            connect: { id: user.id },
+            connect: { id: foundUser.id },
           },
           category: {
             connectOrCreate: {
@@ -70,7 +67,7 @@ export class PostService {
         },
       });
 
-      // 이미지 이동 temp -> images
+      // 이미지 파일 이동
       await this.taskService.movieFiles(
         join(process.cwd(), 'public', 'temp'),
         join(process.cwd(), 'public', 'images'),
@@ -113,7 +110,7 @@ export class PostService {
   }
 
   async findOne(id: number, guestId: string) {
-    let foundPost = await this.prismaService.post.findUnique({
+    const foundPost = await this.prismaService.post.findUnique({
       where: { id },
       include: {
         comments: true,
@@ -140,26 +137,26 @@ export class PostService {
 
     if (!foundPost) throw new NotFoundException('게시글이 존재하지 않습니다');
 
-    let { postLikes, ...newPost } = foundPost;
-    let post = { ...newPost, isLiked: postLikes.length > 0 };
+    let { postLikes, ...restFields } = foundPost;
+    let post = { ...restFields, isLiked: postLikes.length > 0 };
 
     return post;
   }
 
   async update(postId: number, userId: number, updatePostDto: UpdatePostDto) {
-    const user = await this.prismaService.user.findUnique({
+    const foundUser = await this.prismaService.user.findUnique({
       where: { id: userId },
     });
-    if (!user) throw new NotFoundException('유저를 찾을 수 없습니다');
+    if (!foundUser) throw new NotFoundException('유저를 찾을 수 없습니다');
 
-    const post = await this.prismaService.post.findUnique({
+    const foundPost = await this.prismaService.post.findUnique({
       where: { id: postId },
       include: { images: true },
     });
-    if (!post) throw new NotFoundException('게시글을 찾을 수 없습니다');
+    if (!foundPost) throw new NotFoundException('게시글을 찾을 수 없습니다');
 
     // 작성자 비교
-    if (user.id !== post.authorId) {
+    if (foundUser.id !== foundPost.authorId) {
       throw new ForbiddenException('게시글에 대한 권한이 없습니다');
     }
 
@@ -169,61 +166,62 @@ export class PostService {
     );
 
     try {
-      // 트랜잭션으로 묶음
-      const result = await this.prismaService.$transaction(async (database) => {
-        // 게시글을 참조하고 있는 이미지 정보 삭제
-        await database.image.deleteMany({
-          where: { post: { id: postId } },
-        });
+      const transactionResult = await this.prismaService.$transaction(
+        async (database) => {
+          // 게시글을 참조하고 있는 이미지 데이터베이스 삭제
+          await database.image.deleteMany({
+            where: { post: { id: postId } },
+          });
 
-        // 게시글 업데이트
-        const newPost = await database.post.update({
-          where: { id: postId },
-          data: {
-            ...restFields,
-            category: {
-              connectOrCreate: {
-                where: { name: category },
-                create: { name: category },
+          const newPost = await database.post.update({
+            where: { id: postId },
+            data: {
+              ...restFields,
+              category: {
+                connectOrCreate: {
+                  where: { name: category },
+                  create: { name: category },
+                },
               },
-            },
-            images: {
-              createMany: {
-                data: images.map((fileName: string) => ({
-                  url: new URL(fileName, baseURL).toString(),
+              images: {
+                createMany: {
+                  data: images.map((fileName: string) => ({
+                    url: new URL(fileName, baseURL).toString(),
+                  })),
+                },
+              },
+              tags: {
+                // 연결 및 생성 => 이걸 바탕으로 관계 덮어쓰기(set)
+                connectOrCreate: tags.map((name: string) => ({
+                  where: { name },
+                  create: { name },
                 })),
+                set: tags.map((name: string) => ({ name })),
               },
             },
-            tags: {
-              // 연결 및 생성 => 이걸 바탕으로 관계 덮어쓰기(set)
-              connectOrCreate: tags.map((name: string) => ({
-                where: { name },
-                create: { name },
-              })),
-              set: tags.map((name: string) => ({ name })),
-            },
-          },
-          include: { tags: true, images: true },
-        });
+            include: { tags: true, images: true },
+          });
 
-        return newPost;
-      });
+          return newPost;
+        },
+      );
 
-      if (post.images.length > 0) {
-        // fileName 분리
-        const existingImages: string[] = post.images.map(
-          (obj) =>
-            obj.url.split(
+      // 이미지 처리
+      if (foundPost.images.length > 0) {
+        const oldImageArray: string[] = foundPost.images.map(
+          (image: Image) =>
+            image.url.split(
               `${this.configService.get(envVariableKeys.serverOrigin)}/public/images/`,
             )[1],
         );
-        const existingImagesSet: Set<string> = new Set(existingImages);
-        const newImages: string[] = images;
-        const newImagesSet: Set<string> = new Set(newImages);
+        const oldImageSet: Set<string> = new Set(oldImageArray);
+        const newImageArray: string[] = images;
+        const newImageSet: Set<string> = new Set(newImageArray);
 
-        // updatePostDto.images 중 새롭게 temp에 들어온 놈 images로 이동
-        const imagesToMove = newImages.filter(
-          (fileName: string) => !existingImagesSet.has(fileName),
+        // 이미지 파일 이동
+        // updatePostDto.images 중 새롭게 들어온 놈 images 폴더로 이동
+        const imagesToMove = newImageArray.filter(
+          (fileName: string) => !oldImageSet.has(fileName),
         );
         await this.taskService.movieFiles(
           join(process.cwd(), 'public', 'temp'),
@@ -231,9 +229,10 @@ export class PostService {
           imagesToMove,
         );
 
-        // 기존에 있던 놈 vs 새로운 놈 -> 기존에 있는 놈 중 쓰이지 않으면 images 폴더에서 제거
-        const imagesToDelete = existingImages.filter(
-          (fileName: string) => !newImagesSet.has(fileName),
+        // 이미지 파일 삭제
+        // 기존에 있던 놈 vs 새로운 놈 비교 -> 기존에 있는 놈 중 쓰이지 않으면, images 폴더에서 제거
+        const imagesToDelete = oldImageArray.filter(
+          (fileName: string) => !newImageSet.has(fileName),
         );
         await this.taskService.deleteFiles(
           join(process.cwd(), 'public', 'images'),
@@ -241,7 +240,7 @@ export class PostService {
         );
       }
 
-      return result;
+      return transactionResult;
     } catch (e) {
       if (e.code === 'P2002' && e.meta.target.includes('title')) {
         throw new ConflictException('이미 존재하는 게시글의 title 입니다');
@@ -251,23 +250,19 @@ export class PostService {
   }
 
   async remove(id: number) {
-    // 게시글 찾기
-    const post = await this.prismaService.post.findUnique({
+    const foundPost = await this.prismaService.post.findUnique({
       where: { id },
       include: { images: true },
     });
-
-    if (!post) {
-      throw new NotFoundException('게시글이 존재하지 않습니다');
-    }
+    if (!foundPost) throw new NotFoundException('게시글이 존재하지 않습니다');
 
     await this.prismaService.post.delete({ where: { id } });
 
-    // 이미지 삭제
-    if (post.images.length > 0) {
-      const filesToDelete = post.images.map(
-        (obj) =>
-          obj.url.split(
+    // 이미지 파일 삭제
+    if (foundPost.images.length > 0) {
+      const filesToDelete = foundPost.images.map(
+        (image: Image) =>
+          image.url.split(
             `${this.configService.get(envVariableKeys.serverOrigin)}/public/images/`,
           )[1],
       );
@@ -279,11 +274,10 @@ export class PostService {
   }
 
   async togglePostLike(postId: number, guestId: string) {
-    const post = this.prismaService.post.findUnique({
+    const foundPost = this.prismaService.post.findUnique({
       where: { id: postId },
     });
-
-    if (!post) throw new NotFoundException('게시글이 존재하지 않습니다');
+    if (!foundPost) throw new NotFoundException('게시글이 존재하지 않습니다');
 
     const isLiked = await this.prismaService.postLike.findUnique({
       where: {
@@ -311,12 +305,12 @@ export class PostService {
       });
     }
 
-    const result = await this.prismaService.postLike.findUnique({
+    const foundPostLike = await this.prismaService.postLike.findUnique({
       where: { postId_guestId: { postId, guestId } },
     });
 
     return {
-      isLiked: !!result,
+      isLiked: !!foundPostLike,
     };
   }
 
