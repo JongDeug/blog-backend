@@ -17,6 +17,8 @@ import { UserId } from 'src/user/decorator/user-id.decorator';
 import { RBAC } from './decorator/rbac.decorator';
 import { Role } from '@prisma/client';
 import { Cookies } from 'src/common/decorator/cookies.decorator';
+import { Authorization } from './decorator/authorization.decorator';
+import { ApiBasicAuth } from '@nestjs/swagger';
 
 const cookieOptions = {
   path: '/',
@@ -35,10 +37,11 @@ export class AuthController {
     return this.authService.register(body);
   }
 
+  @ApiBasicAuth()
   @Public()
   @Post('login')
   async loginUser(
-    @Headers('authorization') token: string,
+    @Authorization() token: string,
     @Res({ passthrough: true }) res: Response,
   ) {
     const { accessToken, refreshToken } = await this.authService.login(token);
