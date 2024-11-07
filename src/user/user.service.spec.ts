@@ -29,7 +29,7 @@ describe('UserService', () => {
   // then
 
   describe('findAll', () => {
-    it('should find all users', async () => {
+    it('should return an array of all users', async () => {
       jest.spyOn(prismaMock.user, 'findMany').mockResolvedValue([] as User[]);
 
       const result = await userService.findAll();
@@ -40,7 +40,7 @@ describe('UserService', () => {
   });
 
   describe('findOne', () => {
-    it('should find a user', async () => {
+    it('should return a user when the user exists', async () => {
       const foundUser = {
         id: 1,
         email: 'test@gmail.com',
@@ -58,7 +58,7 @@ describe('UserService', () => {
       });
     });
 
-    it('should throw a NotFoundException if user does not exist', () => {
+    it('should throw a NotFoundException when the user does not exist', () => {
       jest.spyOn(prismaMock.user, 'findUnique').mockResolvedValue(null);
 
       expect(userService.findOne(999)).rejects.toThrow(NotFoundException);
@@ -67,7 +67,7 @@ describe('UserService', () => {
   });
 
   describe('remove', () => {
-    it('should remove a user', async () => {
+    it('should delete a user when the user exists', async () => {
       const foundUser = {
         id: 1,
         email: 'test@gmail.com',
@@ -87,7 +87,7 @@ describe('UserService', () => {
       });
     });
 
-    it('should throw a NotFoundException if user does not exist', () => {
+    it('should throw a NotFoundException when the user to delete does not exist', () => {
       jest.spyOn(prismaMock.user, 'findUnique').mockResolvedValue(null);
 
       expect(userService.remove(999)).rejects.toThrow(NotFoundException);
