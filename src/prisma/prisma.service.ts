@@ -11,6 +11,12 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
           updatedAt: true,
         },
       },
+      // log: [
+      //   {
+      //     emit: 'event',
+      //     level: 'query',
+      //   },
+      // ],
     });
   }
 

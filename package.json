@@ -18,6 +18,7 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
+    "test:user": "jest --watch --testPathPattern=src/user --coverage --collectCoverageFrom=src/user/**",
     "prisma:migrate:dev": "npx prisma migrate dev",
     "prisma:migrate:prod": "npx prisma migrate prod",
     "prisma:generate": "npx prisma generate"
@@ -83,7 +84,10 @@
       "json",
       "ts"
     ],
-    "rootDir": "src",
+    "rootDir": "./",
+    "modulePaths": [
+      "<rootDir>"
+    ],
     "testRegex": ".*\\.spec\\.ts$",
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
@@ -91,7 +95,12 @@
     "collectCoverageFrom": [
       "**/*.(t|j)s"
     ],
-    "coverageDirectory": "../coverage",
+    "coveragePathIgnorePatterns": [
+      "module.ts",
+      "dto.ts",
+      "entity.ts"
+    ],
+    "coverageDirectory": "./coverage",
     "testEnvironment": "node"
   },
   "packageManager": "pnpm@9.1.1+sha512.14e915759c11f77eac07faba4d019c193ec8637229e62ec99eefb7cf3c3b75c64447882b7c485142451ee3a6b408059cdfb7b7fa0341b975f12d0f7629c71195"
