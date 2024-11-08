@@ -62,10 +62,10 @@ describe('UserService', () => {
       });
     });
 
-    it('should throw a NotFoundException when the user does not exist', () => {
+    it('should throw a NotFoundException when the user does not exist', async () => {
       jest.spyOn(prismaMock.user, 'findUnique').mockResolvedValue(null);
 
-      expect(userService.findOne(999)).rejects.toThrow(NotFoundException);
+      await expect(userService.findOne(999)).rejects.toThrow(NotFoundException);
       expect(prismaMock.user.findUnique).toHaveBeenCalled();
     });
   });
@@ -91,10 +91,10 @@ describe('UserService', () => {
       });
     });
 
-    it('should throw a NotFoundException when the user to delete does not exist', () => {
+    it('should throw a NotFoundException when the user to delete does not exist', async () => {
       jest.spyOn(prismaMock.user, 'findUnique').mockResolvedValue(null);
 
-      expect(userService.remove(999)).rejects.toThrow(NotFoundException);
+      await expect(userService.remove(999)).rejects.toThrow(NotFoundException);
       expect(prismaMock.user.findUnique).toHaveBeenCalled();
       expect(prismaMock.user.delete).not.toHaveBeenCalled();
     });

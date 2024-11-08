@@ -29,8 +29,8 @@ export class TagService {
     return this.prismaService.tag.findMany({});
   }
 
-  findOne(id: number) {
-    const foundTag = this.prismaService.tag.findUnique({
+  async findOne(id: number) {
+    const foundTag = await this.prismaService.tag.findUnique({
       where: { id },
       include: { posts: true },
     });
