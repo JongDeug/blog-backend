@@ -64,6 +64,7 @@ describe('TagService', () => {
 
     it('should a ConflictException when the tag exists', async () => {
       const foundTag = { id: 1, name: '리눅스' };
+
       jest.spyOn(prismaMock.tag, 'findUnique').mockResolvedValue(foundTag);
 
       await expect(tagService.create(createTagDto)).rejects.toThrow(

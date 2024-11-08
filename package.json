@@ -20,6 +20,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "test:user": "jest --watch --testPathPattern=src/user --coverage --collectCoverageFrom=src/user/**",
     "test:tag": "jest --watch --testPathPattern=src/tag --coverage --collectCoverageFrom=src/tag/**",
+    "test:category": "jest --watch --testPathPattern=src/category --coverage --collectCoverageFrom=src/category/**",
     "prisma:migrate:dev": "npx prisma migrate dev",
     "prisma:migrate:prod": "npx prisma migrate prod",
     "prisma:generate": "npx prisma generate"
