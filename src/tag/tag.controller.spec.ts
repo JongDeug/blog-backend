@@ -3,7 +3,7 @@ import { TagController } from './tag.controller';
 import { TagService } from './tag.service';
 import { mock, MockProxy } from 'jest-mock-extended';
 import { CreateTagDto } from './dto/create-tag.dto';
-import { UpdateCategoryDto } from 'src/category/dto/update-category.dto';
+import { UpdateTagDto } from './dto/update-tag.dto';
 
 describe('TagController', () => {
   let tagController: TagController;
@@ -30,7 +30,7 @@ describe('TagController', () => {
   describe('create', () => {
     it('should create a tag', async () => {
       const createTagDto: CreateTagDto = { name: '리눅스' };
-      const newTag = { id: 1, name: '리눅스' };
+      const newTag = { id: 1, name: createTagDto.name };
 
       jest.spyOn(tagService, 'create').mockResolvedValue(newTag);
 
@@ -67,7 +67,7 @@ describe('TagController', () => {
 
   describe('update', () => {
     it('should update a tag', async () => {
-      const updateTagDto: UpdateCategoryDto = { name: '윈도우' };
+      const updateTagDto: UpdateTagDto = { name: '윈도우' };
       const updatedTag = { id: 1, name: updateTagDto.name };
 
       jest.spyOn(tagService, 'update').mockResolvedValue(updatedTag);
