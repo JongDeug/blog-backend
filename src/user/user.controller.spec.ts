@@ -23,6 +23,10 @@ describe('UserController', () => {
     mockUserService = module.get(UserService);
   });
 
+  it('should be defined', () => {
+    expect(userController).toBeDefined();
+  });
+
   // given
   // when
   // then

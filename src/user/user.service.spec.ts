@@ -24,6 +24,10 @@ describe('UserService', () => {
     prismaMock = module.get(PrismaService);
   });
 
+  it('should be defined', () => {
+    expect(userService).toBeDefined();
+  });
+
   // given
   // when
   // then
