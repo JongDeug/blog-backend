@@ -21,6 +21,7 @@
     "test:user": "jest --watch --testPathPattern=src/user --coverage --collectCoverageFrom=src/user/**",
     "test:tag": "jest --watch --testPathPattern=src/tag --coverage --collectCoverageFrom=src/tag/**",
     "test:category": "jest --watch --testPathPattern=src/category --coverage --collectCoverageFrom=src/category/**",
+    "test:common": "jest --watch --testPathPattern=src/common --coverage --collectCoverageFrom=src/common/**",
     "prisma:migrate:dev": "npx prisma migrate dev",
     "prisma:migrate:prod": "npx prisma migrate prod",
     "prisma:generate": "npx prisma generate"
@@ -100,7 +101,8 @@
     "coveragePathIgnorePatterns": [
       "module.ts",
       "dto.ts",
-      "entity.ts"
+      "entity.ts",
+      "const.ts"
     ],
     "coverageDirectory": "./coverage",
     "testEnvironment": "node"

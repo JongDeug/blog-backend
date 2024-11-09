@@ -15,7 +15,7 @@ export class CommonController {
   @UseInterceptors(FileInterceptor('image'))
   createImage(@UploadedFile() image: Express.Multer.File) {
     return {
-      fileName: image.filename,
+      filename: image.filename,
     };
   }
 }
