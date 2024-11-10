@@ -15,7 +15,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Role } from '@prisma/client';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
-import { tokenAge } from './const/token-age';
+import { tokenAge } from './const/token-age.const';
 
 @Injectable()
 export class AuthService {
@@ -73,10 +73,6 @@ export class AuthService {
     }
 
     const [email, password] = splitDecodedBase64;
-
-    if (splitDecodedBase64.length !== 2) {
-      throw new BadRequestException('토큰 포맷이 잘못됐습니다');
-    }
 
     return {
       email,
@@ -141,13 +137,12 @@ export class AuthService {
     );
   }
 
-  async rotateToken(token: string) {
+  async rotateTokens(token: string) {
     try {
       // 토큰 인증
       const payload = await this.jwtService.verifyAsync(token, {
         secret: this.configService.get(envVariableKeys.refreshTokenSecret),
       });
-
       if (payload.type !== 'refresh') {
         throw new UnauthorizedException('잘못된 토큰입니다');
       }
@@ -193,7 +188,7 @@ export class AuthService {
     await this.cacheManager.del(`REFRESH_TOKEN_${userId}`);
   }
 
-  async invalidToken(userId: number) {
+  async revokeToken(userId: number) {
     const foundUser = await this.prismaService.user.findUnique({
       where: { id: userId },
     });

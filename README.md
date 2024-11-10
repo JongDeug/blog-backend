@@ -90,7 +90,7 @@
 |                | 1.2 로그인              | POST        | /auth/login                         | X   |
 |                | 1.3 로그인 갱신         | GET         | /auth/token/refresh                 | O   |
 |                | 1.4 로그아웃            | GET         | /auth/logout                        | O   |
-|                | 1.5 토큰 무효화         | GET         | /auth/token/invalid/:id             | O   |
+|                | 1.5 토큰 무효화         | GET         | /auth/token/revoke/:id              | O   |
 | 2. 게시글 관리 | 2.1 게시글 목록 조회    | GET         | /posts?search=&take=&draft=&cursor= | X   |
 |                | 2.2 게시글 상세 조회    | GET         | /posts/:id                          | X   |
 |                | 2.3 게시글 등록         | POST        | /posts                              | O   |

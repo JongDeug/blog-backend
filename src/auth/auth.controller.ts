@@ -33,8 +33,8 @@ export class AuthController {
 
   @Public()
   @Post('register')
-  registerUser(@Body() body: RegisterDto) {
-    return this.authService.register(body);
+  registerUser(@Body() registerDto: RegisterDto) {
+    return this.authService.register(registerDto);
   }
 
   @ApiBasicAuth()
@@ -56,7 +56,7 @@ export class AuthController {
     @Cookies('refreshToken') refreshToken: string,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const newTokens = await this.authService.rotateToken(refreshToken);
+    const newTokens = await this.authService.rotateTokens(refreshToken);
 
     res.cookie('accessToken', newTokens.accessToken, cookieOptions);
     res.cookie('refreshToken', newTokens.refreshToken, cookieOptions);
@@ -69,12 +69,13 @@ export class AuthController {
   ) {
     res.cookie('accessToken', '');
     res.cookie('refreshToken', '');
+
     return this.authService.logout(userId);
   }
 
   @RBAC(Role.ADMIN)
-  @Get('token/invalid/:id')
-  invalid(@Param('id', ParseIntPipe) userId: number) {
-    return this.authService.invalidToken(userId);
+  @Get('token/revoke/:id')
+  revokeRefreshToken(@Param('id', ParseIntPipe) userId: number) {
+    return this.authService.revokeToken(userId);
   }
 }
