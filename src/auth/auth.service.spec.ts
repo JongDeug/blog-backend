@@ -17,6 +17,8 @@ import {
 } from '@nestjs/common';
 import { tokenAge } from './const/token-age.const';
 
+jest.mock('bcrypt');
+
 describe('AuthService', () => {
   let authService: AuthService;
   let prismaMock: DeepMockProxy<PrismaClient>;
@@ -67,8 +69,11 @@ describe('AuthService', () => {
       } as User;
 
       jest.spyOn(prismaMock.user, 'findUnique').mockResolvedValue(null);
-      jest.spyOn(bcrypt, 'hash').mockImplementation(() => 'hashedPassword');
-      jest.spyOn(configService, 'get').mockReturnValue(expect.anything());
+      jest
+        .spyOn(bcrypt, 'hash')
+        .mockImplementation(() => Promise.resolve('hashedPassword'))
+        .mockClear();
+      jest.spyOn(configService, 'get').mockReturnValue(expect.any(String));
       jest.spyOn(prismaMock.user, 'create').mockResolvedValue(newUser);
 
       const result = await authService.register(registerDto);
@@ -79,7 +84,7 @@ describe('AuthService', () => {
       });
       expect(bcrypt.hash).toHaveBeenCalledWith(
         registerDto.password,
-        expect.anything(),
+        expect.any(String),
       );
       expect(prismaMock.user.create).toHaveBeenCalledWith({
         data: {
@@ -92,7 +97,7 @@ describe('AuthService', () => {
       });
     });
 
-    it('should a ConflictException when the user exists', async () => {
+    it('should throw a ConflictException when the user exists', async () => {
       const foundUser = { name: 'test', email: 'test@gmail.com' } as User;
 
       jest.spyOn(prismaMock.user, 'findUnique').mockResolvedValue(foundUser);
@@ -146,7 +151,9 @@ describe('AuthService', () => {
       const foundUser = { email, password } as User;
 
       jest.spyOn(prismaMock.user, 'findUnique').mockResolvedValue(foundUser);
-      jest.spyOn(bcrypt, 'compare').mockImplementation(() => true);
+      jest
+        .spyOn(bcrypt, 'compare')
+        .mockImplementation(() => Promise.resolve(true));
 
       const result = await authService.authenticate(email, password);
 
@@ -171,7 +178,9 @@ describe('AuthService', () => {
       const foundUser = { email, password } as User;
 
       jest.spyOn(prismaMock.user, 'findUnique').mockResolvedValue(foundUser);
-      jest.spyOn(bcrypt, 'compare').mockImplementation(() => false);
+      jest
+        .spyOn(bcrypt, 'compare')
+        .mockImplementation(() => Promise.resolve(false));
 
       await expect(authService.authenticate(email, password)).rejects.toThrow(
         BadRequestException,
@@ -295,7 +304,7 @@ describe('AuthService', () => {
       expect(result).toEqual({ accessToken, refreshToken });
       expect(jwtService.verifyAsync).toHaveBeenCalledWith(
         token,
-        expect.anything(),
+        expect.any(Object),
       );
       expect(cacheManager.get).toHaveBeenCalledWith(
         `REFRESH_TOKEN_${payload.sub}`,
