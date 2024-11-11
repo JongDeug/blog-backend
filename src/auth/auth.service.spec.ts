@@ -15,10 +15,7 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import e from 'express';
-import { NotFoundError } from 'rxjs';
 import { tokenAge } from './const/token-age.const';
-import { channel } from 'diagnostics_channel';
 
 describe('AuthService', () => {
   let authService: AuthService;
@@ -149,7 +146,7 @@ describe('AuthService', () => {
       const foundUser = { email, password } as User;
 
       jest.spyOn(prismaMock.user, 'findUnique').mockResolvedValue(foundUser);
-      jest.spyOn(bcrypt, 'compare').mockImplementation((a, b) => true);
+      jest.spyOn(bcrypt, 'compare').mockImplementation(() => true);
 
       const result = await authService.authenticate(email, password);
 
@@ -174,7 +171,7 @@ describe('AuthService', () => {
       const foundUser = { email, password } as User;
 
       jest.spyOn(prismaMock.user, 'findUnique').mockResolvedValue(foundUser);
-      jest.spyOn(bcrypt, 'compare').mockImplementation((a, b) => false);
+      jest.spyOn(bcrypt, 'compare').mockImplementation(() => false);
 
       await expect(authService.authenticate(email, password)).rejects.toThrow(
         BadRequestException,

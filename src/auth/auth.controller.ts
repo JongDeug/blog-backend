@@ -2,16 +2,14 @@ import {
   Body,
   Controller,
   Get,
-  Headers,
   Param,
   ParseIntPipe,
   Post,
-  Req,
   Res,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { Public } from './decorator/public.decorator';
 import { UserId } from 'src/user/decorator/user-id.decorator';
 import { RBAC } from './decorator/rbac.decorator';

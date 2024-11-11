@@ -2,10 +2,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { mock, MockProxy } from 'jest-mock-extended';
-import { getMockReq, getMockRes } from '@jest-mock/express';
+import { getMockRes } from '@jest-mock/express';
 import { RegisterDto } from './dto/register.dto';
 import { User } from '@prisma/client';
-import { Response, Request } from 'express';
+import { Response } from 'express';
 
 describe('AuthController', () => {
   let authController: AuthController;

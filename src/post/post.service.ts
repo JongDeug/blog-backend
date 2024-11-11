@@ -137,8 +137,8 @@ export class PostService {
 
     if (!foundPost) throw new NotFoundException('게시글이 존재하지 않습니다');
 
-    let { postLikes, ...restFields } = foundPost;
-    let post = { ...restFields, isLiked: postLikes.length > 0 };
+    const { postLikes, ...restFields } = foundPost;
+    const post = { ...restFields, isLiked: postLikes.length > 0 };
 
     return post;
   }
@@ -320,9 +320,9 @@ export class PostService {
     dto: CursorPaginationDto,
     whereCondition: Prisma.PostWhereInput,
   ) {
-    let { cursor, order, take } = dto;
+    const { cursor, take } = dto;
+    let { order } = dto;
     let cursorCondition;
-    let orderByCondition;
 
     if (cursor) {
       /**
@@ -341,7 +341,7 @@ export class PostService {
       order = cursorObj.order;
     }
 
-    orderByCondition = this.parseOrder(order);
+    const orderByCondition = this.parseOrder(order);
 
     const results = await this.prismaService.post.findMany({
       where: whereCondition,
@@ -361,7 +361,7 @@ export class PostService {
   }
 
   // order 파싱
-  parseOrder(order: string[]): {} {
+  parseOrder(order: string[]) {
     return Object.fromEntries(
       order.map((item) => {
         return item.split('_');
@@ -386,7 +386,7 @@ export class PostService {
     // create values
     const values = {};
     order.forEach((item) => {
-      const [key, _] = item.split('_');
+      const [key] = item.split('_'); // key_value
       values[key] = lastItem[key];
     });
 

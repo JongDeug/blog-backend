@@ -1,11 +1,4 @@
-import {
-  IsArray,
-  IsInt,
-  IsNumber,
-  IsOptional,
-  IsString,
-} from 'class-validator';
-import { Type } from 'class-transformer';
+import { IsArray, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class CursorPaginationDto {
   @IsString()

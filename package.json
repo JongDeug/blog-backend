@@ -105,7 +105,10 @@
       "module.ts",
       "dto.ts",
       "entity.ts",
-      "const.ts"
+      "const.ts",
+      "guard.ts",
+      "decorator.ts",
+      "middleware.ts"
     ],
     "coverageDirectory": "./coverage",
     "testEnvironment": "node"

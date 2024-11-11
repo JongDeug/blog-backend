@@ -8,9 +8,6 @@ import {
   Delete,
   ParseIntPipe,
   Query,
-  Req,
-  Res,
-  BadRequestException,
 } from '@nestjs/common';
 import { PostService } from './post.service';
 import { CreatePostDto } from './dto/create-post.dto';
@@ -20,7 +17,6 @@ import { RBAC } from 'src/auth/decorator/rbac.decorator';
 import { Role } from '@prisma/client';
 import { GetPostsDto } from './dto/get-posts.dto';
 import { Public } from 'src/auth/decorator/public.decorator';
-import { Request } from 'express';
 import { Cookies } from 'src/common/decorator/cookies.decorator';
 
 @Controller('post')
