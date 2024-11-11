@@ -23,6 +23,7 @@
     "test:category": "jest --watch --testPathPattern=src/category --coverage --collectCoverageFrom=src/category/**",
     "test:common": "jest --watch --testPathPattern=src/common --coverage --collectCoverageFrom=src/common/**",
     "test:auth": "jest --watch --testPathPattern=src/auth --coverage --collectCoverageFrom=src/auth/**",
+    "test:post": "jest --watch --testPathPattern=src/post --coverage --collectCoverageFrom=src/post/**",
     "prisma:migrate:dev": "npx prisma migrate dev",
     "prisma:migrate:prod": "npx prisma migrate prod",
     "prisma:generate": "npx prisma generate"

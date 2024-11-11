@@ -3,7 +3,6 @@ import {
   ConflictException,
   Inject,
   Injectable,
-  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -16,6 +15,7 @@ import { Role } from '@prisma/client';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { tokenAge } from './const/token-age.const';
+import { UserService } from 'src/user/user.service';
 
 @Injectable()
 export class AuthService {
@@ -23,6 +23,7 @@ export class AuthService {
     private readonly prismaService: PrismaService,
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
+    private readonly userService: UserService,
     @Inject(CACHE_MANAGER)
     private readonly cacheManager: Cache,
   ) {}
@@ -102,10 +103,10 @@ export class AuthService {
   }
 
   async authenticate(email: string, password: string) {
-    const foundUser = await this.prismaService.user.findUnique({
-      where: { email },
-    });
-    if (!foundUser) throw new NotFoundException('가입되지 않은 이메일입니다');
+    const foundUser = await this.userService.findUserWithNotFoundException(
+      { email },
+      '가입된 이메일이 아닙니다',
+    );
 
     // 비밀번호 확인
     const isCorrect = await bcrypt.compare(password, foundUser.password);
@@ -189,13 +190,10 @@ export class AuthService {
   }
 
   async revokeToken(userId: number) {
-    const foundUser = await this.prismaService.user.findUnique({
-      where: { id: userId },
-    });
-
-    if (!foundUser) {
-      throw new NotFoundException('해당 유저가 없습니다');
-    }
+    await this.userService.findUserWithNotFoundException(
+      { id: userId },
+      '유저를 찾을 수 없습니다',
+    );
 
     // 캐시 삭제
     await this.cacheManager.del(`REFRESH_TOKEN_${userId}`);

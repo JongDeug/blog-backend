@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
@@ -30,5 +31,14 @@ export class UserService {
     if (!foundUser) throw new NotFoundException('존재하지 않는 사용자입니다');
 
     await this.prismaService.user.delete({ where: { id } });
+  }
+
+  async findUserWithNotFoundException(whereCondition: Prisma.UserWhereUniqueInput, errorMessage: string) {
+    const foundUser = await this.prismaService.user.findUnique({
+      where: whereCondition,
+    });
+    if (!foundUser) throw new NotFoundException(errorMessage);
+
+    return foundUser;
   }
 }

@@ -16,6 +16,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { tokenAge } from './const/token-age.const';
+import { UserService } from 'src/user/user.service';
 
 jest.mock('bcrypt');
 
@@ -24,6 +25,7 @@ describe('AuthService', () => {
   let prismaMock: DeepMockProxy<PrismaClient>;
   let configService: MockProxy<ConfigService>;
   let jwtService: MockProxy<JwtService>;
+  let userService: MockProxy<UserService>;
   let cacheManager: MockProxy<Cache>;
 
   beforeEach(async () => {
@@ -33,6 +35,7 @@ describe('AuthService', () => {
         { provide: PrismaService, useValue: mockDeep<PrismaClient>() },
         { provide: ConfigService, useValue: mock<ConfigService>() },
         { provide: JwtService, useValue: mock<JwtService>() },
+        { provide: UserService, useValue: mock<UserService>() },
         { provide: CACHE_MANAGER, useValue: mock<Cache>() },
       ],
     }).compile();
@@ -41,6 +44,7 @@ describe('AuthService', () => {
     prismaMock = module.get(PrismaService);
     configService = module.get(ConfigService);
     jwtService = module.get(JwtService);
+    userService = module.get(UserService);
     cacheManager = module.get(CACHE_MANAGER);
   });
 
@@ -146,11 +150,16 @@ describe('AuthService', () => {
   describe('authenticate', () => {
     const email = 'test@gmail.com';
     const password = '1234';
+    let foundUser;
+
+    beforeEach(() => {
+      foundUser = { email, password } as User;
+      jest
+        .spyOn(userService, 'findUserWithNotFoundException')
+        .mockResolvedValue(foundUser);
+    });
 
     it('should authenticate a user with correct credentials', async () => {
-      const foundUser = { email, password } as User;
-
-      jest.spyOn(prismaMock.user, 'findUnique').mockResolvedValue(foundUser);
       jest
         .spyOn(bcrypt, 'compare')
         .mockImplementation(() => Promise.resolve(true));
@@ -158,26 +167,14 @@ describe('AuthService', () => {
       const result = await authService.authenticate(email, password);
 
       expect(result).toEqual(foundUser);
-      expect(prismaMock.user.findUnique).toHaveBeenCalledWith({
-        where: { email },
-      });
+      expect(userService.findUserWithNotFoundException).toHaveBeenCalledWith(
+        { email },
+        '가입된 이메일이 아닙니다',
+      );
       expect(bcrypt.compare).toHaveBeenCalledWith(password, foundUser.password);
     });
 
-    it('should throw a NotFoundException when the user is not registered', async () => {
-      jest.spyOn(prismaMock.user, 'findUnique').mockResolvedValue(null);
-
-      await expect(authService.authenticate(email, password)).rejects.toThrow(
-        NotFoundException,
-      );
-      expect(prismaMock.user.findUnique).toHaveBeenCalled();
-      expect(bcrypt.compare).not.toHaveBeenCalled();
-    });
-
     it('should throw an error for invalid credentials', async () => {
-      const foundUser = { email, password } as User;
-
-      jest.spyOn(prismaMock.user, 'findUnique').mockResolvedValue(foundUser);
       jest
         .spyOn(bcrypt, 'compare')
         .mockImplementation(() => Promise.resolve(false));
@@ -185,7 +182,7 @@ describe('AuthService', () => {
       await expect(authService.authenticate(email, password)).rejects.toThrow(
         BadRequestException,
       );
-      expect(prismaMock.user.findUnique).toHaveBeenCalled();
+      expect(userService.findUserWithNotFoundException).toHaveBeenCalled();
       expect(bcrypt.compare).toHaveBeenCalled();
     });
   });
@@ -392,28 +389,14 @@ describe('AuthService', () => {
   describe('revokeToken', () => {
     it('should revoke the token using userId', async () => {
       const userId = 1;
-      const foundUser = { id: userId } as User;
-
-      jest.spyOn(prismaMock.user, 'findUnique').mockResolvedValue(foundUser);
 
       await authService.revokeToken(userId);
 
-      expect(prismaMock.user.findUnique).toHaveBeenCalledWith({
-        where: { id: userId },
-      });
-      expect(cacheManager.del).toHaveBeenCalledWith(`REFRESH_TOKEN_${userId}`);
-    });
-
-    it('should throw a NotFoundException when the user does not exists', async () => {
-      const userId = 1;
-
-      jest.spyOn(prismaMock.user, 'findUnique').mockResolvedValue(null);
-
-      await expect(authService.revokeToken(userId)).rejects.toThrow(
-        NotFoundException,
+      expect(userService.findUserWithNotFoundException).toHaveBeenCalledWith(
+        { id: userId },
+        '유저를 찾을 수 없습니다',
       );
-      expect(prismaMock.user.findUnique).toHaveBeenCalled();
-      expect(cacheManager.del).not.toHaveBeenCalled();
+      expect(cacheManager.del).toHaveBeenCalledWith(`REFRESH_TOKEN_${userId}`);
     });
   });
 });

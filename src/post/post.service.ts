@@ -24,6 +24,13 @@ export class PostService {
     private readonly taskService: TaskService,
   ) {}
 
+  /* istanbul ignore next */
+  getBaseURL() {
+    return new URL(
+      `${this.configService.get(envVariableKeys.serverOrigin)}/public/images/`,
+    );
+  }
+
   async create(userId: number, createPostDto: CreatePostDto) {
     const foundUser = await this.prismaService.user.findUnique({
       where: { id: userId },
@@ -31,9 +38,6 @@ export class PostService {
     if (!foundUser) throw new NotFoundException('유저를 찾을 수 없습니다');
 
     const { category, images, tags, ...restFields } = createPostDto;
-    const baseURL = new URL(
-      `${this.configService.get(envVariableKeys.serverOrigin)}/public/images/`,
-    );
 
     try {
       const newPost = await this.prismaService.post.create({
@@ -51,7 +55,7 @@ export class PostService {
           images: {
             createMany: {
               data: images.map((fileName: string) => ({
-                url: new URL(fileName, baseURL).toString(),
+                url: new URL(fileName, this.getBaseURL()).toString(),
               })),
             },
           },
@@ -161,9 +165,6 @@ export class PostService {
     }
 
     const { images, tags, category, ...restFields } = updatePostDto;
-    const baseURL = new URL(
-      `${this.configService.get(envVariableKeys.serverOrigin)}/public/images/`,
-    );
 
     try {
       const transactionResult = await this.prismaService.$transaction(
@@ -186,7 +187,7 @@ export class PostService {
               images: {
                 createMany: {
                   data: images.map((fileName: string) => ({
-                    url: new URL(fileName, baseURL).toString(),
+                    url: new URL(fileName, this.getBaseURL()).toString(),
                   })),
                 },
               },
@@ -341,7 +342,7 @@ export class PostService {
       order = cursorObj.order;
     }
 
-    const orderByCondition = this.parseOrder(order);
+    const orderByCondition = this.parseOrderToObject(order);
 
     const results = await this.prismaService.post.findMany({
       where: whereCondition,
@@ -361,7 +362,7 @@ export class PostService {
   }
 
   // order 파싱
-  parseOrder(order: string[]) {
+  parseOrderToObject(order: string[]) {
     return Object.fromEntries(
       order.map((item) => {
         return item.split('_');
