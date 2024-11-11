@@ -107,7 +107,7 @@ describe('AuthController', () => {
   });
 
   describe('logoutUser', () => {
-    it('should clear cookies empty after successful login', async () => {
+    it('should clear cookies after successful logout', async () => {
       const userId = 1;
 
       await authController.logoutUser(userId, res);
