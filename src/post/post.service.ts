@@ -15,6 +15,7 @@ import { GetPostsDto } from './dto/get-posts.dto';
 import { Image, Post, Prisma } from '@prisma/client';
 import { CursorPaginationDto } from './dto/cursor-pagination.dto';
 import { TaskService } from 'src/common/task.service';
+import { UserService } from '../user/user.service';
 
 @Injectable()
 export class PostService {
@@ -22,6 +23,7 @@ export class PostService {
     private readonly prismaService: PrismaService,
     private readonly configService: ConfigService,
     private readonly taskService: TaskService,
+    private readonly userService: UserService,
   ) {}
 
   /* istanbul ignore next */
@@ -32,10 +34,10 @@ export class PostService {
   }
 
   async create(userId: number, createPostDto: CreatePostDto) {
-    const foundUser = await this.prismaService.user.findUnique({
-      where: { id: userId },
-    });
-    if (!foundUser) throw new NotFoundException('유저를 찾을 수 없습니다');
+    const foundUser = await this.userService.findUserWithNotFoundException(
+      { id: userId },
+      '유저를 찾을 수 없습니다',
+    );
 
     const { category, images, tags, ...restFields } = createPostDto;
 
@@ -148,10 +150,10 @@ export class PostService {
   }
 
   async update(postId: number, userId: number, updatePostDto: UpdatePostDto) {
-    const foundUser = await this.prismaService.user.findUnique({
-      where: { id: userId },
-    });
-    if (!foundUser) throw new NotFoundException('유저를 찾을 수 없습니다');
+    const foundUser = await this.userService.findUserWithNotFoundException(
+      { id: userId },
+      '유저를 찾을 수 없습니다',
+    );
 
     const foundPost = await this.prismaService.post.findUnique({
       where: { id: postId },

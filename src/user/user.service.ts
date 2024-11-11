@@ -15,27 +15,32 @@ export class UserService {
   }
 
   async findOne(id: number) {
-    const foundUser = await this.prismaService.user.findUnique({
-      where: { id },
-      omit: { password: true },
-    });
-    if (!foundUser) throw new NotFoundException('존재하지 않는 사용자입니다');
+    const foundUser = await this.findUserWithNotFoundException(
+      { id },
+      '존재하지 않는 사용자입니다',
+      { password: true },
+    );
 
     return foundUser;
   }
 
   async remove(id: number) {
-    const foundUser = await this.prismaService.user.findUnique({
-      where: { id },
-    });
-    if (!foundUser) throw new NotFoundException('존재하지 않는 사용자입니다');
+    await this.findUserWithNotFoundException(
+      { id },
+      '존재하지 않는 사용자입니다',
+    );
 
     await this.prismaService.user.delete({ where: { id } });
   }
 
-  async findUserWithNotFoundException(whereCondition: Prisma.UserWhereUniqueInput, errorMessage: string) {
+  async findUserWithNotFoundException(
+    whereCondition: Prisma.UserWhereUniqueInput,
+    errorMessage: string,
+    omitCondition: Prisma.UserOmit = {},
+  ) {
     const foundUser = await this.prismaService.user.findUnique({
       where: whereCondition,
+      omit: omitCondition,
     });
     if (!foundUser) throw new NotFoundException(errorMessage);
 
