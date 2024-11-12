@@ -48,39 +48,23 @@ export class TaskService {
   // }
 
   async deleteFiles(folderPath: string, files: string[]) {
-    try {
-      const deletePromises = files.map((fileName: string) => {
-        return unlink(join(folderPath, fileName));
-      });
+    const deletePromises = files.map((fileName: string) => {
+      return unlink(join(folderPath, fileName));
+    });
 
-      // unlink 병렬 실행
-      await Promise.all(deletePromises);
-    } catch (e) {
-      throw new InternalServerErrorException({
-        message: '파일 삭제 에러',
-        error: e.code,
-        statusCode: 500,
-      });
-    }
+    // unlink 병렬 실행
+    await Promise.all(deletePromises);
   }
 
-  async movieFiles(oldPath: string, newPath: string, files: string[]) {
-    try {
-      // 폴더 없으면 생성
-      await mkdir(oldPath, { recursive: true });
+  async moveFiles(oldPath: string, newPath: string, files: string[]) {
+    // 폴더 없으면 생성
+    await mkdir(oldPath, { recursive: true });
 
-      const renamePromises = files.map((fileName: string) => {
-        return rename(join(oldPath, fileName), join(newPath, fileName));
-      });
+    const renamePromises = files.map((fileName: string) => {
+      return rename(join(oldPath, fileName), join(newPath, fileName));
+    });
 
-      // rename 병렬 실행
-      await Promise.all(renamePromises);
-    } catch (e) {
-      throw new InternalServerErrorException({
-        message: '파일 이동 에러',
-        error: e.code,
-        statusCode: 500,
-      });
-    }
+    // rename 병렬 실행
+    await Promise.all(renamePromises);
   }
 }

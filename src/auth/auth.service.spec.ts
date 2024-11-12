@@ -75,8 +75,7 @@ describe('AuthService', () => {
       jest.spyOn(prismaMock.user, 'findUnique').mockResolvedValue(null);
       jest
         .spyOn(bcrypt, 'hash')
-        .mockImplementation(() => Promise.resolve('hashedPassword'))
-        .mockClear();
+        .mockImplementation(() => Promise.resolve('hashedPassword'));
       jest.spyOn(configService, 'get').mockReturnValue(expect.any(String));
       jest.spyOn(prismaMock.user, 'create').mockResolvedValue(newUser);
 
