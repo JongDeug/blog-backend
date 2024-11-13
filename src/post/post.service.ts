@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   ForbiddenException,
   Inject,
@@ -73,15 +74,21 @@ export class PostService {
       draft,
     };
 
-    const { results, nextCursor } = await this.applyCursorPaginationToPost(
-      getPostsDto,
-      whereCondition,
-    );
+    try {
+      const { results, nextCursor } = await this.applyCursorPaginationToPost(
+        getPostsDto,
+        whereCondition,
+      );
 
-    return {
-      posts: results,
-      cursor: nextCursor,
-    };
+      return {
+        posts: results,
+        cursor: nextCursor,
+      };
+    } catch (e) {
+      this.logger.warn(e, PostService.name);
+      if (e.status === 400) throw e;
+      throw new InternalServerErrorException(e);
+    }
   }
 
   async findOne(id: number, guestId: string) {
@@ -235,23 +242,13 @@ export class PostService {
     let cursorCondition;
 
     if (cursor) {
-      /**
-       * {
-       *  values: {
-       *   id: 27,
-       *  },
-       *  order: ['id_desc'],
-       * }
-       */
-      const decodedCursor = Buffer.from(cursor, 'base64').toString('utf-8');
-      const cursorObj = JSON.parse(decodedCursor);
-      // values 적용
-      cursorCondition = cursorObj.values;
-      // order 덮어쓰기
-      order = cursorObj.order;
+      const result = this.parseCursorWithValidation(cursor);
+      // cursor가 있을때 order 덮어쓰기
+      order = result.order;
+      cursorCondition = result.values;
     }
 
-    const orderByCondition = this.parseOrderToObject(order);
+    const orderByCondition = this.parseOrderWithValidation(order);
 
     const results = await this.prismaService.post.findMany({
       where: whereCondition,
@@ -270,11 +267,57 @@ export class PostService {
     };
   }
 
-  // order 파싱
-  parseOrderToObject(order: string[]) {
+  parseCursorWithValidation(cursor: string) {
+    const decodedCursor = Buffer.from(cursor, 'base64').toString('utf-8');
+    /**
+     * {
+     *  values: {
+     *   id: 27,
+     *  },
+     *  order: ['id_desc'],
+     * }
+     */
+    const { values, order } = JSON.parse(decodedCursor);
+
+    // values 체킹
+    for (const key of Object.keys(values)) {
+      if (!(key in Prisma.PostScalarFieldEnum)) {
+        throw new BadRequestException(
+          `유효하지 않는 필드입니다 values: ${key}`,
+        );
+      }
+    }
+
+    return { values, order };
+  }
+
+  parseOrderWithValidation(order: string[]) {
     return Object.fromEntries(
       order.map((item) => {
-        return item.split('_');
+        const splitItem = item.split('_');
+
+        if (splitItem.length !== 2) {
+          throw new BadRequestException(
+            `[order] 유효하지 않는 값입니다 ${item} ex) id_desc`,
+          );
+        }
+
+        let [key, value] = splitItem;
+        value = value.toLowerCase();
+
+        if (!(key in Prisma.PostScalarFieldEnum)) {
+          throw new BadRequestException(
+            `order query param의 key ${key}가 유효하지 않습니다. 올바른 key를 입력해주세요`,
+          );
+        }
+
+        if (!['desc', 'asc'].includes(value)) {
+          throw new BadRequestException(
+            `order query param의 value ${value}가  유효하지 않습니다. ex) desc, asc`,
+          );
+        }
+
+        return [key, value];
       }),
     );
   }
@@ -293,10 +336,10 @@ export class PostService {
 
     const lastItem = results[results.length - 1];
 
-    // create values
+    // create values field
     const values = {};
     order.forEach((item) => {
-      const [key] = item.split('_'); // key_value
+      const [key] = item.split('_');
       values[key] = lastItem[key];
     });
 
@@ -327,11 +370,11 @@ export class PostService {
     );
   }
 
-  /* istanbul ignore next */
-  async createPost(user: User, createPostDto: CreatePostDto) {
+  // /* istanbul ignore next */
+  createPost(user: User, createPostDto: CreatePostDto) {
     const { category, images, tags, ...restFields } = createPostDto;
 
-    return await this.prismaService.post.create({
+    return this.prismaService.post.create({
       data: {
         ...restFields,
         author: {
@@ -363,13 +406,11 @@ export class PostService {
     });
   }
 
-  async updatePostWithTransaction(
-    postId: number,
-    updatePostDto: UpdatePostDto,
-  ) {
+  /* istanbul ignore next */
+  updatePostWithTransaction(postId: number, updatePostDto: UpdatePostDto) {
     const { images, tags, category, ...restFields } = updatePostDto;
 
-    return await this.prismaService.$transaction(async (database) => {
+    return this.prismaService.$transaction(async (database) => {
       // 게시글을 참조하고 있는 이미지 데이터베이스 삭제
       await database.image.deleteMany({
         where: { post: { id: postId } },

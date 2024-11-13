@@ -15,15 +15,19 @@ import { TaskService } from 'src/common/task.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UserService } from 'src/user/user.service';
 import {
+  BadRequestException,
   ConflictException,
   ForbiddenException,
   InternalServerErrorException,
   LoggerService,
+  NotFoundException,
 } from '@nestjs/common';
 import { GetPostsDto } from './dto/get-posts.dto';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { IMAGES_DIRECTORY_PATH, TEMP_DIRECTORY_PATH } from './const/path.const';
 import { UpdatePostDto } from './dto/update-post.dto';
+import { CursorPaginationDto } from './dto/cursor-pagination.dto';
+import { NotFoundError } from 'rxjs';
 
 describe('PostService', () => {
   let postService: PostService;
@@ -32,6 +36,10 @@ describe('PostService', () => {
   let taskService: MockProxy<TaskService>;
   let userService: MockProxy<UserService>;
   let logger: MockProxy<LoggerService>;
+
+  type PostType = Prisma.PromiseReturnType<
+    typeof postService.findPostWithNotFoundException
+  >;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -137,7 +145,7 @@ describe('PostService', () => {
   });
 
   describe('findAll', () => {
-    it('should return an array of all posts with cursor-based pagination', async () => {
+    it('should return an array of posts with cursor-based pagination', async () => {
       const getPostsDto = new GetPostsDto();
       getPostsDto.search = 'search word';
       getPostsDto.cursor =
@@ -164,15 +172,41 @@ describe('PostService', () => {
         },
       );
     });
+
+    it('should throw a BadRequestException if cursor or order fields are invalid', async () => {
+      const getPostsDto = new GetPostsDto();
+      getPostsDto.cursor = 'invalidcursor';
+
+      jest
+        .spyOn(postService, 'applyCursorPaginationToPost')
+        .mockRejectedValue(new BadRequestException());
+
+      await expect(postService.findAll(getPostsDto)).rejects.toThrow(
+        BadRequestException,
+      );
+      expect(postService.applyCursorPaginationToPost).toHaveBeenCalled();
+    });
+
+    it('should throw an InternalServerErrorException when postService.applyCursorPaginationToPost() fails', async () => {
+      const getPostsDto = new GetPostsDto();
+      getPostsDto.cursor =
+        'eyJ2YWx1ZXMiOnsiaWQiOjI5N30sIm9yZGVyIjpbImlkX2Rlc2MiXX0';
+
+      jest
+        .spyOn(postService, 'applyCursorPaginationToPost')
+        .mockRejectedValue(Error);
+
+      await expect(postService.findAll(getPostsDto)).rejects.toThrow(
+        InternalServerErrorException,
+      );
+      expect(postService.applyCursorPaginationToPost).toHaveBeenCalled();
+    });
   });
 
   describe('findOne', () => {
     it('should return a post with isLiked field', async () => {
       const id = 1;
       const guestId = 'uuid';
-      type PostType = Prisma.PromiseReturnType<
-        typeof postService.findPostWithNotFoundException
-      >;
       const foundPost = {
         id: 1,
         postLikes: [{ guestId }],
@@ -208,9 +242,6 @@ describe('PostService', () => {
       updatePostDto = new UpdatePostDto();
       updatePostDto.title = '제목 수정';
       foundUser = { id: userId, email: 'test@gmail.com' } as User;
-      type PostType = Prisma.PromiseReturnType<
-        typeof postService.findPostWithNotFoundException
-      >;
       foundPost = {
         id: postId,
         authorId: userId,
@@ -264,9 +295,6 @@ describe('PostService', () => {
     });
 
     it('should throw a ForbiddenException if the user is not the author of the post', async () => {
-      type PostType = Prisma.PromiseReturnType<
-        typeof postService.findPostWithNotFoundException
-      >;
       const foundPost = {
         id: postId,
         authorId: 999999999,
@@ -331,9 +359,6 @@ describe('PostService', () => {
   describe('remove', () => {
     it('should remove a post with all its relations (comments, images, postLikes)', async () => {
       const id = 1;
-      type PostType = Prisma.PromiseReturnType<
-        typeof postService.findPostWithNotFoundException
-      >;
       const serverOrigin = 'https://test.org';
       const foundPost = {
         id,
@@ -366,9 +391,6 @@ describe('PostService', () => {
 
     it('should throw an InternalServerErrorException if an error occurs while deleting the post or the files', async () => {
       const id = 1;
-      type PostType = Prisma.PromiseReturnType<
-        typeof postService.findPostWithNotFoundException
-      >;
       const foundPost = {
         id,
         title: '제목',
@@ -386,6 +408,252 @@ describe('PostService', () => {
       expect(postService.findPostWithNotFoundException).toHaveBeenCalled();
       expect(prismaMock.post.delete).toHaveBeenCalled();
       expect(taskService.deleteFiles).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('togglePostLike', () => {
+    it('should add a like on the post like', async () => {
+      const postId = 1;
+      const guestId = 'uuid';
+      const foundPost = { id: postId } as PostType;
+      const isLiked = null;
+      const foundPostLike = { postId, guestId } as PostLike;
+
+      jest
+        .spyOn(postService, 'findPostWithNotFoundException')
+        .mockResolvedValue(foundPost);
+      jest
+        .spyOn(prismaMock.postLike, 'findUnique')
+        .mockResolvedValueOnce(isLiked);
+      jest
+        .spyOn(prismaMock.postLike, 'findUnique')
+        .mockResolvedValueOnce(foundPostLike);
+
+      const result = await postService.togglePostLike(postId, guestId);
+
+      expect(result).toEqual({ isLiked: !!foundPostLike });
+      expect(postService.findPostWithNotFoundException).toHaveBeenCalledWith(
+        { id: postId },
+        '게시글이 존재하지 않습니다',
+      );
+      expect(prismaMock.postLike.findUnique).toHaveBeenCalledWith({
+        where: {
+          postId_guestId: {
+            postId,
+            guestId,
+          },
+        },
+      });
+      expect(prismaMock.postLike.delete).not.toHaveBeenCalled();
+      expect(prismaMock.postLike.create).toHaveBeenCalledWith({
+        data: {
+          post: { connect: { id: postId } },
+          guest: {
+            connectOrCreate: { where: { guestId }, create: { guestId } },
+          },
+        },
+      });
+      expect(prismaMock.postLike.findUnique).toHaveBeenCalledWith({
+        where: { postId_guestId: { postId, guestId } },
+      });
+    });
+
+    it('should remove a like on the post like', async () => {
+      const postId = 1;
+      const guestId = 'uuid';
+      const foundPost = { id: postId } as PostType;
+      const isLiked = { postId, guestId } as PostLike;
+      const foundPostLike = null;
+
+      jest
+        .spyOn(postService, 'findPostWithNotFoundException')
+        .mockResolvedValue(foundPost);
+      jest
+        .spyOn(prismaMock.postLike, 'findUnique')
+        .mockResolvedValueOnce(isLiked);
+      jest
+        .spyOn(prismaMock.postLike, 'findUnique')
+        .mockResolvedValueOnce(foundPostLike);
+
+      const result = await postService.togglePostLike(postId, guestId);
+
+      expect(result).toEqual({ isLiked: !!foundPostLike });
+      expect(postService.findPostWithNotFoundException).toHaveBeenCalled();
+      expect(prismaMock.postLike.findUnique).toHaveBeenCalled();
+      expect(prismaMock.postLike.delete).toHaveBeenCalledWith({
+        where: { postId_guestId: { postId, guestId } },
+      });
+      expect(prismaMock.postLike.create).not.toHaveBeenCalled();
+      expect(prismaMock.postLike.findUnique).toHaveBeenCalled();
+    });
+  });
+
+  describe('applyCursorPaginationToPost', () => {
+    it('should return an array of posts with cursor-based pagination', async () => {
+      const cursorPaginationDto = new CursorPaginationDto();
+      cursorPaginationDto.cursor =
+        'eyJ2YWx1ZXMiOnsiaWQiOjI3fSwib3JkZXIiOlsiaWRfZGVzYyJdfQ==';
+      // 디코딩 결과: {"values":{"id":27},"order":["id_desc"]}
+      const whereCondition = {
+        OR: [
+          { title: { contains: 'mock' } },
+          { content: { contains: 'mock' } },
+        ],
+        draft: false,
+      };
+      const cursorCondition = { id: 27 };
+      const orderByCondition = { id: 'desc' };
+      const results = [];
+      const nextCursor =
+        'eyJ2YsdflsdkfjWQiOjI5N30sIm9yZGVyIjpbImlkX2Rlc2MiXX0=';
+
+      jest.spyOn(postService, 'parseCursorWithValidation').mockReturnValue({
+        order: cursorPaginationDto.order,
+        values: { id: 27 },
+      });
+      jest
+        .spyOn(postService, 'parseOrderWithValidation')
+        .mockReturnValue({ id: 'desc' });
+      jest.spyOn(prismaMock.post, 'findMany').mockResolvedValue(results);
+      jest.spyOn(postService, 'generateNextCursor').mockReturnValue(nextCursor);
+
+      const result = await postService.applyCursorPaginationToPost(
+        cursorPaginationDto,
+        whereCondition,
+      );
+
+      expect(result).toEqual({ results, nextCursor });
+      expect(postService.parseCursorWithValidation).toHaveBeenCalledWith(
+        cursorPaginationDto.cursor,
+      );
+      expect(postService.parseOrderWithValidation).toHaveBeenCalledWith(
+        cursorPaginationDto.order,
+      );
+      expect(prismaMock.post.findMany).toHaveBeenCalledWith({
+        where: whereCondition,
+        orderBy: orderByCondition,
+        skip: cursorCondition ? 1 : 0,
+        take: cursorPaginationDto.take,
+        cursor: cursorCondition,
+      });
+      expect(postService.generateNextCursor).toHaveBeenCalledWith(
+        results,
+        cursorPaginationDto.order,
+      );
+    });
+  });
+
+  describe('parseCursorWithValidation', () => {
+    it('should parse cursor to object', () => {
+      const cursor = 'eyJ2YWx1ZXMiOnsiaWQiOjI3fSwib3JkZXIiOlsiaWRfZGVzYyJdfQ==';
+      const values = { id: 27 };
+      const order = ['id_desc'];
+
+      const result = postService.parseCursorWithValidation(cursor);
+
+      expect(result).toEqual({ values, order });
+    });
+
+    it('should throw a BadRequestException if key of values object is invalid', () => {
+      const cursor =
+        'eyJ2YWx1ZXMiOnsiaW52YWxpZCI6Mjd9LCJvcmRlciI6WyJpZF9kZXNjIl19';
+      // 디코딩: {"values":{"invalid":27},"order":["id_desc"]}
+
+      expect(() => postService.parseCursorWithValidation(cursor)).toThrow(
+        BadRequestException,
+      );
+    });
+  });
+
+  describe('parseOrderWithValidation', () => {
+    it('should parse order to object', () => {
+      const order = ['id_desc', 'createdAt_asc'];
+
+      const result = postService.parseOrderWithValidation(order);
+
+      expect(result).toEqual({
+        id: 'desc',
+        createdAt: 'asc',
+      });
+    });
+
+    it('should throw a BadRequestException if an order array item cannot be split into 2 parts', () => {
+      const order = ['id-desc'];
+
+      expect(() => postService.parseOrderWithValidation(order)).toThrow(
+        BadRequestException,
+      );
+    });
+
+    it('should throw a BadRequestException if the key of the order query param is invalid', () => {
+      const order = ['invalid_desc'];
+
+      expect(() => postService.parseOrderWithValidation(order)).toThrow(
+        BadRequestException,
+      );
+    });
+
+    it('should throw a BadRequestException if the value of the order query param is invalid', () => {
+      const order = ['id_invalid'];
+
+      expect(() => postService.parseOrderWithValidation(order)).toThrow(
+        BadRequestException,
+      );
+    });
+  });
+
+  describe('generateNextCursor', () => {
+    it('should generate the next cursor in base64 format', () => {
+      const results = [{ id: 27 }] as Post[];
+      const order = ['id_desc'];
+      const base64 = 'eyJ2YWx1ZXMiOnsiaWQiOjI3fSwib3JkZXIiOlsiaWRfZGVzYyJdfQ==';
+      // 디코딩 결과: {"values":{"id":27},"order":["id_desc"]}
+
+      const result = postService.generateNextCursor(results, order);
+
+      expect(result).toEqual(base64);
+    });
+
+    it('should return null if results.length is 0', () => {
+      const results = [];
+      const order = ['id_desc'];
+
+      const result = postService.generateNextCursor(results, order);
+
+      expect(result).toEqual(null);
+    });
+  });
+
+  describe('findPostWithNotFoundException', () => {
+    it('should return a post', async () => {
+      const foundPost = { id: 1 } as Post;
+      const whereCondition = { id: 1 };
+      const includeCondition = {};
+
+      jest.spyOn(prismaMock.post, 'findUnique').mockResolvedValue(foundPost);
+
+      const result = await postService.findPostWithNotFoundException(
+        { id: 1 },
+        'errorMessage',
+      );
+
+      expect(result).toEqual(foundPost);
+      expect(prismaMock.post.findUnique).toHaveBeenCalledWith({
+        where: whereCondition,
+        include: includeCondition,
+      });
+    });
+
+    it('should throw a NotFoundException when post does not exist', async () => {
+      const whereCondition = { id: 1 };
+      const includeCondition = {};
+
+      jest.spyOn(prismaMock.post, 'findUnique').mockResolvedValue(null);
+
+      await expect(
+        postService.findPostWithNotFoundException({ id: 1 }, 'errorMessage'),
+      ).rejects.toThrow(NotFoundException);
+      expect(prismaMock.post.findUnique).toHaveBeenCalled();
     });
   });
 });
