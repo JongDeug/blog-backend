@@ -32,9 +32,7 @@ export class PrismaClientExceptionFilter extends BaseExceptionFilter {
         res.status(status).json({
           statusCode: status,
           error: 'Conflict',
-          message: message.includes('title')
-            ? '이미 존재하는 title 입니다'
-            : message,
+          message: message.includes('title') ? '중복된 title 입니다' : message,
         });
         break;
       }

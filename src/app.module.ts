@@ -20,7 +20,7 @@ import { WinstonModule } from 'nest-winston';
 import * as winston from 'winston';
 import { LoggingInterceptor } from './common/interceptor/logging.interceptor';
 import { join } from 'path';
-import { PrismaClientExceptionFilter } from './common/filter/prisma-client-exception.filter';
+import { PrismaClientExceptionFilter } from './prisma/filter/prisma-client-exception.filter';
 
 @Module({
   imports: [
