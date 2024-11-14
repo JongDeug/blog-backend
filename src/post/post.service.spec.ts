@@ -521,7 +521,7 @@ describe('PostService', () => {
       );
     });
 
-    it('should return an array of posts when no cursor', async () => {
+    it('should return an array of posts when cursor is not provided', async () => {
       const cursorPaginationDto = new CursorPaginationDto();
       const whereCondition = {
         OR: [
