@@ -322,7 +322,6 @@ export class PostService {
     );
   }
 
-  // 커서를 생성하는 함수
   generateNextCursor<T>(results: T[], order: string[]): string | null {
     if (!results.length) return null;
     /**
@@ -370,7 +369,7 @@ export class PostService {
     );
   }
 
-  // /* istanbul ignore next */
+  /* istanbul ignore next */
   createPost(user: User, createPostDto: CreatePostDto) {
     const { category, images, tags, ...restFields } = createPostDto;
 
@@ -420,6 +419,7 @@ export class PostService {
         where: { id: postId },
         data: {
           ...restFields,
+          content: restFields.content,
           category: category
             ? {
                 connectOrCreate: {

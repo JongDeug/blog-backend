@@ -34,14 +34,12 @@ export class CreatePostDto {
   summary: string;
 
   @IsArray()
-  // @ArrayNotEmpty()
   @IsNotEmpty()
   @IsString({ each: true })
   @IsOptional()
   images?: string[] = [];
 
   @IsArray()
-  // @ArrayNotEmpty()
   @IsNotEmpty()
   @IsString({ each: true })
   @IsOptional()
