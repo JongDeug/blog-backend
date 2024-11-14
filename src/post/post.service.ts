@@ -46,7 +46,7 @@ export class PostService {
         createPostDto.images,
       );
     } catch (e) {
-      this.logger.error(`${e.stack}`, null, PostService.name);
+      this.logger.error(e.stack, null, PostService.name);
       if (e.code === 'ENOENT') {
         e = new NotFoundException('요청 파일을 찾을 수 없습니다');
       }
@@ -82,7 +82,7 @@ export class PostService {
         cursor: nextCursor,
       };
     } catch (e) {
-      this.logger.error(`${e.stack}`, null, PostService.name);
+      this.logger.error(e.stack, null, PostService.name);
       throw e;
     }
   }
@@ -146,7 +146,7 @@ export class PostService {
       // 이미지 처리 (move, delete)
       await this.handleImageFiles(foundPost.images, updatePostDto.images);
     } catch (e) {
-      this.logger.error(`${e.stack}`, null, PostService.name);
+      this.logger.error(e.stack, null, PostService.name);
       if (e.code === 'ENOENT') {
         e = new NotFoundException('요청 파일을 찾을 수 없습니다');
       }
@@ -180,7 +180,7 @@ export class PostService {
         );
       }
     } catch (e) {
-      this.logger.error(`${e.stack}`, null, PostService.name);
+      this.logger.error(e.stack, null, PostService.name);
       if (e.code === 'ENOENT') {
         e = new NotFoundException('요청 파일을 찾을 수 없습니다');
       }
