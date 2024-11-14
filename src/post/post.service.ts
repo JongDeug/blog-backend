@@ -1,10 +1,8 @@
 import {
   BadRequestException,
-  ConflictException,
   ForbiddenException,
   Inject,
   Injectable,
-  InternalServerErrorException,
   LoggerService,
   NotFoundException,
 } from '@nestjs/common';
@@ -38,25 +36,24 @@ export class PostService {
       '유저를 찾을 수 없습니다',
     );
 
-    try {
-      const newPost = await this.createPost(foundUser, createPostDto);
+    const newPost = await this.createPost(foundUser, createPostDto);
 
+    try {
       // 이미지 파일 이동
       await this.taskService.moveFiles(
         TEMP_DIRECTORY_PATH,
         IMAGES_DIRECTORY_PATH,
         createPostDto.images,
       );
-
-      return newPost.id;
     } catch (e) {
-      if (e.code === 'P2002' && e.meta.target.includes('title')) {
-        throw new ConflictException('이미 존재하는 게시글의 title 입니다');
+      this.logger.error(`${e.stack}`, null, PostService.name);
+      if (e.code === 'ENOENT') {
+        e = new NotFoundException('요청 파일을 찾을 수 없습니다');
       }
-
-      this.logger.warn(e, PostService.name);
-      throw new InternalServerErrorException(e);
+      throw e;
     }
+
+    return newPost.id;
   }
 
   async findAll(getPostsDto: GetPostsDto) {
@@ -85,9 +82,8 @@ export class PostService {
         cursor: nextCursor,
       };
     } catch (e) {
-      this.logger.warn(e, PostService.name);
-      if (e.status === 400) throw e;
-      throw new InternalServerErrorException(e);
+      this.logger.error(`${e.stack}`, null, PostService.name);
+      throw e;
     }
   }
 
@@ -141,24 +137,23 @@ export class PostService {
       throw new ForbiddenException('게시글에 대한 권한이 없습니다');
     }
 
-    try {
-      const transactionResult = await this.updatePostWithTransaction(
-        postId,
-        updatePostDto,
-      );
+    const transactionResult = await this.updatePostWithTransaction(
+      postId,
+      updatePostDto,
+    );
 
+    try {
       // 이미지 처리 (move, delete)
       await this.handleImageFiles(foundPost.images, updatePostDto.images);
-
-      return transactionResult;
     } catch (e) {
-      if (e.code === 'P2002' && e.meta.target.includes('title')) {
-        throw new ConflictException('이미 존재하는 게시글의 title 입니다');
+      this.logger.error(`${e.stack}`, null, PostService.name);
+      if (e.code === 'ENOENT') {
+        e = new NotFoundException('요청 파일을 찾을 수 없습니다');
       }
-
-      this.logger.warn(e, PostService.name);
-      throw new InternalServerErrorException(e);
+      throw e;
     }
+
+    return transactionResult;
   }
 
   async remove(id: number) {
@@ -168,9 +163,9 @@ export class PostService {
       { images: true },
     );
 
-    try {
-      await this.prismaService.post.delete({ where: { id } });
+    await this.prismaService.post.delete({ where: { id } });
 
+    try {
       // 이미지 파일 삭제
       if (foundPost.images.length > 0) {
         const filesToDelete = foundPost.images.map(
@@ -185,8 +180,11 @@ export class PostService {
         );
       }
     } catch (e) {
-      this.logger.warn(e, PostService.name);
-      throw new InternalServerErrorException(e);
+      this.logger.error(`${e.stack}`, null, PostService.name);
+      if (e.code === 'ENOENT') {
+        e = new NotFoundException('요청 파일을 찾을 수 없습니다');
+      }
+      throw e;
     }
   }
 
@@ -255,7 +253,7 @@ export class PostService {
       orderBy: orderByCondition,
       skip: cursorCondition ? 1 : 0,
       take,
-      cursor: cursorCondition,
+      cursor: cursorCondition ?? Prisma.skip,
     });
 
     // 다음 커서 생성
@@ -283,7 +281,7 @@ export class PostService {
     for (const key of Object.keys(values)) {
       if (!(key in Prisma.PostScalarFieldEnum)) {
         throw new BadRequestException(
-          `유효하지 않는 필드입니다 values: ${key}`,
+          `유효하지 않는 cursor 필드입니다 { values: { ${key} } }`,
         );
       }
     }
@@ -298,7 +296,7 @@ export class PostService {
 
         if (splitItem.length !== 2) {
           throw new BadRequestException(
-            `[order] 유효하지 않는 값입니다 ${item} ex) id_desc`,
+            `유효하지 않는 order: ${item} 입니다 ex) id_desc`,
           );
         }
 
@@ -307,13 +305,13 @@ export class PostService {
 
         if (!(key in Prisma.PostScalarFieldEnum)) {
           throw new BadRequestException(
-            `order query param의 key ${key}가 유효하지 않습니다. 올바른 key를 입력해주세요`,
+            `유효하지 않는 order "${key}" key 입니다. 올바른 key를 입력해주세요`,
           );
         }
 
         if (!['desc', 'asc'].includes(value)) {
           throw new BadRequestException(
-            `order query param의 value ${value}가  유효하지 않습니다. ex) desc, asc`,
+            `유효하지 않는 order "${value}" value 입니다. ex) desc, asc`,
           );
         }
 
@@ -419,7 +417,6 @@ export class PostService {
         where: { id: postId },
         data: {
           ...restFields,
-          content: restFields.content,
           category: category
             ? {
                 connectOrCreate: {
@@ -427,7 +424,7 @@ export class PostService {
                   create: { name: category },
                 },
               }
-            : {},
+            : Prisma.skip,
           images: {
             createMany: {
               data: images.map((fileName: string) => ({

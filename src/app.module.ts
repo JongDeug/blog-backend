@@ -3,7 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import * as Joi from 'joi';
-import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { AuthGuard } from './auth/guard/auth.guard';
 import { CacheModule } from '@nestjs/cache-manager';
 import { UserModule } from './user/user.module';
@@ -20,6 +20,7 @@ import { WinstonModule } from 'nest-winston';
 import * as winston from 'winston';
 import { LoggingInterceptor } from './common/interceptor/logging.interceptor';
 import { join } from 'path';
+import { PrismaClientExceptionFilter } from './common/filter/prisma-client-exception.filter';
 
 @Module({
   imports: [
@@ -96,6 +97,10 @@ import { join } from 'path';
     {
       provide: APP_INTERCEPTOR,
       useClass: LoggingInterceptor,
+    },
+    {
+      provide: APP_FILTER,
+      useClass: PrismaClientExceptionFilter,
     },
   ],
 })

@@ -107,40 +107,25 @@ describe('PostService', () => {
       );
     });
 
-    it('should throw a ConflictException if title already exists', async () => {
+    it('should throw a NotFoundException if requested files do not exist', async () => {
       const userId = 1;
       const foundUser = { id: userId } as User;
       const createPostDto = new CreatePostDto();
+      const newPost = { id: 1 } as Post;
 
       jest
         .spyOn(userService, 'findUserWithNotFoundException')
         .mockResolvedValue(foundUser);
+      jest.spyOn(postService, 'createPost').mockResolvedValue(newPost);
       jest
-        .spyOn(postService, 'createPost')
-        .mockRejectedValue({ code: 'P2002', meta: { target: 'title' } });
+        .spyOn(taskService, 'moveFiles')
+        .mockRejectedValue({ code: 'ENOENT' });
 
       await expect(postService.create(userId, createPostDto)).rejects.toThrow(
-        ConflictException,
+        NotFoundException,
       );
       expect(userService.findUserWithNotFoundException).toHaveBeenCalled();
-      expect(taskService.moveFiles).not.toHaveBeenCalled();
-    });
-
-    it('should throw an InternalServerErrorException if an error occurs during post creation or file move', async () => {
-      const userId = 1;
-      const foundUser = { id: userId } as User;
-      const createPostDto = new CreatePostDto();
-
-      jest
-        .spyOn(userService, 'findUserWithNotFoundException')
-        .mockResolvedValue(foundUser);
-      jest.spyOn(postService, 'createPost').mockRejectedValue(new Error());
-
-      await expect(postService.create(userId, createPostDto)).rejects.toThrow(
-        InternalServerErrorException,
-      );
-      expect(userService.findUserWithNotFoundException).toHaveBeenCalled();
-      expect(taskService.moveFiles).not.toHaveBeenCalled();
+      expect(taskService.moveFiles).toHaveBeenCalled();
     });
   });
 
@@ -187,20 +172,20 @@ describe('PostService', () => {
       expect(postService.applyCursorPaginationToPost).toHaveBeenCalled();
     });
 
-    it('should throw an InternalServerErrorException when postService.applyCursorPaginationToPost() fails', async () => {
-      const getPostsDto = new GetPostsDto();
-      getPostsDto.cursor =
-        'eyJ2YWx1ZXMiOnsiaWQiOjI5N30sIm9yZGVyIjpbImlkX2Rlc2MiXX0';
+    // it('should throw an InternalServerErrorException when postService.applyCursorPaginationToPost() fails', async () => {
+    //   const getPostsDto = new GetPostsDto();
+    //   getPostsDto.cursor =
+    //     'eyJ2YWx1ZXMiOnsiaWQiOjI5N30sIm9yZGVyIjpbImlkX2Rlc2MiXX0';
 
-      jest
-        .spyOn(postService, 'applyCursorPaginationToPost')
-        .mockRejectedValue(Error);
+    //   jest
+    //     .spyOn(postService, 'applyCursorPaginationToPost')
+    //     .mockRejectedValue(Error);
 
-      await expect(postService.findAll(getPostsDto)).rejects.toThrow(
-        InternalServerErrorException,
-      );
-      expect(postService.applyCursorPaginationToPost).toHaveBeenCalled();
-    });
+    //   await expect(postService.findAll(getPostsDto)).rejects.toThrow(
+    //     ,
+    //   );
+    //   expect(postService.applyCursorPaginationToPost).toHaveBeenCalled();
+    // });
   });
 
   describe('findOne', () => {
@@ -316,43 +301,31 @@ describe('PostService', () => {
       expect(mockUpdatePostWithTransaction).not.toHaveBeenCalled();
     });
 
-    it('should throw a ConflictException if title already exists', async () => {
+    it('should throw a NotFoundException if requested files do not exist', async () => {
+      type UpdatedPostType = Prisma.PromiseReturnType<
+        typeof postService.updatePostWithTransaction
+      >;
+      const transactionResult = {
+        id: postId,
+        title: updatePostDto.title,
+      } as UpdatedPostType;
+
       jest
         .spyOn(userService, 'findUserWithNotFoundException')
         .mockResolvedValue(foundUser);
       jest
         .spyOn(postService, 'findPostWithNotFoundException')
         .mockResolvedValue(foundPost);
-      mockUpdatePostWithTransaction.mockRejectedValue({
-        code: 'P2002',
-        meta: { target: 'title' },
-      });
+      mockUpdatePostWithTransaction.mockResolvedValue(transactionResult);
+      mockHandleImageFiles.mockRejectedValue({ code: 'ENOENT' });
 
       await expect(
         postService.update(postId, userId, updatePostDto),
-      ).rejects.toThrow(ConflictException);
+      ).rejects.toThrow(NotFoundException);
       expect(userService.findUserWithNotFoundException).toHaveBeenCalled();
       expect(postService.findPostWithNotFoundException).toHaveBeenCalled();
       expect(mockUpdatePostWithTransaction).toHaveBeenCalled();
-      expect(mockHandleImageFiles).not.toHaveBeenCalled();
-    });
-
-    it('should throw an InternalServerErrorException if an error occurs while updating the post or handling images', async () => {
-      jest
-        .spyOn(userService, 'findUserWithNotFoundException')
-        .mockResolvedValue(foundUser);
-      jest
-        .spyOn(postService, 'findPostWithNotFoundException')
-        .mockResolvedValue(foundPost);
-      mockUpdatePostWithTransaction.mockRejectedValue(new Error());
-
-      await expect(
-        postService.update(postId, userId, updatePostDto),
-      ).rejects.toThrow(InternalServerErrorException);
-      expect(userService.findUserWithNotFoundException).toHaveBeenCalled();
-      expect(postService.findPostWithNotFoundException).toHaveBeenCalled();
-      expect(mockUpdatePostWithTransaction).toHaveBeenCalled();
-      expect(mockHandleImageFiles).not.toHaveBeenCalled();
+      expect(mockHandleImageFiles).toHaveBeenCalled();
     });
   });
 
@@ -389,25 +362,31 @@ describe('PostService', () => {
       );
     });
 
-    it('should throw an InternalServerErrorException if an error occurs while deleting the post or the files', async () => {
+    it('should throw a NotFoundException if requested files do not exist', async () => {
       const id = 1;
+      const serverOrigin = 'https://test.org';
       const foundPost = {
         id,
         title: '제목',
-        images: [],
+        images: [
+          {
+            url: `${serverOrigin}/public/images/aslfdkjsflksjfd-lkdfjsdlvmlsdf-21sdlkfjas.png`,
+          },
+        ],
       } as PostType;
 
       jest
         .spyOn(postService, 'findPostWithNotFoundException')
         .mockResolvedValue(foundPost);
-      jest.spyOn(prismaMock.post, 'delete').mockRejectedValue(new Error());
+      jest.spyOn(configService, 'get').mockReturnValue(serverOrigin);
+      jest
+        .spyOn(taskService, 'deleteFiles')
+        .mockRejectedValue({ code: 'ENOENT' });
 
-      await expect(postService.remove(id)).rejects.toThrow(
-        InternalServerErrorException,
-      );
+      await expect(postService.remove(id)).rejects.toThrow(NotFoundException);
       expect(postService.findPostWithNotFoundException).toHaveBeenCalled();
       expect(prismaMock.post.delete).toHaveBeenCalled();
-      expect(taskService.deleteFiles).not.toHaveBeenCalled();
+      expect(taskService.deleteFiles).toHaveBeenCalled();
     });
   });
 
@@ -532,7 +511,7 @@ describe('PostService', () => {
       expect(prismaMock.post.findMany).toHaveBeenCalledWith({
         where: whereCondition,
         orderBy: orderByCondition,
-        skip: cursorCondition ? 1 : 0,
+        skip: 1,
         take: cursorPaginationDto.take,
         cursor: cursorCondition,
       });
@@ -540,6 +519,43 @@ describe('PostService', () => {
         results,
         cursorPaginationDto.order,
       );
+    });
+
+    it('should return an array of posts when no cursor', async () => {
+      const cursorPaginationDto = new CursorPaginationDto();
+      const whereCondition = {
+        OR: [
+          { title: { contains: 'mock' } },
+          { content: { contains: 'mock' } },
+        ],
+        draft: false,
+      };
+      const orderByCondition = { id: 'desc' };
+      const results = [];
+      const nextCursor =
+        'eyJ2YsdflsdkfjWQiOjI5N30sIm9yZGVyIjpbImlkX2Rlc2MiXX0=';
+
+      jest
+        .spyOn(postService, 'parseOrderWithValidation')
+        .mockReturnValue({ id: 'desc' });
+      jest.spyOn(prismaMock.post, 'findMany').mockResolvedValue(results);
+      jest.spyOn(postService, 'generateNextCursor').mockReturnValue(nextCursor);
+
+      const result = await postService.applyCursorPaginationToPost(
+        cursorPaginationDto,
+        whereCondition,
+      );
+
+      expect(result).toEqual({ results, nextCursor });
+      expect(postService.parseOrderWithValidation).toHaveBeenCalled();
+      expect(prismaMock.post.findMany).toHaveBeenCalledWith({
+        where: whereCondition,
+        orderBy: orderByCondition,
+        skip: 0,
+        take: cursorPaginationDto.take,
+        cursor: Prisma.skip,
+      });
+      expect(postService.generateNextCursor).toHaveBeenCalled();
     });
   });
 
@@ -646,14 +662,57 @@ describe('PostService', () => {
 
     it('should throw a NotFoundException when post does not exist', async () => {
       const whereCondition = { id: 1 };
-      const includeCondition = {};
 
       jest.spyOn(prismaMock.post, 'findUnique').mockResolvedValue(null);
 
       await expect(
-        postService.findPostWithNotFoundException({ id: 1 }, 'errorMessage'),
+        postService.findPostWithNotFoundException(
+          whereCondition,
+          'errorMessage',
+        ),
       ).rejects.toThrow(NotFoundException);
       expect(prismaMock.post.findUnique).toHaveBeenCalled();
+    });
+  });
+
+  describe('handleImageFiles', () => {
+    it('should move new incoming images and delete unused images', async () => {
+      const currentImages = [
+        {
+          url: 'http://test.org/public/images/test-A.png',
+        },
+        {
+          url: 'http://test.org/public/images/test-B.png',
+        },
+        {
+          url: 'http://test.org/public/images/test-C.png',
+        },
+      ] as Image[];
+      const incomingImages = [
+        'test-B.png',
+        'test-C.png',
+        'test-D.png',
+        'test-F.png',
+      ];
+      // D, F => imagesToMove
+      // A  => imagesToDelete
+      const imagesToMove = ['test-D.png', 'test-F.png'];
+      const imagesToDelete = ['test-A.png'];
+      const serverOrigin = 'http://test.org';
+
+      jest.spyOn(configService, 'get').mockReturnValue(serverOrigin);
+
+      await postService.handleImageFiles(currentImages, incomingImages);
+
+      expect(jest.spyOn(taskService, 'moveFiles')).toHaveBeenCalledWith(
+        TEMP_DIRECTORY_PATH,
+        IMAGES_DIRECTORY_PATH,
+        imagesToMove,
+      );
+      expect(jest.spyOn(taskService, 'deleteFiles')).toHaveBeenCalledWith(
+        IMAGES_DIRECTORY_PATH,
+        imagesToDelete,
+      );
     });
   });
 });
