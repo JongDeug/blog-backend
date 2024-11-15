@@ -241,25 +241,15 @@ describe('PostService', () => {
     });
 
     it('should update a post and handle image files (move, delete)', async () => {
-      type UpdatedPostType = Prisma.PromiseReturnType<
-        typeof postService.updatePostWithTransaction
-      >;
-      const transactionResult = {
-        id: postId,
-        title: updatePostDto.title,
-      } as UpdatedPostType;
-
       jest
         .spyOn(userService, 'findUserWithNotFoundException')
         .mockResolvedValue(foundUser);
       jest
         .spyOn(postService, 'findPostWithNotFoundException')
         .mockResolvedValue(foundPost);
-      mockUpdatePostWithTransaction.mockResolvedValue(transactionResult);
 
-      const result = await postService.update(postId, userId, updatePostDto);
+      await postService.update(postId, userId, updatePostDto);
 
-      expect(result).toEqual(transactionResult);
       expect(userService.findUserWithNotFoundException).toHaveBeenCalledWith(
         { id: userId },
         '유저를 찾을 수 없습니다',
@@ -302,21 +292,12 @@ describe('PostService', () => {
     });
 
     it('should throw a NotFoundException if requested files do not exist', async () => {
-      type UpdatedPostType = Prisma.PromiseReturnType<
-        typeof postService.updatePostWithTransaction
-      >;
-      const transactionResult = {
-        id: postId,
-        title: updatePostDto.title,
-      } as UpdatedPostType;
-
       jest
         .spyOn(userService, 'findUserWithNotFoundException')
         .mockResolvedValue(foundUser);
       jest
         .spyOn(postService, 'findPostWithNotFoundException')
         .mockResolvedValue(foundPost);
-      mockUpdatePostWithTransaction.mockResolvedValue(transactionResult);
       mockHandleImageFiles.mockRejectedValue({ code: 'ENOENT' });
 
       await expect(

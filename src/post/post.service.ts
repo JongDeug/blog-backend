@@ -137,10 +137,7 @@ export class PostService {
       throw new ForbiddenException('게시글에 대한 권한이 없습니다');
     }
 
-    const transactionResult = await this.updatePostWithTransaction(
-      postId,
-      updatePostDto,
-    );
+    await this.updatePostWithTransaction(postId, updatePostDto);
 
     try {
       // 이미지 처리 (move, delete)
@@ -152,8 +149,6 @@ export class PostService {
       }
       throw e;
     }
-
-    return transactionResult;
   }
 
   async remove(id: number) {
@@ -413,7 +408,7 @@ export class PostService {
         where: { post: { id: postId } },
       });
 
-      const newPost = await database.post.update({
+      await database.post.update({
         where: { id: postId },
         data: {
           ...restFields,
@@ -443,8 +438,6 @@ export class PostService {
         },
         include: { tags: true, images: true },
       });
-
-      return newPost;
     });
   }
 
