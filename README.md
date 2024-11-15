@@ -49,67 +49,45 @@
 [//]: # '## 📌 기타 추가 사항들'
 [//]: # '## 📌 화면 구성/API 주소'
 
-## 📌 기능 리스트
-
-| 구분           | 기능명                  | 추가 기능                   | 설명                                                                |
-| -------------- | ----------------------- | --------------------------- | ------------------------------------------------------------------- |
-| 1. 회원 관리   | 1.1 이메일 가입         |                             |                                                                     |
-|                | 1.2 로그인              |                             |                                                                     |
-|                | 1.3 인증 갱신           |                             | refreshToken 을 가지고 accessToken 와 refreshToken 을 갱신한다.     |
-|                | 1.4 로그아웃            |                             |                                                                     |
-|                | 1.5 토큰 무효화         |                             | 관리자가 유저의 refresh token을 무효화할 수 있다.                   |
-| 2. 게시판 관리 | 2.1 게시글 목록 조회    | 2.1.1 게시글 검색           | 검색어를 포함하고 있는 게시글 목록을 볼 수 있다.                    |
-|                |                         | 2.1.2 페이지네이션          | page, limit 변수를 기준으로 게시글 목록을 나눠서 보여주는 기능이다. |
-|                | 2.2 게시글 상세 조회    | 2.2.1 댓글 조회             | 게시글의 댓글을 조회할 수 있다.                                     |
-|                | 2.3 게시글 등록         | 2.3.1 카테고리 및 태그 작성 |                                                                     |
-|                | 2.4 게시글 수정         |                             |                                                                     |
-|                | 2.5 게시글 삭제         |                             |                                                                     |
-|                | 2.6 카테고리 목록 조회  |                             |                                                                     |
-|                | 2.6 카테고리 상세 조회  |                             |                                                                     |
-|                | 2.7 카테고리 생성       |                             |                                                                     |
-|                | 2.8 카테고리 수정       |                             |                                                                     |
-|                | 2.9 카테고리 삭제       |                             |                                                                     |
-|                | 2.10 게시글 좋아요      |                             |                                                                     |
-|                | 2.11 비회원 댓글 작성   |                             |                                                                     |
-|                | 2.12 비회원 대댓글 작성 |                             |                                                                     |
-|                | 2.13 비회원 댓글 수정   |                             |                                                                     |
-|                | 2.14 비회원 댓글 삭제   |                             |                                                                     |
-|                | 2.15 댓글 작성          |                             |                                                                     |
-|                | 2.16 대댓글 작성        |                             |                                                                     |
-|                | 2.17 댓글 수정          |                             |                                                                     |
-|                | 2.18 댓글 삭제          |                             |                                                                     |
-|                | 2.19 이미지 업로드      |                             |                                                                     |
-
 ## 📌 설계 명세서
 
 ### ⚡ API 명세서
 
-| 구분           | 기능명                  | HTTP Method | REST API                            | JWT |
-| -------------- | ----------------------- | ----------- | ----------------------------------- | --- |
-| 1. 회원 관리   | 1.1 이메일 가입~~       | POST        | /auth/register                      | X   |
-|                | 1.2 로그인              | POST        | /auth/login                         | X   |
-|                | 1.3 로그인 갱신         | GET         | /auth/token/refresh                 | O   |
-|                | 1.4 로그아웃            | GET         | /auth/logout                        | O   |
-|                | 1.5 토큰 무효화         | GET         | /auth/token/revoke/:id              | O   |
-| 2. 게시글 관리 | 2.1 게시글 목록 조회    | GET         | /posts?search=&take=&draft=&cursor= | X   |
-|                | 2.2 게시글 상세 조회    | GET         | /posts/:id                          | X   |
-|                | 2.3 게시글 등록         | POST        | /posts                              | O   |
-|                | 2.4 게시글 수정         | PATCH       | /posts/:id                          | O   |
-|                | 2.5 게시글 삭제         | DELETE      | /posts/:id                          | O   |
-|                | 2.6 카테고리 목록 조회  | GET         | /categories                         | X   |
-|                | 2.7 카테고리 생성       | POST        | /categories                         | O   |
-|                | 2.8 카테고리 수정       | PATCH       | /categories/:name                   | O   |
-|                | 2.9 카테고리 삭제       | DELETE      | /categories/:name                   | O   |
-|                | 2.10 게시글 좋아요      | POST        | /posts/like                         | X   |
-|                | 2.11 비회원 댓글 작성   | POST        | /posts/comments/guest               | X   |
-|                | 2.12 비회원 대댓글 작성 | POST        | /posts/child-comments/guest         | X   |
-|                | 2.13 비회원 댓글 수정   | PATCH       | /posts/comments/guest/:id           | X   |
-|                | 2.14 비회원 댓글 삭제   | DELETE      | /posts/comments/guest/:id           | X   |
-|                | 2.15 댓글 작성          | POST        | /posts/comments                     | O   |
-|                | 2.16 대댓글 작성        | POST        | /posts/child-comments               | O   |
-|                | 2.17 댓글 수정          | PATCH       | /posts/comments/:id                 | O   |
-|                | 2.18 댓글 삭제          | DELETE      | /posts/comments/:id                 | O   |
-|                | 2.19 이미지 업로드      | POST        | /posts/upload                       | O   |
+| 구분           | 기능명                  | HTTP Method | REST API                           | JWT | ROLE |
+| -------------- | ----------------------- | ----------- | ---------------------------------- | --- | ---- |
+| 1. 회원 관리   | 1.1 이메일 가입         | POST        | /auth/register                     | X   |      |
+|                | 1.2 로그인              | POST        | /auth/login                        | X   |      |
+|                | 1.3 로그아웃            | GET         | /auth/logout                       | O   |      |
+|                | 1.4 로그인 갱신         | GET         | /auth/token/refresh                | O   |      |
+|                | 1.5 토큰 무효화         | GET         | /auth/token/revoke/:id             | O   |      |
+|                | 1.6 유저 목록 조회      | GET         | /user                              | O   |      |
+|                | 1.7 유저 상세 조회      | GET         | /user/:id                          | O   |      |
+|                | 1.8 유저 삭제           | DELETE      | /user/:id                          | O   |      |
+| 2. 게시글 관리 | 2.1 게시글 목록 조회    | GET         | /post?search=&take=&draft=&cursor= | X   |      |
+|                | 2.2 게시글 상세 조회    | GET         | /post/:id                          | X   |      |
+|                | 2.3 게시글 등록         | POST        | /post                              | O   |      |
+|                | 2.4 게시글 수정         | PATCH       | /post/:id                          | O   |      |
+|                | 2.5 게시글 삭제         | DELETE      | /post/:id                          | O   |      |
+|                | 2.10 게시글 좋아요      | POST        | /post/like/:id                     | X   |      |
+|                | 2.19 이미지 업로드      | POST        | /common/upload                     | O   |      |
+|                | 2.5 태그 목록 조회      | GET         | /tag                               | X   |      |
+|                | 2.5 태그 상세 조회      | GET         | /tag/:id                           | X   |      |
+|                | 2.7 태그 생성           | POST        | /tag                               | O   |      |
+|                | 2.8 태그 수정           | PATCH       | /tag/:id                           | O   |      |
+|                | 2.9 태그 삭제           | DELETE      | /tag/:id                           | O   |      |
+|                | 2.5 카테고리 목록 조회  | GET         | /category                          | X   |      |
+|                | 2.6 카테고리 상세 조회  | GET         | /category/:id                      | X   |      |
+|                | 2.7 카테고리 생성       | POST        | /category                          | O   |      |
+|                | 2.8 카테고리 수정       | PATCH       | /category/:id                      | O   |      |
+|                | 2.9 카테고리 삭제       | DELETE      | /category/:id                      | O   |      |
+|                | 2.11 비회원 댓글 작성   | POST        | /comment/guest                     | X   |      |
+|                | 2.12 비회원 대댓글 작성 | POST        | /posts/child-comments/guest        | X   |      |
+|                | 2.13 비회원 댓글 수정   | PATCH       | /posts/comments/guest/:id          | X   |      |
+|                | 2.14 비회원 댓글 삭제   | DELETE      | /posts/comments/guest/:id          | X   |      |
+|                | 2.15 댓글 작성          | POST        | /posts/comments                    | O   |      |
+|                | 2.16 대댓글 작성        | POST        | /posts/child-comments              | O   |      |
+|                | 2.17 댓글 수정          | PATCH       | /posts/comments/:id                | O   |      |
+|                | 2.18 댓글 삭제          | DELETE      | /posts/comments/:id                | O   |      |
 
 ### ⚡ ERD 설계
 
