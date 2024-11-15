@@ -59,7 +59,7 @@ export class PostService {
   async findAll(getPostsDto: GetPostsDto) {
     const { search, draft } = getPostsDto;
 
-    const whereCondition = {
+    const whereConditions = {
       ...(search
         ? {
             OR: [
@@ -74,7 +74,7 @@ export class PostService {
     try {
       const { results, nextCursor } = await this.applyCursorPaginationToPost(
         getPostsDto,
-        whereCondition,
+        whereConditions,
       );
 
       return {
@@ -92,7 +92,16 @@ export class PostService {
       { id },
       '게시글이 존재하지 않습니다',
       {
-        comments: true,
+        comments: {
+          where: { parentCommentId: null },
+          orderBy: { createdAt: 'desc' },
+          include: {
+            childComments: {
+              include: { author: { select: { id: true, name: true } } },
+            },
+            author: { select: { id: true, name: true } },
+          },
+        },
         category: true,
         tags: true,
         images: {
@@ -228,7 +237,7 @@ export class PostService {
 
   async applyCursorPaginationToPost(
     dto: CursorPaginationDto,
-    whereCondition: Prisma.PostWhereInput,
+    whereConditions: Prisma.PostWhereInput,
   ) {
     const { cursor, take } = dto;
     let { order } = dto;
@@ -244,7 +253,7 @@ export class PostService {
     const orderByCondition = this.parseOrderWithValidation(order);
 
     const results = await this.prismaService.post.findMany({
-      where: whereCondition,
+      where: whereConditions,
       orderBy: orderByCondition,
       skip: cursorCondition ? 1 : 0,
       take,
@@ -342,13 +351,13 @@ export class PostService {
   }
 
   async findPostWithNotFoundException(
-    whereCondition: Prisma.PostWhereUniqueInput,
+    whereConditions: Prisma.PostWhereUniqueInput,
     errorMessage: string,
-    includeCondition: Prisma.PostInclude = {},
+    includeConditions: Prisma.PostInclude = {},
   ) {
     const foundPost = await this.prismaService.post.findUnique({
-      where: whereCondition,
-      include: includeCondition,
+      where: whereConditions,
+      include: includeConditions,
     });
     if (!foundPost) throw new NotFoundException(errorMessage);
 

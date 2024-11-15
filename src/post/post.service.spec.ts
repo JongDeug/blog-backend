@@ -454,15 +454,15 @@ describe('PostService', () => {
       cursorPaginationDto.cursor =
         'eyJ2YWx1ZXMiOnsiaWQiOjI3fSwib3JkZXIiOlsiaWRfZGVzYyJdfQ==';
       // 디코딩 결과: {"values":{"id":27},"order":["id_desc"]}
-      const whereCondition = {
+      const whereConditions = {
         OR: [
           { title: { contains: 'mock' } },
           { content: { contains: 'mock' } },
         ],
         draft: false,
       };
-      const cursorCondition = { id: 27 };
-      const orderByCondition = { id: 'desc' };
+      const cursorConditions = { id: 27 };
+      const orderByConditions = { id: 'desc' };
       const results = [];
       const nextCursor =
         'eyJ2YsdflsdkfjWQiOjI5N30sIm9yZGVyIjpbImlkX2Rlc2MiXX0=';
@@ -479,7 +479,7 @@ describe('PostService', () => {
 
       const result = await postService.applyCursorPaginationToPost(
         cursorPaginationDto,
-        whereCondition,
+        whereConditions,
       );
 
       expect(result).toEqual({ results, nextCursor });
@@ -490,11 +490,11 @@ describe('PostService', () => {
         cursorPaginationDto.order,
       );
       expect(prismaMock.post.findMany).toHaveBeenCalledWith({
-        where: whereCondition,
-        orderBy: orderByCondition,
+        where: whereConditions,
+        orderBy: orderByConditions,
         skip: 1,
         take: cursorPaginationDto.take,
-        cursor: cursorCondition,
+        cursor: cursorConditions,
       });
       expect(postService.generateNextCursor).toHaveBeenCalledWith(
         results,
@@ -504,7 +504,7 @@ describe('PostService', () => {
 
     it('should return an array of posts when cursor is not provided', async () => {
       const cursorPaginationDto = new CursorPaginationDto();
-      const whereCondition = {
+      const whereConditions = {
         OR: [
           { title: { contains: 'mock' } },
           { content: { contains: 'mock' } },
@@ -524,13 +524,13 @@ describe('PostService', () => {
 
       const result = await postService.applyCursorPaginationToPost(
         cursorPaginationDto,
-        whereCondition,
+        whereConditions,
       );
 
       expect(result).toEqual({ results, nextCursor });
       expect(postService.parseOrderWithValidation).toHaveBeenCalled();
       expect(prismaMock.post.findMany).toHaveBeenCalledWith({
-        where: whereCondition,
+        where: whereConditions,
         orderBy: orderByCondition,
         skip: 0,
         take: cursorPaginationDto.take,
@@ -624,7 +624,7 @@ describe('PostService', () => {
   describe('findPostWithNotFoundException', () => {
     it('should return a post', async () => {
       const foundPost = { id: 1 } as Post;
-      const whereCondition = { id: 1 };
+      const whereConditions = { id: 1 };
       const includeCondition = {};
 
       jest.spyOn(prismaMock.post, 'findUnique').mockResolvedValue(foundPost);
@@ -636,19 +636,19 @@ describe('PostService', () => {
 
       expect(result).toEqual(foundPost);
       expect(prismaMock.post.findUnique).toHaveBeenCalledWith({
-        where: whereCondition,
+        where: whereConditions,
         include: includeCondition,
       });
     });
 
     it('should throw a NotFoundException when post does not exist', async () => {
-      const whereCondition = { id: 1 };
+      const whereConditions = { id: 1 };
 
       jest.spyOn(prismaMock.post, 'findUnique').mockResolvedValue(null);
 
       await expect(
         postService.findPostWithNotFoundException(
-          whereCondition,
+          whereConditions,
           'errorMessage',
         ),
       ).rejects.toThrow(NotFoundException);

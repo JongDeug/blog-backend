@@ -34,13 +34,13 @@ export class UserService {
   }
 
   async findUserWithNotFoundException(
-    whereCondition: Prisma.UserWhereUniqueInput,
+    whereConditions: Prisma.UserWhereUniqueInput,
     errorMessage: string,
-    omitCondition: Prisma.UserOmit = {},
+    omitConditions: Prisma.UserOmit = {},
   ) {
     const foundUser = await this.prismaService.user.findUnique({
-      where: whereCondition,
-      omit: omitCondition,
+      where: whereConditions,
+      omit: omitConditions,
     });
     if (!foundUser) throw new NotFoundException(errorMessage);
 

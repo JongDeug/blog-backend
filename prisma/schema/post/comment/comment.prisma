@@ -23,7 +23,7 @@ model Comment {
   /// Foreign Key
   ///
   /// 부모 댓글 ID {@link Comment.id}
-  // [자식] parentCommentId 는 "다" 인 ChildComment 가 가지고 있음 => 그래서 자식 쪽에(parentComment가 있는 곳) @relation
+  // [자식] parentCommentId는 "다" 인 ChildComment가 가지고 있음 => 그래서 자식 쪽에(parentComment가 있는 곳) @relation
   parentCommentId Int? // 외래키(ParentComment)
   parentComment   Comment? @relation("ParentComment", fields: [parentCommentId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 

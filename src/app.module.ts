@@ -21,7 +21,7 @@ import * as winston from 'winston';
 import { LoggingInterceptor } from './common/interceptor/logging.interceptor';
 import { join } from 'path';
 import { PrismaClientExceptionFilter } from './prisma/filter/prisma-client-exception.filter';
-import { CommentModule } from './comment/comment.module';
+import { CommentModule } from './post/comment/comment.module';
 
 @Module({
   imports: [
