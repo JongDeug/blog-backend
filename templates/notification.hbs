@@ -1,0 +1,32 @@
+<html lang='en'>
+  <head>
+    <meta charset='UTF-8' />
+    <meta name='viewport' content='width=device-width, initial-scale=1.0' />
+    <title>Welcome to Our Service!</title>
+    <style>
+      body { font-family: Arial, sans-serif; background-color: #f4f4f4; color:
+      #333; padding: 20px; } .container { background-color: #fff; border-radius:
+      10px; padding: 20px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); } h1 {
+      color: #4CAF50; } p { font-size: 16px; } .button { display: inline-block;
+      padding: 10px 20px; background-color: #4CAF50; color: #fff;
+      text-decoration: none; border-radius: 5px; font-size: 16px; } .footer {
+      font-size: 12px; color: #777; margin-top: 20px; }
+    </style>
+  </head>
+  <body>
+    <div class='container'>
+      <h1>안녕하세요, {{receiverName}}님!</h1>
+      <p>블로그를 이용해 주셔서 감사합니다.
+        {{title}}
+        게시글에
+        {{senderName}}
+        님이 댓글을 달았습니다.</p>
+      <p>게시글로 이동하려면 아래 버튼을 클릭해주세요:</p>
+      <a href='{{link}}' class='button'>블로그로 이동하기</a>
+      <div class='footer'>
+        <p>궁금한 점이 있으시면 편하게
+          <a href='mailto:jongdeug2021@gmail.com'>연락주세요</a>.</p>
+      </div>
+    </div>
+  </body>
+</html>

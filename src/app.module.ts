@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import * as Joi from 'joi';
@@ -12,7 +12,7 @@ import { PostModule } from './post/post.module';
 import { CommonController } from './common/common.controller';
 import { CommonModule } from './common/common.module';
 import { MulterModule } from '@nestjs/platform-express';
-import { MulterConfigService } from './common/config/multer-config.service';
+import { MulterConfigService } from './common/multer-config.service';
 import { CategoryModule } from './category/category.module';
 import { TagModule } from './tag/tag.module';
 import { ScheduleModule } from '@nestjs/schedule';
@@ -22,6 +22,10 @@ import { LoggingInterceptor } from './common/interceptor/logging.interceptor';
 import { join } from 'path';
 import { PrismaClientExceptionFilter } from './prisma/filter/prisma-client-exception.filter';
 import { CommentModule } from './post/comment/comment.module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
+import { MailerModule } from '@nestjs-modules/mailer';
+import { envVariableKeys } from './common/const/env.const';
+import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 
 @Module({
   imports: [
@@ -40,8 +44,9 @@ import { CommentModule } from './post/comment/comment.module';
         HASH_ROUNDS: Joi.number().required(),
         ACCESS_TOKEN_SECRET: Joi.string().required(),
         REFRESH_TOKEN_SECRET: Joi.string().required(),
-        MAIL_ID: Joi.string().required(),
-        MAIL_PWD: Joi.string().required(),
+        EMAIL_HOST: Joi.string().required(),
+        EMAIL_ID: Joi.string().required(),
+        EMAIL_PWD: Joi.string().required(),
       }),
       isGlobal: true,
     }),
@@ -76,6 +81,29 @@ import { CommentModule } from './post/comment/comment.module';
     CacheModule.register({ isGlobal: true }),
     MulterModule.registerAsync({
       useClass: MulterConfigService,
+    }),
+    EventEmitterModule.forRoot(),
+    MailerModule.forRootAsync({
+      useFactory: (configService: ConfigService) => ({
+        transport: {
+          host: configService.get(envVariableKeys.emailHost),
+          auth: {
+            user: configService.get(envVariableKeys.emailId),
+            pass: configService.get(envVariableKeys.emailPwd),
+          },
+        },
+        defaults: {
+          from: configService.get(envVariableKeys.emailId),
+        },
+        template: {
+          dir: process.cwd() + '/templates/',
+          adapter: new HandlebarsAdapter(), // or new PugAdapter() or new EjsAdapter()
+          options: {
+            strict: true,
+          },
+        },
+      }),
+      inject: [ConfigService],
     }),
     PrismaModule,
     AuthModule,

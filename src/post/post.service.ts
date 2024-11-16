@@ -57,25 +57,9 @@ export class PostService {
   }
 
   async findAll(getPostsDto: GetPostsDto) {
-    const { search, draft } = getPostsDto;
-
-    const whereConditions = {
-      ...(search
-        ? {
-            OR: [
-              { title: { contains: search } },
-              { content: { contains: search } },
-            ],
-          }
-        : {}),
-      draft,
-    };
-
     try {
-      const { results, nextCursor } = await this.applyCursorPaginationToPost(
-        getPostsDto,
-        whereConditions,
-      );
+      const { results, nextCursor } =
+        await this.applyCursorPaginationToPost(getPostsDto);
 
       return {
         posts: results,
@@ -88,41 +72,9 @@ export class PostService {
   }
 
   async findOne(id: number, guestId: string) {
-    const foundPost = await this.findPostWithNotFoundException(
-      { id },
-      '게시글이 존재하지 않습니다',
-      {
-        comments: {
-          where: { parentCommentId: null },
-          orderBy: { createdAt: 'desc' },
-          include: {
-            childComments: {
-              include: { author: { select: { id: true, name: true } } },
-            },
-            author: { select: { id: true, name: true } },
-          },
-        },
-        category: true,
-        tags: true,
-        images: {
-          omit: { postId: true },
-        },
-        author: {
-          omit: {
-            password: true,
-            role: true,
-            createdAt: true,
-          },
-        },
-        postLikes: {
-          where: {
-            guestId, // unique
-          },
-        },
-        _count: { select: { postLikes: true } },
-      },
-    );
+    const foundPost = await this.findPostWithDetails(id, guestId);
 
+    // guestId의 게시글 좋아요 유무
     const { postLikes, ...restFields } = foundPost;
     const post = { ...restFields, isLiked: postLikes.length > 0 };
 
@@ -135,11 +87,7 @@ export class PostService {
       '유저를 찾을 수 없습니다',
     );
 
-    const foundPost = await this.findPostWithNotFoundException(
-      { id: postId },
-      '게시글이 존재하지 않습니다',
-      { images: true },
-    );
+    const foundPost = await this.findPostWithImages(postId);
 
     // 작성자 비교
     if (foundUser.id !== foundPost.authorId) {
@@ -161,11 +109,7 @@ export class PostService {
   }
 
   async remove(id: number) {
-    const foundPost = await this.findPostWithNotFoundException(
-      { id },
-      '게시글이 존재하지 않습니다',
-      { images: true },
-    );
+    const foundPost = await this.findPostWithImages(id);
 
     await this.prismaService.post.delete({ where: { id } });
 
@@ -193,10 +137,7 @@ export class PostService {
   }
 
   async togglePostLike(postId: number, guestId: string) {
-    await this.findPostWithNotFoundException(
-      { id: postId },
-      '게시글이 존재하지 않습니다',
-    );
+    await this.findPostById(postId);
 
     const isLiked = await this.prismaService.postLike.findUnique({
       where: {
@@ -235,11 +176,21 @@ export class PostService {
 
   // ====================================== Utils ======================================
 
-  async applyCursorPaginationToPost(
-    dto: CursorPaginationDto,
-    whereConditions: Prisma.PostWhereInput,
-  ) {
-    const { cursor, take } = dto;
+  async applyCursorPaginationToPost(dto: GetPostsDto) {
+    const { cursor, take, search, draft } = dto;
+
+    const whereConditions = {
+      ...(search
+        ? {
+            OR: [
+              { title: { contains: search } },
+              { content: { contains: search } },
+            ],
+          }
+        : {}),
+      draft,
+    };
+
     let { order } = dto;
     let cursorCondition;
 
@@ -350,16 +301,78 @@ export class PostService {
     return base64;
   }
 
-  async findPostWithNotFoundException(
-    whereConditions: Prisma.PostWhereUniqueInput,
-    errorMessage: string,
-    includeConditions: Prisma.PostInclude = {},
-  ) {
+  // async findPostWithNotFoundException<T extends Prisma.PostInclude>(
+  //   whereConditions: Prisma.PostWhereUniqueInput,
+  //   errorMessage: string,
+  //   includeConditions?: Prisma.Subset<T, Prisma.PostInclude>,
+  // ) {
+  //   const foundPost = await this.prismaService.post.findUnique({
+  //     where: whereConditions,
+  //     include: includeConditions,
+  //   });
+  //   if (!foundPost) throw new NotFoundException(errorMessage);
+
+  //   return foundPost;
+  // }
+
+  async findPostById(id: number) {
     const foundPost = await this.prismaService.post.findUnique({
-      where: whereConditions,
-      include: includeConditions,
+      where: { id },
     });
-    if (!foundPost) throw new NotFoundException(errorMessage);
+    if (!foundPost) throw new NotFoundException('게시글이 존재하지 않습니다');
+
+    return foundPost;
+  }
+
+  async findPostWithImages(id: number) {
+    const foundPost = await this.prismaService.post.findUnique({
+      where: { id },
+      include: { images: true },
+    });
+    if (!foundPost) throw new NotFoundException('게시글이 존재하지 않습니다');
+
+    return foundPost;
+  }
+
+  async findPostWithDetails(id: number, guestId: string) {
+    const foundPost = await this.prismaService.post.findUnique({
+      where: { id },
+      include: {
+        comments: {
+          where: { parentCommentId: null },
+          orderBy: { createdAt: 'desc' },
+          include: {
+            childComments: {
+              include: {
+                author: { select: { id: true, name: true } },
+                guest: true,
+              },
+            },
+            author: { select: { id: true, name: true } },
+            guest: true,
+          },
+        },
+        category: true,
+        tags: true,
+        images: {
+          omit: { postId: true },
+        },
+        author: {
+          omit: {
+            password: true,
+            role: true,
+            createdAt: true,
+          },
+        },
+        postLikes: {
+          where: {
+            guestId, // unique
+          },
+        },
+        _count: { select: { postLikes: true } },
+      },
+    });
+    if (!foundPost) throw new NotFoundException('게시글이 존재하지 않습니다');
 
     return foundPost;
   }
