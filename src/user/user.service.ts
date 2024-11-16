@@ -45,6 +45,10 @@ export class UserService {
     return foundUser;
   }
 
+  async findUserByEmail(email: string) {
+    return this.prismaService.user.findUnique({ where: { email } });
+  }
+
   // async findUserWithNotFoundException(
   //   whereConditions: Prisma.UserWhereUniqueInput,
   //   errorMessage: string,

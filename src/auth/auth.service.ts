@@ -3,6 +3,7 @@ import {
   ConflictException,
   Inject,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -16,6 +17,7 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { tokenAge } from './const/token-age.const';
 import { UserService } from 'src/user/user.service';
+import { NotFoundError } from 'rxjs';
 
 @Injectable()
 export class AuthService {
@@ -29,9 +31,7 @@ export class AuthService {
   ) {}
 
   async register(registerDto: RegisterDto) {
-    const foundUser = await this.prismaService.user.findUnique({
-      where: { email: registerDto.email },
-    });
+    const foundUser = await this.userService.findUserByEmail(registerDto.email);
     if (foundUser) throw new ConflictException('이미 가입한 이메일입니다');
 
     const hashedPassword = await bcrypt.hash(
@@ -103,14 +103,15 @@ export class AuthService {
   }
 
   async authenticate(email: string, password: string) {
-    const foundUser = await this.userService.findUserWithNotFoundException(
-      { email },
-      '가입된 이메일이 아닙니다',
-    );
+    const foundUser = await this.userService.findUserByEmail(email);
+    if (!foundUser) throw new NotFoundException('가입된 이메일이 아닙니다');
 
-    // 비밀번호 확인
-    const isCorrect = await bcrypt.compare(password, foundUser.password);
-    if (!isCorrect) throw new BadRequestException('잘못된 로그인 정보입니다');
+    const isCorrectPassword = await bcrypt.compare(
+      password,
+      foundUser.password,
+    );
+    if (!isCorrectPassword)
+      throw new BadRequestException('잘못된 로그인 정보입니다');
 
     return foundUser;
   }
@@ -190,12 +191,9 @@ export class AuthService {
   }
 
   async revokeToken(userId: number) {
-    await this.userService.findUserWithNotFoundException(
-      { id: userId },
-      '유저를 찾을 수 없습니다',
-    );
+    const foundUser = await this.userService.findUserById(userId);
 
     // 캐시 삭제
-    await this.cacheManager.del(`REFRESH_TOKEN_${userId}`);
+    await this.cacheManager.del(`REFRESH_TOKEN_${foundUser.id}`);
   }
 }
