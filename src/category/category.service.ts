@@ -13,11 +13,7 @@ export class CategoryService {
   constructor(private readonly prismaService: PrismaService) {}
 
   async create(createCategoryDto: CreateCategoryDto) {
-    const categoryExists = await this.prismaService.category.findUnique({
-      where: { name: createCategoryDto.name },
-    });
-    if (categoryExists)
-      throw new ConflictException('이미 존재하는 카테고리입니다');
+    await this.findCategoryByName(createCategoryDto.name);
 
     const newCategory = await this.prismaService.category.create({
       data: {
@@ -39,35 +35,17 @@ export class CategoryService {
   }
 
   async findOne(id: number) {
-    const foundCategory = await this.prismaService.category.findUnique({
-      where: { id },
-      include: { posts: true },
-    });
-
-    if (!foundCategory) {
-      throw new NotFoundException('존재하지 않는 카테고리입니다');
-    }
-
-    return foundCategory;
+    return this.findCategoryById(id);
   }
 
   async update(id: number, updateCategoryDto: UpdateCategoryDto) {
-    const foundCategory = await this.prismaService.category.findUnique({
-      where: { id },
-    });
-    if (!foundCategory)
-      throw new NotFoundException('존재하지 않는 카테고리입니다');
+    const foundCategory = await this.findCategoryById(id);
 
-    // 업데이트 하려는 카테고리 검색
-    const targetCategoryExits = await this.prismaService.category.findUnique({
-      where: { name: updateCategoryDto.name },
-    });
-    if (targetCategoryExits)
-      throw new ConflictException('이미 존재하는 카테고리입니다');
+    // 업데이트 하려는 카테고리가 존재하는지 확인
+    await this.findCategoryByName(updateCategoryDto.name);
 
-    // 카테고리 업데이트
     const newCategory = await this.prismaService.category.update({
-      where: { id },
+      where: { id: foundCategory.id },
       data: {
         name: updateCategoryDto.name,
       },
@@ -77,12 +55,7 @@ export class CategoryService {
   }
 
   async remove(id: number) {
-    const foundCategory = await this.prismaService.category.findUnique({
-      where: { id },
-      include: { posts: true },
-    });
-    if (!foundCategory)
-      throw new NotFoundException('존재하지 않는 카테고리입니다');
+    const foundCategory = await this.findCategoryById(id);
 
     // DB 설정 해놓긴 함. Post.category: (onDelete: Restrict)
     if (foundCategory.posts.length > 0) {
@@ -92,5 +65,26 @@ export class CategoryService {
     }
 
     await this.prismaService.category.delete({ where: { id } });
+  }
+
+  async findCategoryById(id: number) {
+    const foundCategory = await this.prismaService.category.findUnique({
+      where: { id },
+      include: { posts: true },
+    });
+    if (!foundCategory)
+      throw new NotFoundException('존재하지 않는 카테고리입니다');
+
+    return foundCategory;
+  }
+
+  async findCategoryByName(name: string) {
+    const foundCategory = await this.prismaService.category.findUnique({
+      where: { name },
+    });
+    if (foundCategory)
+      throw new ConflictException('이미 존재하는 카테고리입니다');
+
+    return foundCategory;
   }
 }
