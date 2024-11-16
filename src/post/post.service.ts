@@ -13,7 +13,6 @@ import { ConfigService } from '@nestjs/config';
 import { envVariableKeys } from 'src/common/const/env.const';
 import { GetPostsDto } from './dto/get-posts.dto';
 import { Image, Post, Prisma, User } from '@prisma/client';
-import { CursorPaginationDto } from './dto/cursor-pagination.dto';
 import { TaskService } from 'src/common/task.service';
 import { UserService } from '../user/user.service';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
@@ -31,10 +30,7 @@ export class PostService {
   ) {}
 
   async create(userId: number, createPostDto: CreatePostDto) {
-    const foundUser = await this.userService.findUserWithNotFoundException(
-      { id: userId },
-      '유저를 찾을 수 없습니다',
-    );
+    const foundUser = await this.userService.findUserById(userId);
 
     const newPost = await this.createPost(foundUser, createPostDto);
 
@@ -82,10 +78,7 @@ export class PostService {
   }
 
   async update(postId: number, userId: number, updatePostDto: UpdatePostDto) {
-    const foundUser = await this.userService.findUserWithNotFoundException(
-      { id: userId },
-      '유저를 찾을 수 없습니다',
-    );
+    const foundUser = await this.userService.findUserById(userId);
 
     const foundPost = await this.findPostWithImages(postId);
 

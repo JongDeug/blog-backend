@@ -15,35 +15,47 @@ export class UserService {
   }
 
   async findOne(id: number) {
-    const foundUser = await this.findUserWithNotFoundException(
-      { id },
-      '존재하지 않는 사용자입니다',
-      { password: true },
-    );
+    const foundUser = await this.findUserWithoutPassword(id);
 
     return foundUser;
   }
 
   async remove(id: number) {
-    await this.findUserWithNotFoundException(
-      { id },
-      '존재하지 않는 사용자입니다',
-    );
+    const foundUser = await this.findUserById(id);
 
-    await this.prismaService.user.delete({ where: { id } });
+    await this.prismaService.user.delete({ where: { id: foundUser.id } });
   }
 
-  async findUserWithNotFoundException(
-    whereConditions: Prisma.UserWhereUniqueInput,
-    errorMessage: string,
-    omitConditions: Prisma.UserOmit = {},
-  ) {
+  async findUserById(id: number) {
     const foundUser = await this.prismaService.user.findUnique({
-      where: whereConditions,
-      omit: omitConditions,
+      where: { id },
     });
-    if (!foundUser) throw new NotFoundException(errorMessage);
+    if (!foundUser) throw new NotFoundException('사용자가 존재하지 않습니다');
 
     return foundUser;
   }
+
+  async findUserWithoutPassword(id: number) {
+    const foundUser = await this.prismaService.user.findUnique({
+      where: { id },
+      omit: { password: true },
+    });
+    if (!foundUser) throw new NotFoundException('사용자가 존재하지 않습니다');
+
+    return foundUser;
+  }
+
+  // async findUserWithNotFoundException(
+  //   whereConditions: Prisma.UserWhereUniqueInput,
+  //   errorMessage: string,
+  //   omitConditions: Prisma.UserOmit = {},
+  // ) {
+  //   const foundUser = await this.prismaService.user.findUnique({
+  //     where: whereConditions,
+  //     omit: omitConditions,
+  //   });
+  //   if (!foundUser) throw new NotFoundException(errorMessage);
+
+  //   return foundUser;
+  // }
 }
