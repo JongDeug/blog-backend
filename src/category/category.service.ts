@@ -13,6 +13,7 @@ export class CategoryService {
   constructor(private readonly prismaService: PrismaService) {}
 
   async create(createCategoryDto: CreateCategoryDto) {
+    // 이미 존재하는 카테고리인지 확인
     await this.findCategoryByName(createCategoryDto.name);
 
     const newCategory = await this.prismaService.category.create({
@@ -34,7 +35,7 @@ export class CategoryService {
     });
   }
 
-  async findOne(id: number) {
+  findOne(id: number) {
     return this.findCategoryById(id);
   }
 
@@ -44,6 +45,7 @@ export class CategoryService {
     // 업데이트 하려는 카테고리가 존재하는지 확인
     await this.findCategoryByName(updateCategoryDto.name);
 
+    // 카테고리 업데이트
     const newCategory = await this.prismaService.category.update({
       where: { id: foundCategory.id },
       data: {
