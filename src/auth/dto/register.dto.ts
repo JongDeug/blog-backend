@@ -6,7 +6,7 @@ import {
   ValidationOptions,
 } from 'class-validator';
 
-function IsPassword(validationOptions?: ValidationOptions) {
+export function IsPassword(validationOptions?: ValidationOptions) {
   return function (object: object, propertyName: string) {
     registerDecorator({
       target: object.constructor,
@@ -25,15 +25,15 @@ function IsPassword(validationOptions?: ValidationOptions) {
 }
 
 export class RegisterDto {
-  @IsNotEmpty()
   @IsString()
+  @IsNotEmpty()
   name: string;
 
-  @IsNotEmpty()
   @IsEmail({}, { message: '이메일 형식이 아닙니다' })
+  @IsNotEmpty()
   email: string;
 
-  @IsNotEmpty()
   @IsPassword()
+  @IsNotEmpty()
   password: string;
 }

@@ -10,7 +10,9 @@ import { UserService } from 'src/user/user.service';
 import { PostService } from '../post.service';
 import { Prisma } from '@prisma/client';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { MailService, SendMailInfo } from 'src/common/mail.service';
+import { MailService } from 'src/common/mail.service';
+import { CreateCommentByGuestDto } from './dto/create-comment-by-guest';
+import { AuthService } from 'src/auth/auth.service';
 
 @Injectable()
 export class CommentService {
@@ -18,6 +20,7 @@ export class CommentService {
     private readonly prismaService: PrismaService,
     private readonly postService: PostService,
     private readonly userService: UserService,
+    private readonly authService: AuthService,
     private readonly eventEmitter: EventEmitter2,
     private readonly mailService: MailService,
   ) {}
@@ -127,10 +130,7 @@ export class CommentService {
   async update(userId: number, id: number, updateCommentDto: UpdateCommentDto) {
     const foundUser = await this.userService.findUserById(userId);
 
-    const foundComment = await this.prismaService.comment.findUnique({
-      where: { id },
-    });
-    if (!foundComment) throw new NotFoundException('댓글이 존재하지 않습니다');
+    const foundComment = await this.findCommentById(id, false);
 
     // 댓글 작성자가 아니면서, 관리자가 아니면
     if (foundUser.id !== foundComment.authorId && foundUser.role !== 'ADMIN') {
@@ -148,10 +148,7 @@ export class CommentService {
   async remove(id: number, userId: number) {
     const foundUser = await this.userService.findUserById(userId);
 
-    const foundComment = await this.prismaService.comment.findUnique({
-      where: { id },
-    });
-    if (!foundComment) throw new NotFoundException('댓글이 존재하지 않습니다');
+    const foundComment = await this.findCommentById(id, false);
 
     if (foundUser.id !== foundComment.authorId && foundUser.role !== 'ADMIN') {
       throw new UnauthorizedException('댓글에 대한 권한이 없습니다');
@@ -159,6 +156,125 @@ export class CommentService {
 
     await this.prismaService.comment.delete({
       where: { id: foundComment.id },
+    });
+  }
+
+  async createCommentByGuest(
+    guestId: string,
+    createCommentByGuestDto: CreateCommentByGuestDto,
+  ) {
+    const { postId, content } = createCommentByGuestDto;
+
+    const foundPost = await this.postService.findPostById(postId);
+
+    const newComment = await this.prismaService.$transaction(
+      async (database) => {
+        const newGuestComment = await this.createGuestComment(
+          database,
+          guestId,
+          createCommentByGuestDto,
+        );
+
+        return database.comment.create({
+          data: {
+            content,
+            // GuestComment
+            guest: {
+              connect: { id: newGuestComment.id },
+            },
+            post: {
+              connect: { id: foundPost.id },
+            },
+          },
+        });
+      },
+    );
+
+    // 이메일 전송 시스템
+
+    return newComment.id;
+  }
+
+  async createChildCommentByGuest(
+    guestId: string,
+    createCommentByGuestDto: CreateCommentByGuestDto,
+  ) {
+    const { parentCommentId, content } = createCommentByGuestDto;
+
+    const foundParentComment = await this.findCommentById(
+      parentCommentId,
+      true,
+    );
+
+    const newChildComment = await this.prismaService.$transaction(
+      async (database) => {
+        const newGuestComment = await this.createGuestComment(
+          database,
+          guestId,
+          createCommentByGuestDto,
+        );
+
+        return database.comment.create({
+          data: {
+            content,
+            // GuestComment
+            guest: {
+              connect: { id: newGuestComment.id },
+            },
+            post: {
+              connect: { id: foundParentComment.postId },
+            },
+            parentComment: {
+              connect: { id: foundParentComment.id },
+            },
+          },
+        });
+      },
+    );
+
+    // 이메일 전송 시스템
+
+    return newChildComment.id;
+  }
+
+  // ----------
+
+  async findCommentById(id: number, isParent: boolean) {
+    const foundComment = await this.prismaService.comment.findUnique({
+      where: { id },
+    });
+    if (!foundComment)
+      throw new NotFoundException(
+        `${isParent ? '부모 ' : ''}댓글이 존재하지 않습니다`,
+      );
+
+    return foundComment;
+  }
+
+  async createGuestComment(
+    database: Prisma.TransactionClient,
+    guestId: string,
+    createCommentByGuestDto: CreateCommentByGuestDto,
+  ) {
+    const { nickName, password, email } = createCommentByGuestDto;
+
+    // 비밀번호 암호화
+    const hashedPassword = await this.authService.hashPassword(password);
+
+    return database.guestComment.create({
+      data: {
+        nickName,
+        email,
+        password: hashedPassword,
+        // (Guest <=> GuestComment): 일 대 다 관계임
+        // Guest가 있으면 연결하고, 없을 때 생성함.
+        guest: {
+          connectOrCreate: {
+            where: { guestId },
+            create: { guestId },
+          },
+        },
+      },
     });
   }
 }

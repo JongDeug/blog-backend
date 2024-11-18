@@ -34,10 +34,7 @@ export class AuthService {
     const foundUser = await this.userService.findUserByEmail(registerDto.email);
     if (foundUser) throw new ConflictException('이미 가입한 이메일입니다');
 
-    const hashedPassword = await bcrypt.hash(
-      registerDto.password,
-      this.configService.get(envVariableKeys.hashRounds),
-    );
+    const hashedPassword = await this.hashPassword(registerDto.password);
 
     const newUser = await this.prismaService.user.create({
       data: {
@@ -195,5 +192,12 @@ export class AuthService {
 
     // 캐시 삭제
     await this.cacheManager.del(`REFRESH_TOKEN_${foundUser.id}`);
+  }
+
+  hashPassword(password: string) {
+    return bcrypt.hash(
+      password,
+      this.configService.get(envVariableKeys.hashRounds),
+    );
   }
 }

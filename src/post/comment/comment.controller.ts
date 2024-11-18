@@ -12,6 +12,9 @@ import { CommentService } from './comment.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
 import { UserId } from 'src/user/decorator/user-id.decorator';
+import { Public } from 'src/auth/decorator/public.decorator';
+import { CreateCommentByGuestDto } from './dto/create-comment-by-guest';
+import { Cookies } from 'src/common/decorator/cookies.decorator';
 
 @Controller('post/comment')
 export class CommentController {
@@ -21,7 +24,6 @@ export class CommentController {
   create(@UserId() userId: number, @Body() createCommentDto: CreateCommentDto) {
     const { parentCommentId } = createCommentDto;
 
-    // 부모 id가 없다면 댓글, 있다면 대댓글
     if (!parentCommentId) {
       return this.commentService.createComment(userId, createCommentDto);
     } else {
@@ -30,7 +32,7 @@ export class CommentController {
   }
 
   @Patch('user/:id')
-  update(
+  userUpdate(
     @Param('id', ParseIntPipe) id: number,
     @UserId() userId: number,
     @Body() updateCommentDto: UpdateCommentDto,
@@ -41,5 +43,26 @@ export class CommentController {
   @Delete('user/:id')
   remove(@Param('id', ParseIntPipe) id: number, @UserId() userId: number) {
     return this.commentService.remove(id, userId);
+  }
+
+  @Post('guest')
+  @Public()
+  createByGuest(
+    @Cookies('guestId') guestId: string,
+    @Body() createCommentByGuestDto: CreateCommentByGuestDto,
+  ) {
+    const { parentCommentId } = createCommentByGuestDto;
+
+    if (!parentCommentId) {
+      return this.commentService.createCommentByGuest(
+        guestId,
+        createCommentByGuestDto,
+      );
+    } else {
+      return this.commentService.createChildCommentByGuest(
+        guestId,
+        createCommentByGuestDto,
+      );
+    }
   }
 }

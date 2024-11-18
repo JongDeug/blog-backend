@@ -6,12 +6,12 @@ export class CreateCommentDto {
   @IsOptional()
   postId?: number; // 댓글
 
-  @IsString()
-  @IsNotEmpty()
-  content: string;
-
   @IsNumber()
   @IsNotEmpty()
   @IsOptional()
   parentCommentId?: number; // 대댓글
+
+  @IsString()
+  @IsNotEmpty()
+  content: string;
 }
