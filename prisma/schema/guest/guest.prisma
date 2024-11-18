@@ -8,18 +8,9 @@ model Guest {
   /// 비회원 id, 프론트에서 생성
   guestId  String   @unique
 
-  /// 닉네임
-  nickName String?   @db.VarChar(100)
-
-  /// 이메일
-  email    String?   @db.VarChar(200)
-
-  /// 비밀번호(해시값)
-  password String?   @db.VarChar(255)
-
   /// ---
   /// RELATIONS
   /// ---
   postLikes PostLike[]
-  comment  Comment?
+  guestComments GuestComment[]
 }

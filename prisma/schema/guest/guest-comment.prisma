@@ -1,0 +1,27 @@
+/// 비회원 댓글 테이블
+///
+/// @namespace Blog
+model GuestComment {
+  /// Pirmary Key
+  id       Int      @id @default(autoincrement())
+
+  /// 닉네임
+  nickName String   @db.VarChar(100)
+
+  /// 이메일
+  email    String   @db.VarChar(200)
+
+  /// 비밀번호(해시값)
+  password String   @db.VarChar(255)
+
+  /// ---
+  /// RELATIONS
+  /// ---
+  comment  Comment?
+
+  /// Foreign Key
+  ///
+  /// 작성자(비회원) ID {@link Guest.guestId}
+  guestId String
+  guest   Guest @relation(fields: [guestId], references: [guestId])
+}

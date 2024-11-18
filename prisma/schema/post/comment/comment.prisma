@@ -41,7 +41,7 @@ model Comment {
 
   /// Foreign Key
   ///
-  /// 작성자(비회원) ID {@link Guest.guestId}
-  guestId String?       @unique
-  guest   Guest? @relation(fields: [guestId], references: [guestId])
+  /// 작성자(비회원) ID {@link GuestComment.id}
+  guestId Int? @unique
+  guest   GuestComment? @relation(fields: [guestId], references: [id])
 }

@@ -6,12 +6,16 @@
 ## Blog
 ```mermaid
 erDiagram
+"GuestComment" {
+  Int id PK
+  String nickName
+  String email
+  String password
+  String guestId FK
+}
 "Guest" {
   Int id PK
   String guestId UK
-  String nickName "nullable"
-  String email "nullable"
-  String password "nullable"
 }
 "Category" {
   Int id PK
@@ -27,7 +31,7 @@ erDiagram
   Int parentCommentId FK "nullable"
   Int postId FK
   Int authorId FK "nullable"
-  String guestId FK "nullable"
+  Int guestId FK "nullable"
 }
 "Image" {
   Int id PK
@@ -68,10 +72,11 @@ erDiagram
   String A FK
   String B FK
 }
+"GuestComment" }o--|| "Guest" : guest
 "Comment" }o--o| "Comment" : parentComment
 "Comment" }o--|| "Post" : post
 "Comment" }o--o| "User" : author
-"Comment" |o--o| "Guest" : guest
+"Comment" |o--o| "GuestComment" : guest
 "Image" }o--|| "Post" : post
 "PostLike" }o--|| "Post" : post
 "PostLike" }o--|| "Guest" : guest
@@ -81,15 +86,25 @@ erDiagram
 "_PostToTag" }o--|| "Tag" : Tag
 ```
 
+### `GuestComment`
+비회원 댓글 테이블
+
+**Properties**
+  - `id`: Pirmary Key
+  - `nickName`: 닉네임
+  - `email`: 이메일
+  - `password`: 비밀번호(해시값)
+  - `guestId`
+    > Foreign Key
+    > 
+    > 작성자(비회원) ID [Guest.guestId](#Guest)
+
 ### `Guest`
 비회원 테이블
 
 **Properties**
   - `id`: Pirmary Key
   - `guestId`: 비회원 id, 프론트에서 생성
-  - `nickName`: 닉네임
-  - `email`: 이메일
-  - `password`: 비밀번호(해시값)
 
 ### `Category`
 카테고리 테이블
@@ -123,7 +138,7 @@ erDiagram
   - `guestId`
     > Foreign Key
     > 
-    > 작성자(비회원) ID [Guest.guestId](#Guest)
+    > 작성자(비회원) ID [GuestComment.id](#GuestComment)
 
 ### `Image`
 이미지 테이블
