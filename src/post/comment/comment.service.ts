@@ -145,20 +145,20 @@ export class CommentService {
     });
   }
 
-  // async remove(id: number, userId: number) {
-  //   const foundUser = await this.userService.findUserById(userId);
+  async remove(id: number, userId: number) {
+    const foundUser = await this.userService.findUserById(userId);
 
-  //   const foundComment = await this.prismaService.comment.findUnique({
-  //     where: { id },
-  //   });
-  //   if (!foundComment) throw new NotFoundException('댓글이 존재하지 않습니다');
+    const foundComment = await this.prismaService.comment.findUnique({
+      where: { id },
+    });
+    if (!foundComment) throw new NotFoundException('댓글이 존재하지 않습니다');
 
-  //   if (foundUser.id !== foundComment.authorId && foundUser.role !== 'ADMIN') {
-  //     throw new UnauthorizedException('댓글에 대한 권한이 없습니다');
-  //   }
+    if (foundUser.id !== foundComment.authorId && foundUser.role !== 'ADMIN') {
+      throw new UnauthorizedException('댓글에 대한 권한이 없습니다');
+    }
 
-  //   await this.prismaService.comment.delete({
-  //     where: { id: foundComment.id },
-  //   });
-  // }
+    await this.prismaService.comment.delete({
+      where: { id: foundComment.id },
+    });
+  }
 }
