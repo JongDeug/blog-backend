@@ -294,82 +294,6 @@ export class PostService {
     return base64;
   }
 
-  // async findPostWithNotFoundException<T extends Prisma.PostInclude>(
-  //   whereConditions: Prisma.PostWhereUniqueInput,
-  //   errorMessage: string,
-  //   includeConditions?: Prisma.Subset<T, Prisma.PostInclude>,
-  // ) {
-  //   const foundPost = await this.prismaService.post.findUnique({
-  //     where: whereConditions,
-  //     include: includeConditions,
-  //   });
-  //   if (!foundPost) throw new NotFoundException(errorMessage);
-
-  //   return foundPost;
-  // }
-
-  async findPostById(id: number) {
-    const foundPost = await this.prismaService.post.findUnique({
-      where: { id },
-    });
-    if (!foundPost) throw new NotFoundException('게시글이 존재하지 않습니다');
-
-    return foundPost;
-  }
-
-  async findPostWithImages(id: number) {
-    const foundPost = await this.prismaService.post.findUnique({
-      where: { id },
-      include: { images: true },
-    });
-    if (!foundPost) throw new NotFoundException('게시글이 존재하지 않습니다');
-
-    return foundPost;
-  }
-
-  async findPostWithDetails(id: number, guestId: string) {
-    const foundPost = await this.prismaService.post.findUnique({
-      where: { id },
-      include: {
-        comments: {
-          where: { parentCommentId: null },
-          orderBy: { createdAt: 'desc' },
-          include: {
-            childComments: {
-              include: {
-                author: { select: { id: true, name: true } },
-                guest: true,
-              },
-            },
-            author: { select: { id: true, name: true } },
-            guest: true,
-          },
-        },
-        category: true,
-        tags: true,
-        images: {
-          omit: { postId: true },
-        },
-        author: {
-          omit: {
-            password: true,
-            role: true,
-            createdAt: true,
-          },
-        },
-        postLikes: {
-          where: {
-            guestId, // unique
-          },
-        },
-        _count: { select: { postLikes: true } },
-      },
-    });
-    if (!foundPost) throw new NotFoundException('게시글이 존재하지 않습니다');
-
-    return foundPost;
-  }
-
   /* istanbul ignore next */
   getBaseURL() {
     return new URL(
@@ -484,5 +408,77 @@ export class PostService {
       ),
       await this.taskService.deleteFiles(IMAGES_DIRECTORY_PATH, imagesToDelete),
     ]);
+  }
+
+  async findPostById(id: number) {
+    const foundPost = await this.prismaService.post.findUnique({
+      where: { id },
+    });
+    if (!foundPost) throw new NotFoundException('게시글이 존재하지 않습니다');
+
+    return foundPost;
+  }
+
+  async findPostWithAuthor(id: number) {
+    const foundPost = await this.prismaService.post.findUnique({
+      where: { id },
+      include: { author: true },
+    });
+    if (!foundPost) throw new NotFoundException('게시글이 존재하지 않습니다');
+
+    return foundPost;
+  }
+
+  async findPostWithImages(id: number) {
+    const foundPost = await this.prismaService.post.findUnique({
+      where: { id },
+      include: { images: true },
+    });
+    if (!foundPost) throw new NotFoundException('게시글이 존재하지 않습니다');
+
+    return foundPost;
+  }
+
+  async findPostWithDetails(id: number, guestId: string) {
+    const foundPost = await this.prismaService.post.findUnique({
+      where: { id },
+      include: {
+        comments: {
+          where: { parentCommentId: null },
+          orderBy: { createdAt: 'desc' },
+          include: {
+            childComments: {
+              include: {
+                author: { select: { id: true, name: true } },
+                guest: true,
+              },
+            },
+            author: { select: { id: true, name: true } },
+            guest: true,
+          },
+        },
+        category: true,
+        tags: true,
+        images: {
+          omit: { postId: true },
+        },
+        author: {
+          omit: {
+            password: true,
+            role: true,
+            createdAt: true,
+          },
+        },
+        postLikes: {
+          where: {
+            guestId, // unique
+          },
+        },
+        _count: { select: { postLikes: true } },
+      },
+    });
+    if (!foundPost) throw new NotFoundException('게시글이 존재하지 않습니다');
+
+    return foundPost;
   }
 }

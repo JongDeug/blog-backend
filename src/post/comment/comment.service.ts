@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -19,15 +23,10 @@ export class CommentService {
   ) {}
 
   async createComment(userId: number, createCommentDto: CreateCommentDto) {
-    const foundUser = await this.userService.findUserWithNotFoundException(
-      { id: userId },
-      '유저를 찾을 수 없습니다',
-    );
+    const foundUser = await this.userService.findUserById(userId);
 
-    const foundPost = await this.postService.findPostWithNotFoundException(
-      { id: createCommentDto.postId },
-      '게시글이 존재하지 않습니다',
-      { author: true },
+    const foundPost = await this.postService.findPostWithAuthor(
+      createCommentDto.postId,
     );
 
     const newComment = await this.prismaService.comment.create({
@@ -64,10 +63,7 @@ export class CommentService {
   }
 
   async createChildComment(userId: number, createCommentDto: CreateCommentDto) {
-    const foundUser = await this.userService.findUserWithNotFoundException(
-      { id: userId },
-      '유저를 찾을 수 없습니다',
-    );
+    const foundUser = await this.userService.findUserById(userId);
 
     const foundParentComment = await this.prismaService.comment.findUnique({
       where: { id: createCommentDto.parentCommentId },
@@ -80,11 +76,6 @@ export class CommentService {
     });
     if (!foundParentComment)
       throw new NotFoundException('부모 댓글이 존재하지 않습니다');
-    // const foundParentComment = await this.findCommentWithNotFoundException(
-    //   { id: createCommentDto.parentCommentId },
-    //   '부모 댓글이 존재하지 않습니다',
-    //   {post: {include: {author: true}}}
-    // );
 
     const newChildComment = await this.prismaService.comment.create({
       data: {
@@ -133,25 +124,41 @@ export class CommentService {
     return newChildComment.id;
   }
 
-  update(id: number, updateCommentDto: UpdateCommentDto) {
-    return `This action updates a #${id} comment`;
-  }
+  async update(userId: number, id: number, updateCommentDto: UpdateCommentDto) {
+    const foundUser = await this.userService.findUserById(userId);
 
-  remove(id: number) {
-    return `This action removes a #${id} comment`;
-  }
-
-  async findCommentWithNotFoundException(
-    whereConditions: Prisma.CommentWhereUniqueInput,
-    errorMessage: string,
-    includeConditions: Prisma.CommentInclude = {},
-  ) {
-    const comment = await this.prismaService.comment.findUnique({
-      where: whereConditions,
-      include: includeConditions,
+    const foundComment = await this.prismaService.comment.findUnique({
+      where: { id },
     });
-    if (!comment) throw new NotFoundException(errorMessage);
+    if (!foundComment) throw new NotFoundException('댓글이 존재하지 않습니다');
 
-    return comment;
+    // 댓글 작성자가 아니면서, 관리자가 아니면
+    if (foundUser.id !== foundComment.authorId && foundUser.role !== 'ADMIN') {
+      throw new UnauthorizedException('댓글에 대한 권한이 없습니다');
+    }
+
+    await this.prismaService.comment.update({
+      where: { id: foundComment.id },
+      data: {
+        content: updateCommentDto.content,
+      },
+    });
   }
+
+  // async remove(id: number, userId: number) {
+  //   const foundUser = await this.userService.findUserById(userId);
+
+  //   const foundComment = await this.prismaService.comment.findUnique({
+  //     where: { id },
+  //   });
+  //   if (!foundComment) throw new NotFoundException('댓글이 존재하지 않습니다');
+
+  //   if (foundUser.id !== foundComment.authorId && foundUser.role !== 'ADMIN') {
+  //     throw new UnauthorizedException('댓글에 대한 권한이 없습니다');
+  //   }
+
+  //   await this.prismaService.comment.delete({
+  //     where: { id: foundComment.id },
+  //   });
+  // }
 }

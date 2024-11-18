@@ -32,13 +32,14 @@ export class CommentController {
   @Patch('user/:id')
   update(
     @Param('id', ParseIntPipe) id: number,
+    @UserId() userId: number,
     @Body() updateCommentDto: UpdateCommentDto,
   ) {
-    return this.commentService.update(id, updateCommentDto);
+    return this.commentService.update(userId, id, updateCommentDto);
   }
 
   @Delete('user/:id')
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.commentService.remove(id);
+  remove(@Param('id', ParseIntPipe) id: number, @UserId() userId: number) {
+    return this.commentService.remove(id, userId);
   }
 }

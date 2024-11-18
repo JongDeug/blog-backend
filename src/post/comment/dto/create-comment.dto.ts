@@ -4,7 +4,7 @@ export class CreateCommentDto {
   @IsNumber()
   @IsNotEmpty()
   @IsOptional()
-  postId?: number;
+  postId?: number; // 댓글
 
   @IsString()
   @IsNotEmpty()
@@ -13,5 +13,5 @@ export class CreateCommentDto {
   @IsNumber()
   @IsNotEmpty()
   @IsOptional()
-  parentCommentId?: number;
+  parentCommentId?: number; // 대댓글
 }
