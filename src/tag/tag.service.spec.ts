@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TagService } from './tag.service';
 import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
-import { PrismaClient, Tag, Post } from '@prisma/client';
+import { PrismaClient, Tag, Post, Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateTagDto } from './dto/create-tag.dto';
 import {
@@ -14,6 +14,8 @@ import { UpdateTagDto } from './dto/update-tag.dto';
 describe('TagService', () => {
   let tagService: TagService;
   let prismaMock: DeepMockProxy<PrismaClient>;
+
+  type TagType = Prisma.PromiseReturnType<typeof tagService.findTagById>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -48,30 +50,17 @@ describe('TagService', () => {
         id: 1,
         name: createTagDto.name,
       };
-      jest.spyOn(prismaMock.tag, 'findUnique').mockResolvedValue(null);
+
+      jest.spyOn(tagService, 'findTagByName');
       jest.spyOn(prismaMock.tag, 'create').mockResolvedValue(newTag);
 
       const result = await tagService.create(createTagDto);
 
       expect(result).toEqual(newTag);
-      expect(prismaMock.tag.findUnique).toHaveBeenCalledWith({
-        where: { name: createTagDto.name },
-      });
+      expect(tagService.findTagByName).toHaveBeenCalledWith(createTagDto.name);
       expect(prismaMock.tag.create).toHaveBeenCalledWith({
         data: { name: createTagDto.name },
       });
-    });
-
-    it('should a ConflictException when the tag exists', async () => {
-      const foundTag = { id: 1, name: '리눅스' };
-
-      jest.spyOn(prismaMock.tag, 'findUnique').mockResolvedValue(foundTag);
-
-      await expect(tagService.create(createTagDto)).rejects.toThrow(
-        ConflictException,
-      );
-      expect(prismaMock.tag.findUnique).toHaveBeenCalled();
-      expect(prismaMock.tag.create).not.toHaveBeenCalled();
     });
   });
 
@@ -88,10 +77,76 @@ describe('TagService', () => {
 
   describe('findOne', () => {
     it('should return a tag when the tag exists', async () => {
-      const foundTag = { id: 1, name: '리눅스' };
-      jest.spyOn(prismaMock.tag, 'findUnique').mockResolvedValue(foundTag);
+      const foundTag = { id: 1, name: '리눅스' } as TagType;
+
+      jest.spyOn(tagService, 'findTagById').mockResolvedValue(foundTag);
 
       const result = await tagService.findOne(1);
+
+      expect(result).toEqual(foundTag);
+      expect(tagService.findTagById).toHaveBeenCalledWith(1);
+    });
+  });
+
+  describe('update', () => {
+    const updateTagDto: UpdateTagDto = { name: '윈도우' };
+    const foundTag = { id: 1, name: '리눅스' } as TagType;
+
+    it('should update a tag', async () => {
+      const newTag = { id: 1, name: updateTagDto.name };
+
+      jest.spyOn(tagService, 'findTagById').mockResolvedValue(foundTag);
+      jest.spyOn(tagService, 'findTagByName');
+      jest.spyOn(prismaMock.tag, 'update').mockResolvedValue(newTag);
+
+      const result = await tagService.update(1, updateTagDto);
+
+      expect(result).toEqual(newTag);
+      expect(tagService.findTagById).toHaveBeenCalledWith(1);
+      expect(tagService.findTagByName).toHaveBeenCalledWith(updateTagDto.name);
+      expect(prismaMock.tag.update).toHaveBeenCalledWith({
+        where: { id: 1 },
+        data: {
+          name: updateTagDto.name,
+        },
+      });
+    });
+  });
+
+  describe('remove', () => {
+    it('should delete a tag', async () => {
+      const foundTag = { id: 1, name: '리눅스', posts: [] } as TagType;
+
+      jest.spyOn(tagService, 'findTagById').mockResolvedValue(foundTag);
+
+      await tagService.remove(1);
+
+      expect(tagService.findTagById).toHaveBeenCalledWith(1);
+      expect(prismaMock.tag.delete).toHaveBeenCalledWith({ where: { id: 1 } });
+    });
+
+    it('should throw a BadRequestException when trying to remove a tag that is referenced by posts', async () => {
+      const foundTag: Tag & { posts: Post[] } = {
+        id: 1,
+        name: '리눅스',
+        posts: [{ id: 10 } as Post],
+      } as TagType;
+
+      jest.spyOn(tagService, 'findTagById').mockResolvedValue(foundTag);
+
+      await expect(tagService.remove(1)).rejects.toThrow(BadRequestException);
+      expect(tagService.findTagById).toHaveBeenCalled();
+      expect(prismaMock.tag.delete).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('findTagById', () => {
+    it('should return a tag by id when the tag exists', async () => {
+      const foundTag = { id: 1 } as TagType;
+
+      jest.spyOn(prismaMock.tag, 'findUnique').mockResolvedValue(foundTag);
+
+      const result = await tagService.findTagById(1);
 
       expect(result).toEqual(foundTag);
       expect(prismaMock.tag.findUnique).toHaveBeenCalledWith({
@@ -103,100 +158,35 @@ describe('TagService', () => {
     it('should throw a NotFoundException when the tag does not exist', async () => {
       jest.spyOn(prismaMock.tag, 'findUnique').mockResolvedValue(null);
 
-      await expect(tagService.findOne(1)).rejects.toThrow(NotFoundException);
-      expect(prismaMock.tag.findUnique).toHaveBeenCalled();
-    });
-  });
-
-  describe('update', () => {
-    const updateTagDto: UpdateTagDto = { name: '윈도우' };
-    const foundTag = { id: 1, name: '리눅스' };
-
-    it('should update a tag', async () => {
-      const newTag = { id: 1, name: updateTagDto.name };
-
-      jest.spyOn(prismaMock.tag, 'findUnique').mockResolvedValueOnce(foundTag);
-      jest.spyOn(prismaMock.tag, 'findUnique').mockResolvedValueOnce(null);
-      jest.spyOn(prismaMock.tag, 'update').mockResolvedValue(newTag);
-
-      const result = await tagService.update(1, updateTagDto);
-
-      expect(result).toEqual(newTag);
-      expect(prismaMock.tag.findUnique).toHaveBeenNthCalledWith(1, {
-        where: { id: 1 },
-      });
-      expect(prismaMock.tag.findUnique).toHaveBeenNthCalledWith(2, {
-        where: { name: updateTagDto.name },
-      });
-      expect(prismaMock.tag.update).toHaveBeenCalledWith({
-        where: { id: 1 },
-        data: {
-          name: updateTagDto.name,
-        },
-      });
-    });
-
-    it('should throw a NotFoundException when the tag to update does not exist', async () => {
-      jest.spyOn(prismaMock.tag, 'findUnique').mockResolvedValue(null);
-
-      await expect(tagService.update(1, updateTagDto)).rejects.toThrow(
+      await expect(tagService.findTagById(1)).rejects.toThrow(
         NotFoundException,
       );
       expect(prismaMock.tag.findUnique).toHaveBeenCalled();
     });
+  });
 
-    it('should throw a ConflictException when the tag already exists for the update', async () => {
-      const targetTagExists = { id: 2, name: '윈도우' };
+  describe('findTagByName', () => {
+    it('should not throw an error when the tag does not exist', async () => {
+      const name = '태그';
 
-      jest.spyOn(prismaMock.tag, 'findUnique').mockResolvedValueOnce(foundTag);
-      jest
-        .spyOn(prismaMock.tag, 'findUnique')
-        .mockResolvedValueOnce(targetTagExists);
+      jest.spyOn(prismaMock.tag, 'findUnique').mockResolvedValue(null);
 
-      await expect(tagService.update(1, updateTagDto)).rejects.toThrow(
+      await expect(tagService.findTagByName(name)).resolves.toBeUndefined();
+      expect(prismaMock.tag.findUnique).toHaveBeenCalledWith({
+        where: { name },
+      });
+    });
+
+    it('should throw a ConflictException when the tag exists', async () => {
+      const name = '태그';
+      const foundTag = { id: 1, name } as TagType;
+
+      jest.spyOn(prismaMock.tag, 'findUnique').mockResolvedValue(foundTag);
+
+      await expect(tagService.findTagByName(name)).rejects.toThrow(
         ConflictException,
       );
       expect(prismaMock.tag.findUnique).toHaveBeenCalled();
-      expect(prismaMock.tag.findUnique).toHaveBeenCalled();
-      expect(prismaMock.tag.update).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('remove', () => {
-    it('should delete a tag', async () => {
-      const foundTag = { id: 1, name: '리눅스', posts: [] };
-
-      jest.spyOn(prismaMock.tag, 'findUnique').mockResolvedValue(foundTag);
-
-      await tagService.remove(1);
-
-      expect(prismaMock.tag.findUnique).toHaveBeenCalledWith({
-        where: { id: 1 },
-        include: { posts: true },
-      });
-      expect(prismaMock.tag.delete).toHaveBeenCalledWith({ where: { id: 1 } });
-    });
-
-    it('should throw a NotFoundException when the tag to delete does not exist', async () => {
-      jest.spyOn(prismaMock.tag, 'findUnique').mockResolvedValue(null);
-
-      await expect(tagService.remove(1)).rejects.toThrow(NotFoundException);
-      expect(prismaMock.tag.findUnique).toHaveBeenCalled();
-      expect(prismaMock.tag.delete).not.toHaveBeenCalled();
-    });
-
-    it('should throw a BadRequestException when trying to remove a tag that is referenced by posts', async () => {
-      const foundTag: Tag & { posts: Post[] } = {
-        id: 1,
-        name: '리눅스',
-        posts: [{ id: 10 } as Post],
-      };
-
-      jest.spyOn(prismaMock.tag, 'findUnique').mockResolvedValue(foundTag);
-
-      await expect(tagService.remove(1)).rejects.toThrow(BadRequestException);
-      expect(prismaMock.tag.findUnique).toHaveBeenCalled();
-      expect(prismaMock.tag.delete).not.toHaveBeenCalled();
     });
   });
 });

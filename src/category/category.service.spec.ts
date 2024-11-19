@@ -169,7 +169,7 @@ describe('CategoryService', () => {
   });
 
   describe('findCategoryById', () => {
-    it('should return the category with posts by id when the category exists', async () => {
+    it('should return a category with posts by id when the category exists', async () => {
       const foundCategory = {
         id: 1,
         name: '운영체제',
@@ -200,7 +200,7 @@ describe('CategoryService', () => {
   });
 
   describe('findCategoryByName', () => {
-    it('should return the category by name when the category does not exist', async () => {
+    it('should not throw an error when the category does not exist', async () => {
       const name = '운영체제';
 
       jest.spyOn(prismaMock.category, 'findUnique').mockResolvedValue(null);
@@ -213,7 +213,7 @@ describe('CategoryService', () => {
       });
     });
 
-    it('should a ConflictException when the category exists', async () => {
+    it('should throw a ConflictException when the category exists', async () => {
       const name = '운영체제';
       const categoryExists = { id: 1, name } as Category;
 
