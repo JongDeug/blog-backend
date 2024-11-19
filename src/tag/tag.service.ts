@@ -73,7 +73,5 @@ export class TagService {
       where: { name },
     });
     if (foundTag) throw new ConflictException('이미 존재하는 태그입니다');
-
-    return foundTag;
   }
 }
