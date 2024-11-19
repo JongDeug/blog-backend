@@ -42,11 +42,9 @@
 
 ![image](https://github.com/user-attachments/assets/7242ee85-c15a-41a7-a556-57b10cbd902c)
 
-
 #### 백엔드 구조
 
 ![image](https://github.com/user-attachments/assets/5458ff73-aebc-4b68-8e5a-cc6a287a37c2)
-
 
 [//]: # '## 📌 기타 추가 사항들'
 [//]: # '## 📌 화면 구성/API 주소'
@@ -82,12 +80,12 @@
 |                | 2.15 카테고리 생성      | POST        | /category                                  | O   | ADMIN           |
 |                | 2.16 카테고리 수정      | PATCH       | /category/:id                              | O   | ADMIN           |
 |                | 2.17 카테고리 삭제      | DELETE      | /category/:id                              | O   | ADMIN           |
-|                | 2.18 댓글 작성          | POST        | /post/comment/user                         | O   | USER            |
-|                | 2.19 댓글 수정          | PATCH       | /post/comment/user/:id                     | O   | USER            |
-|                | 2.20 댓글 삭제          | DELETE      | /post/comment/user/:id                     | O   | USER            |
-|                | 2.21 비회원 댓글 작성   | POST        | /post/comment/guest                        | X   | .               |
-|                | 2.22 비회원 댓글 수정   | PATCH       | /post/comment/guest/:id                    | X   | .               |
-|                | 2.23 비회원 댓글 삭제   | DELETE      | /post/comment/guest/:id                    | X   | .               |
+|                | 2.18 댓글 작성(회원)    | POST        | /post/comment/user                         | O   | USER            |
+|                | 2.19 댓글 수정(회원)    | PATCH       | /post/comment/user/:id                     | O   | USER            |
+|                | 2.20 댓글 삭제(회원)    | DELETE      | /post/comment/user/:id                     | O   | USER            |
+|                | 2.21 댓글 작성(비회원)  | POST        | /post/comment/guest                        | X   | .               |
+|                | 2.22 댓글 수정(비회원)  | PATCH       | /post/comment/guest/:id                    | X   | .               |
+|                | 2.23 댓글 삭제(비회원)  | DELETE      | /post/comment/guest/:id                    | X   | .               |
 
 ### ⚡ ERD 설계
 
