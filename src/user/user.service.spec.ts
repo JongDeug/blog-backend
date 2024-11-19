@@ -51,17 +51,13 @@ describe('UserService', () => {
       } as User;
 
       jest
-        .spyOn(userService, 'findUserWithNotFoundException')
+        .spyOn(userService, 'findUserWithoutPassword')
         .mockResolvedValue(foundUser);
 
       const result = await userService.findOne(1);
 
       expect(result).toEqual(foundUser);
-      expect(userService.findUserWithNotFoundException).toHaveBeenCalledWith(
-        { id: 1 },
-        '존재하지 않는 사용자입니다',
-        { password: true },
-      );
+      expect(userService.findUserWithoutPassword).toHaveBeenCalledWith(1);
     });
   });
 
@@ -72,51 +68,78 @@ describe('UserService', () => {
         email: 'test@gmail.com',
       } as User;
 
-      jest
-        .spyOn(userService, 'findUserWithNotFoundException')
-        .mockResolvedValue(foundUser);
+      jest.spyOn(userService, 'findUserById').mockResolvedValue(foundUser);
 
-      const result = await userService.remove(1);
-
-      expect(result).toEqual(undefined);
-      expect(userService.findUserWithNotFoundException).toHaveBeenCalledWith(
-        { id: 1 },
-        '존재하지 않는 사용자입니다',
-      );
+      await expect(userService.remove(1)).resolves.toBeUndefined();
+      expect(userService.findUserById).toHaveBeenCalledWith(1);
       expect(prismaMock.user.delete).toHaveBeenCalledWith({
         where: { id: 1 },
       });
     });
   });
 
-  describe('findUserWithNotFoundException', () => {
-    it('should find and return a user by unique column', async () => {
-      const foundUser = {
-        id: 1,
-        email: 'test@gmail.com',
-      } as User;
+  describe('findUserById', () => {
+    it('should return a user by id when the user exists', async () => {
+      const foundUser = { id: 1 } as User;
 
       jest.spyOn(prismaMock.user, 'findUnique').mockResolvedValue(foundUser);
 
-      const result = await userService.findUserWithNotFoundException(
-        { id: foundUser.id },
-        '에러 메시지',
-      );
+      const result = await userService.findUserById(1);
 
       expect(result).toEqual(foundUser);
       expect(prismaMock.user.findUnique).toHaveBeenCalledWith({
-        where: { id: foundUser.id },
-        omit: {},
+        where: { id: 1 },
       });
     });
 
     it('should throw a NotFoundException when the user does not exists', async () => {
       jest.spyOn(prismaMock.user, 'findUnique').mockResolvedValue(null);
 
-      await expect(
-        userService.findUserWithNotFoundException({ id: 1 }, '에러 메시지'),
-      ).rejects.toThrow(NotFoundException);
+      await expect(userService.findUserById(1)).rejects.toThrow(
+        NotFoundException,
+      );
       expect(prismaMock.user.findUnique).toHaveBeenCalled();
+    });
+  });
+
+  describe('findUserWithoutPassword', () => {
+    it('should return a user without password when the user exists', async () => {
+      const foundUser = { id: 1 } as User;
+
+      jest.spyOn(prismaMock.user, 'findUnique').mockResolvedValue(foundUser);
+
+      const result = await userService.findUserWithoutPassword(1);
+
+      expect(result).toEqual(foundUser);
+      expect(prismaMock.user.findUnique).toHaveBeenCalledWith({
+        where: { id: 1 },
+        omit: { password: true },
+      });
+    });
+
+    it('should throw a NotFoundException when the user does not exists', async () => {
+      jest.spyOn(prismaMock.user, 'findUnique').mockResolvedValue(null);
+
+      await expect(userService.findUserWithoutPassword(1)).rejects.toThrow(
+        NotFoundException,
+      );
+      expect(prismaMock.user.findUnique).toHaveBeenCalled();
+    });
+  });
+
+  describe('findUserByEmail', () => {
+    it('should return a user by email', async () => {
+      const email = 'test@gmail.com';
+      const foundUser = { id: 1 } as User;
+
+      jest.spyOn(prismaMock.user, 'findUnique').mockResolvedValue(foundUser);
+
+      const result = await userService.findUserByEmail(email);
+
+      expect(result).toEqual(foundUser);
+      expect(prismaMock.user.findUnique).toHaveBeenCalledWith({
+        where: { email },
+      });
     });
   });
 });

@@ -13,10 +13,8 @@ export class UserService {
     });
   }
 
-  async findOne(id: number) {
-    const foundUser = await this.findUserWithoutPassword(id);
-
-    return foundUser;
+  findOne(id: number) {
+    return this.findUserWithoutPassword(id);
   }
 
   async remove(id: number) {
