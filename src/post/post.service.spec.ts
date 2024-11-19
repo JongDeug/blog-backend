@@ -16,9 +16,7 @@ import { CreatePostDto } from './dto/create-post.dto';
 import { UserService } from 'src/user/user.service';
 import {
   BadRequestException,
-  ConflictException,
   ForbiddenException,
-  InternalServerErrorException,
   LoggerService,
   NotFoundException,
 } from '@nestjs/common';
@@ -26,8 +24,6 @@ import { GetPostsDto } from './dto/get-posts.dto';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { IMAGES_DIRECTORY_PATH, TEMP_DIRECTORY_PATH } from './const/path.const';
 import { UpdatePostDto } from './dto/update-post.dto';
-import { CursorPaginationDto } from './dto/cursor-pagination.dto';
-import { NotFoundError } from 'rxjs';
 
 describe('PostService', () => {
   let postService: PostService;
@@ -36,10 +32,6 @@ describe('PostService', () => {
   let taskService: MockProxy<TaskService>;
   let userService: MockProxy<UserService>;
   let logger: MockProxy<LoggerService>;
-
-  type PostType = Prisma.PromiseReturnType<
-    typeof postService.findPostWithNotFoundException
-  >;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -84,18 +76,13 @@ describe('PostService', () => {
       createPostDto.category = '리눅스';
       const newPost = { id: 1 } as Post;
 
-      jest
-        .spyOn(userService, 'findUserWithNotFoundException')
-        .mockResolvedValue(foundUser);
+      jest.spyOn(userService, 'findUserById').mockResolvedValue(foundUser);
       jest.spyOn(postService, 'createPost').mockResolvedValue(newPost);
 
       const result = await postService.create(userId, createPostDto);
 
       expect(result).toEqual(newPost.id);
-      expect(userService.findUserWithNotFoundException).toHaveBeenCalledWith(
-        { id: userId },
-        '유저를 찾을 수 없습니다',
-      );
+      expect(userService.findUserById).toHaveBeenCalledWith(userId);
       expect(postService.createPost).toHaveBeenCalledWith(
         foundUser,
         createPostDto,
@@ -113,9 +100,7 @@ describe('PostService', () => {
       const createPostDto = new CreatePostDto();
       const newPost = { id: 1 } as Post;
 
-      jest
-        .spyOn(userService, 'findUserWithNotFoundException')
-        .mockResolvedValue(foundUser);
+      jest.spyOn(userService, 'findUserById').mockResolvedValue(foundUser);
       jest.spyOn(postService, 'createPost').mockResolvedValue(newPost);
       jest
         .spyOn(taskService, 'moveFiles')
@@ -124,7 +109,7 @@ describe('PostService', () => {
       await expect(postService.create(userId, createPostDto)).rejects.toThrow(
         NotFoundException,
       );
-      expect(userService.findUserWithNotFoundException).toHaveBeenCalled();
+      expect(userService.findUserById).toHaveBeenCalled();
       expect(taskService.moveFiles).toHaveBeenCalled();
     });
   });
@@ -132,7 +117,6 @@ describe('PostService', () => {
   describe('findAll', () => {
     it('should return an array of posts with cursor-based pagination', async () => {
       const getPostsDto = new GetPostsDto();
-      getPostsDto.search = 'search word';
       getPostsDto.cursor =
         'eyJ2YWx1ZXMiOnsiaWQiOjI5N30sIm9yZGVyIjpbImlkX2Rlc2MiXX0=';
       const results = [{ id: 1 }] as Post[];
@@ -148,13 +132,6 @@ describe('PostService', () => {
       expect(result).toEqual({ posts: results, cursor: nextCursor });
       expect(postService.applyCursorPaginationToPost).toHaveBeenCalledWith(
         getPostsDto,
-        {
-          OR: [
-            { title: { contains: getPostsDto.search } },
-            { content: { contains: getPostsDto.search } },
-          ],
-          draft: getPostsDto.draft,
-        },
       );
     });
 
@@ -171,24 +148,13 @@ describe('PostService', () => {
       );
       expect(postService.applyCursorPaginationToPost).toHaveBeenCalled();
     });
-
-    // it('should throw an InternalServerErrorException when postService.applyCursorPaginationToPost() fails', async () => {
-    //   const getPostsDto = new GetPostsDto();
-    //   getPostsDto.cursor =
-    //     'eyJ2YWx1ZXMiOnsiaWQiOjI5N30sIm9yZGVyIjpbImlkX2Rlc2MiXX0';
-
-    //   jest
-    //     .spyOn(postService, 'applyCursorPaginationToPost')
-    //     .mockRejectedValue(Error);
-
-    //   await expect(postService.findAll(getPostsDto)).rejects.toThrow(
-    //     ,
-    //   );
-    //   expect(postService.applyCursorPaginationToPost).toHaveBeenCalled();
-    // });
   });
 
   describe('findOne', () => {
+    type PostType = Prisma.PromiseReturnType<
+      typeof postService.findPostWithDetails
+    >;
+
     it('should return a post with isLiked field', async () => {
       const id = 1;
       const guestId = 'uuid';
@@ -202,17 +168,13 @@ describe('PostService', () => {
       };
 
       jest
-        .spyOn(postService, 'findPostWithNotFoundException')
+        .spyOn(postService, 'findPostWithDetails')
         .mockResolvedValue(foundPost);
 
       const result = await postService.findOne(id, guestId);
 
       expect(result).toEqual(post);
-      expect(postService.findPostWithNotFoundException).toHaveBeenCalledWith(
-        { id },
-        '게시글이 존재하지 않습니다',
-        expect.any(Object),
-      );
+      expect(postService.findPostWithDetails).toHaveBeenCalledWith(id, guestId);
     });
   });
 
@@ -220,6 +182,10 @@ describe('PostService', () => {
     let mockUpdatePostWithTransaction: jest.SpyInstance;
     let mockHandleImageFiles: jest.SpyInstance;
     let postId, userId, updatePostDto, foundUser, foundPost;
+
+    type PostType = Prisma.PromiseReturnType<
+      typeof postService.findPostWithImages
+    >;
 
     beforeEach(() => {
       postId = 10;
@@ -241,24 +207,15 @@ describe('PostService', () => {
     });
 
     it('should update a post and handle image files (move, delete)', async () => {
+      jest.spyOn(userService, 'findUserById').mockResolvedValue(foundUser);
       jest
-        .spyOn(userService, 'findUserWithNotFoundException')
-        .mockResolvedValue(foundUser);
-      jest
-        .spyOn(postService, 'findPostWithNotFoundException')
+        .spyOn(postService, 'findPostWithImages')
         .mockResolvedValue(foundPost);
 
       await postService.update(postId, userId, updatePostDto);
 
-      expect(userService.findUserWithNotFoundException).toHaveBeenCalledWith(
-        { id: userId },
-        '유저를 찾을 수 없습니다',
-      );
-      expect(postService.findPostWithNotFoundException).toHaveBeenCalledWith(
-        { id: postId },
-        '게시글이 존재하지 않습니다',
-        { images: true },
-      );
+      expect(userService.findUserById).toHaveBeenCalledWith(userId);
+      expect(postService.findPostWithImages).toHaveBeenCalledWith(postId);
       expect(mockUpdatePostWithTransaction).toHaveBeenCalledWith(
         postId,
         updatePostDto,
@@ -276,41 +233,41 @@ describe('PostService', () => {
         images: [],
       } as PostType;
 
+      jest.spyOn(userService, 'findUserById').mockResolvedValue(foundUser);
       jest
-        .spyOn(userService, 'findUserWithNotFoundException')
-        .mockResolvedValue(foundUser);
-      jest
-        .spyOn(postService, 'findPostWithNotFoundException')
+        .spyOn(postService, 'findPostWithImages')
         .mockResolvedValue(foundPost);
 
       await expect(
         postService.update(postId, userId, updatePostDto),
       ).rejects.toThrow(ForbiddenException);
-      expect(userService.findUserWithNotFoundException).toHaveBeenCalled();
-      expect(postService.findPostWithNotFoundException).toHaveBeenCalled();
+      expect(userService.findUserById).toHaveBeenCalled();
+      expect(postService.findPostWithImages).toHaveBeenCalled();
       expect(mockUpdatePostWithTransaction).not.toHaveBeenCalled();
     });
 
     it('should throw a NotFoundException if requested files do not exist', async () => {
+      jest.spyOn(userService, 'findUserById').mockResolvedValue(foundUser);
       jest
-        .spyOn(userService, 'findUserWithNotFoundException')
-        .mockResolvedValue(foundUser);
-      jest
-        .spyOn(postService, 'findPostWithNotFoundException')
+        .spyOn(postService, 'findPostWithImages')
         .mockResolvedValue(foundPost);
       mockHandleImageFiles.mockRejectedValue({ code: 'ENOENT' });
 
       await expect(
         postService.update(postId, userId, updatePostDto),
       ).rejects.toThrow(NotFoundException);
-      expect(userService.findUserWithNotFoundException).toHaveBeenCalled();
-      expect(postService.findPostWithNotFoundException).toHaveBeenCalled();
+      expect(userService.findUserById).toHaveBeenCalled();
+      expect(postService.findPostWithImages).toHaveBeenCalled();
       expect(mockUpdatePostWithTransaction).toHaveBeenCalled();
       expect(mockHandleImageFiles).toHaveBeenCalled();
     });
   });
 
   describe('remove', () => {
+    type PostType = Prisma.PromiseReturnType<
+      typeof postService.findPostWithImages
+    >;
+
     it('should remove a post with all its relations (comments, images, postLikes)', async () => {
       const id = 1;
       const serverOrigin = 'https://test.org';
@@ -325,17 +282,13 @@ describe('PostService', () => {
       } as PostType;
 
       jest
-        .spyOn(postService, 'findPostWithNotFoundException')
+        .spyOn(postService, 'findPostWithImages')
         .mockResolvedValue(foundPost);
       jest.spyOn(configService, 'get').mockReturnValue(serverOrigin);
 
       await postService.remove(id);
 
-      expect(postService.findPostWithNotFoundException).toHaveBeenCalledWith(
-        { id },
-        '게시글이 존재하지 않습니다',
-        { images: true },
-      );
+      expect(postService.findPostWithImages).toHaveBeenCalledWith(id);
       expect(prismaMock.post.delete).toHaveBeenCalledWith({ where: { id } });
       expect(taskService.deleteFiles).toHaveBeenCalledWith(
         IMAGES_DIRECTORY_PATH,
@@ -357,7 +310,7 @@ describe('PostService', () => {
       } as PostType;
 
       jest
-        .spyOn(postService, 'findPostWithNotFoundException')
+        .spyOn(postService, 'findPostWithImages')
         .mockResolvedValue(foundPost);
       jest.spyOn(configService, 'get').mockReturnValue(serverOrigin);
       jest
@@ -365,13 +318,15 @@ describe('PostService', () => {
         .mockRejectedValue({ code: 'ENOENT' });
 
       await expect(postService.remove(id)).rejects.toThrow(NotFoundException);
-      expect(postService.findPostWithNotFoundException).toHaveBeenCalled();
+      expect(postService.findPostWithImages).toHaveBeenCalled();
       expect(prismaMock.post.delete).toHaveBeenCalled();
       expect(taskService.deleteFiles).toHaveBeenCalled();
     });
   });
 
   describe('togglePostLike', () => {
+    type PostType = Prisma.PromiseReturnType<typeof postService.findPostById>;
+
     it('should add a like on the post like', async () => {
       const postId = 1;
       const guestId = 'uuid';
@@ -379,9 +334,7 @@ describe('PostService', () => {
       const isLiked = null;
       const foundPostLike = { postId, guestId } as PostLike;
 
-      jest
-        .spyOn(postService, 'findPostWithNotFoundException')
-        .mockResolvedValue(foundPost);
+      jest.spyOn(postService, 'findPostById').mockResolvedValue(foundPost);
       jest
         .spyOn(prismaMock.postLike, 'findUnique')
         .mockResolvedValueOnce(isLiked);
@@ -392,14 +345,11 @@ describe('PostService', () => {
       const result = await postService.togglePostLike(postId, guestId);
 
       expect(result).toEqual({ isLiked: !!foundPostLike });
-      expect(postService.findPostWithNotFoundException).toHaveBeenCalledWith(
-        { id: postId },
-        '게시글이 존재하지 않습니다',
-      );
+      expect(postService.findPostById).toHaveBeenCalledWith(postId);
       expect(prismaMock.postLike.findUnique).toHaveBeenCalledWith({
         where: {
           postId_guestId: {
-            postId,
+            postId: foundPost.id,
             guestId,
           },
         },
@@ -407,14 +357,14 @@ describe('PostService', () => {
       expect(prismaMock.postLike.delete).not.toHaveBeenCalled();
       expect(prismaMock.postLike.create).toHaveBeenCalledWith({
         data: {
-          post: { connect: { id: postId } },
+          post: { connect: { id: foundPost.id } },
           guest: {
             connectOrCreate: { where: { guestId }, create: { guestId } },
           },
         },
       });
       expect(prismaMock.postLike.findUnique).toHaveBeenCalledWith({
-        where: { postId_guestId: { postId, guestId } },
+        where: { postId_guestId: { postId: foundPost.id, guestId } },
       });
     });
 
@@ -425,9 +375,7 @@ describe('PostService', () => {
       const isLiked = { postId, guestId } as PostLike;
       const foundPostLike = null;
 
-      jest
-        .spyOn(postService, 'findPostWithNotFoundException')
-        .mockResolvedValue(foundPost);
+      jest.spyOn(postService, 'findPostById').mockResolvedValue(foundPost);
       jest
         .spyOn(prismaMock.postLike, 'findUnique')
         .mockResolvedValueOnce(isLiked);
@@ -438,10 +386,10 @@ describe('PostService', () => {
       const result = await postService.togglePostLike(postId, guestId);
 
       expect(result).toEqual({ isLiked: !!foundPostLike });
-      expect(postService.findPostWithNotFoundException).toHaveBeenCalled();
+      expect(postService.findPostById).toHaveBeenCalled();
       expect(prismaMock.postLike.findUnique).toHaveBeenCalled();
       expect(prismaMock.postLike.delete).toHaveBeenCalledWith({
-        where: { postId_guestId: { postId, guestId } },
+        where: { postId_guestId: { postId: foundPost.id, guestId } },
       });
       expect(prismaMock.postLike.create).not.toHaveBeenCalled();
       expect(prismaMock.postLike.findUnique).toHaveBeenCalled();
@@ -450,17 +398,11 @@ describe('PostService', () => {
 
   describe('applyCursorPaginationToPost', () => {
     it('should return an array of posts with cursor-based pagination', async () => {
-      const cursorPaginationDto = new CursorPaginationDto();
-      cursorPaginationDto.cursor =
+      const getPostsDto = new GetPostsDto();
+      getPostsDto.cursor =
         'eyJ2YWx1ZXMiOnsiaWQiOjI3fSwib3JkZXIiOlsiaWRfZGVzYyJdfQ==';
+      getPostsDto.search = 'search';
       // 디코딩 결과: {"values":{"id":27},"order":["id_desc"]}
-      const whereConditions = {
-        OR: [
-          { title: { contains: 'mock' } },
-          { content: { contains: 'mock' } },
-        ],
-        draft: false,
-      };
       const cursorConditions = { id: 27 };
       const orderByConditions = { id: 'desc' };
       const results = [];
@@ -468,7 +410,7 @@ describe('PostService', () => {
         'eyJ2YsdflsdkfjWQiOjI5N30sIm9yZGVyIjpbImlkX2Rlc2MiXX0=';
 
       jest.spyOn(postService, 'parseCursorWithValidation').mockReturnValue({
-        order: cursorPaginationDto.order,
+        order: getPostsDto.order,
         values: { id: 27 },
       });
       jest
@@ -477,40 +419,65 @@ describe('PostService', () => {
       jest.spyOn(prismaMock.post, 'findMany').mockResolvedValue(results);
       jest.spyOn(postService, 'generateNextCursor').mockReturnValue(nextCursor);
 
-      const result = await postService.applyCursorPaginationToPost(
-        cursorPaginationDto,
-        whereConditions,
-      );
+      const result = await postService.applyCursorPaginationToPost(getPostsDto);
 
       expect(result).toEqual({ results, nextCursor });
       expect(postService.parseCursorWithValidation).toHaveBeenCalledWith(
-        cursorPaginationDto.cursor,
+        getPostsDto.cursor,
       );
       expect(postService.parseOrderWithValidation).toHaveBeenCalledWith(
-        cursorPaginationDto.order,
+        getPostsDto.order,
       );
-      expect(prismaMock.post.findMany).toHaveBeenCalledWith({
-        where: whereConditions,
-        orderBy: orderByConditions,
-        skip: 1,
-        take: cursorPaginationDto.take,
-        cursor: cursorConditions,
-      });
+      expect(prismaMock.post.findMany).toHaveBeenCalled();
       expect(postService.generateNextCursor).toHaveBeenCalledWith(
         results,
-        cursorPaginationDto.order,
+        getPostsDto.order,
       );
     });
 
+    it('should return an array of posts with cursor-based pagination without search conditions', async () => {
+      const getPostsDto = new GetPostsDto();
+      getPostsDto.cursor =
+        'eyJ2YWx1ZXMiOnsiaWQiOjI3fSwib3JkZXIiOlsiaWRfZGVzYyJdfQ==';
+      // 디코딩 결과: {"values":{"id":27},"order":["id_desc"]}
+      const cursorConditions = { id: 27 };
+      const orderByConditions = { id: 'desc' };
+      const results = [];
+      const nextCursor =
+        'eyJ2YsdflsdkfjWQiOjI5N30sIm9yZGVyIjpbImlkX2Rlc2MiXX0=';
+
+      jest.spyOn(postService, 'parseCursorWithValidation').mockReturnValue({
+        order: getPostsDto.order,
+        values: { id: 27 },
+      });
+      jest
+        .spyOn(postService, 'parseOrderWithValidation')
+        .mockReturnValue({ id: 'desc' });
+      jest.spyOn(prismaMock.post, 'findMany').mockResolvedValue(results);
+      jest.spyOn(postService, 'generateNextCursor').mockReturnValue(nextCursor);
+
+      const result = await postService.applyCursorPaginationToPost(getPostsDto);
+
+      expect(result).toEqual({ results, nextCursor });
+      expect(postService.parseCursorWithValidation).toHaveBeenCalled();
+      expect(postService.parseOrderWithValidation).toHaveBeenCalled();
+      expect(prismaMock.post.findMany).toHaveBeenCalledWith({
+        where: {
+          draft: false,
+        },
+        orderBy: orderByConditions,
+        skip: 1,
+        take: getPostsDto.take,
+        cursor: cursorConditions,
+      });
+      expect(postService.generateNextCursor).toHaveBeenCalled();
+    });
+
     it('should return an array of posts when cursor is not provided', async () => {
-      const cursorPaginationDto = new CursorPaginationDto();
-      const whereConditions = {
-        OR: [
-          { title: { contains: 'mock' } },
-          { content: { contains: 'mock' } },
-        ],
-        draft: false,
-      };
+      const getPostsDto = new GetPostsDto();
+      getPostsDto.search = 'search';
+      getPostsDto.draft = false;
+
       const orderByCondition = { id: 'desc' };
       const results = [];
       const nextCursor =
@@ -522,18 +489,21 @@ describe('PostService', () => {
       jest.spyOn(prismaMock.post, 'findMany').mockResolvedValue(results);
       jest.spyOn(postService, 'generateNextCursor').mockReturnValue(nextCursor);
 
-      const result = await postService.applyCursorPaginationToPost(
-        cursorPaginationDto,
-        whereConditions,
-      );
+      const result = await postService.applyCursorPaginationToPost(getPostsDto);
 
       expect(result).toEqual({ results, nextCursor });
       expect(postService.parseOrderWithValidation).toHaveBeenCalled();
       expect(prismaMock.post.findMany).toHaveBeenCalledWith({
-        where: whereConditions,
+        where: {
+          OR: [
+            { title: { contains: 'search' } },
+            { content: { contains: 'search' } },
+          ],
+          draft: false,
+        },
         orderBy: orderByCondition,
         skip: 0,
-        take: cursorPaginationDto.take,
+        take: getPostsDto.take,
         cursor: Prisma.skip,
       });
       expect(postService.generateNextCursor).toHaveBeenCalled();
@@ -621,41 +591,6 @@ describe('PostService', () => {
     });
   });
 
-  describe('findPostWithNotFoundException', () => {
-    it('should return a post', async () => {
-      const foundPost = { id: 1 } as Post;
-      const whereConditions = { id: 1 };
-      const includeCondition = {};
-
-      jest.spyOn(prismaMock.post, 'findUnique').mockResolvedValue(foundPost);
-
-      const result = await postService.findPostWithNotFoundException(
-        { id: 1 },
-        'errorMessage',
-      );
-
-      expect(result).toEqual(foundPost);
-      expect(prismaMock.post.findUnique).toHaveBeenCalledWith({
-        where: whereConditions,
-        include: includeCondition,
-      });
-    });
-
-    it('should throw a NotFoundException when post does not exist', async () => {
-      const whereConditions = { id: 1 };
-
-      jest.spyOn(prismaMock.post, 'findUnique').mockResolvedValue(null);
-
-      await expect(
-        postService.findPostWithNotFoundException(
-          whereConditions,
-          'errorMessage',
-        ),
-      ).rejects.toThrow(NotFoundException);
-      expect(prismaMock.post.findUnique).toHaveBeenCalled();
-    });
-  });
-
   describe('handleImageFiles', () => {
     it('should move new incoming images and delete unused images', async () => {
       const currentImages = [
@@ -694,6 +629,128 @@ describe('PostService', () => {
         IMAGES_DIRECTORY_PATH,
         imagesToDelete,
       );
+    });
+  });
+
+  describe('findPostById', () => {
+    it('should return a post by id when the post exists', async () => {
+      const foundPost = { id: 1 } as Post;
+
+      jest.spyOn(prismaMock.post, 'findUnique').mockResolvedValue(foundPost);
+
+      const result = await postService.findPostById(1);
+
+      expect(result).toEqual(foundPost);
+      expect(prismaMock.post.findUnique).toHaveBeenCalledWith({
+        where: { id: 1 },
+      });
+    });
+
+    it('should throw a NotFoundException when the post does not exist', async () => {
+      jest.spyOn(prismaMock.post, 'findUnique').mockResolvedValue(null);
+
+      await expect(postService.findPostById(1)).rejects.toThrow(
+        NotFoundException,
+      );
+      expect(prismaMock.post.findUnique).toHaveBeenCalled();
+    });
+
+    it('should throw a NotFoundException when the id is undefined', async () => {
+      jest.spyOn(prismaMock.post, 'findUnique').mockResolvedValue(null);
+
+      await expect(postService.findPostById(undefined)).rejects.toThrow(
+        NotFoundException,
+      );
+      expect(prismaMock.post.findUnique).toHaveBeenCalledWith({
+        where: { id: Prisma.skip },
+      });
+    });
+  });
+
+  describe('findPostWithAuthor', () => {
+    it('should return a post with author when the post exists', async () => {
+      const foundPost = { id: 1 } as Post;
+
+      jest.spyOn(prismaMock.post, 'findUnique').mockResolvedValue(foundPost);
+
+      const result = await postService.findPostWithAuthor(1);
+
+      expect(result).toEqual(foundPost);
+      expect(prismaMock.post.findUnique).toHaveBeenCalledWith({
+        where: { id: 1 },
+        include: { author: true },
+      });
+    });
+
+    it('should throw a NotFoundException when the post does not exist', async () => {
+      jest.spyOn(prismaMock.post, 'findUnique').mockResolvedValue(null);
+
+      await expect(postService.findPostWithAuthor(1)).rejects.toThrow(
+        NotFoundException,
+      );
+      expect(prismaMock.post.findUnique).toHaveBeenCalled();
+    });
+
+    it('should throw a NotFoundException when the id is undefined', async () => {
+      jest.spyOn(prismaMock.post, 'findUnique').mockResolvedValue(null);
+
+      await expect(postService.findPostWithAuthor(undefined)).rejects.toThrow(
+        NotFoundException,
+      );
+      expect(prismaMock.post.findUnique).toHaveBeenCalledWith({
+        where: { id: Prisma.skip },
+        include: { author: true },
+      });
+    });
+  });
+
+  describe('findPostWithImages', () => {
+    it('should return a post with images when the post exists', async () => {
+      const foundPost = { id: 1 } as Post;
+
+      jest.spyOn(prismaMock.post, 'findUnique').mockResolvedValue(foundPost);
+
+      const result = await postService.findPostWithImages(1);
+
+      expect(result).toEqual(foundPost);
+      expect(prismaMock.post.findUnique).toHaveBeenCalledWith({
+        where: { id: 1 },
+        include: { images: true },
+      });
+    });
+
+    it('should throw a NotFoundException when the post does not exist', async () => {
+      jest.spyOn(prismaMock.post, 'findUnique').mockResolvedValue(null);
+
+      await expect(postService.findPostWithImages(1)).rejects.toThrow(
+        NotFoundException,
+      );
+      expect(prismaMock.post.findUnique).toHaveBeenCalled();
+    });
+  });
+
+  describe('findPostWithDetails', () => {
+    it('should return a post with details when the post exists', async () => {
+      const guestId = 'uuid';
+      const foundPost = { id: 1 } as Post;
+
+      jest.spyOn(prismaMock.post, 'findUnique').mockResolvedValue(foundPost);
+
+      const result = await postService.findPostWithDetails(1, guestId);
+
+      expect(result).toEqual(foundPost);
+      expect(prismaMock.post.findUnique).toHaveBeenCalled();
+    });
+
+    it('should throw a NotFoundException when the post does not exist', async () => {
+      const guestId = 'uuid';
+
+      jest.spyOn(prismaMock.post, 'findUnique').mockResolvedValue(null);
+
+      await expect(postService.findPostWithDetails(1, guestId)).rejects.toThrow(
+        NotFoundException,
+      );
+      expect(prismaMock.post.findUnique).toHaveBeenCalled();
     });
   });
 });

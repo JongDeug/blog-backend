@@ -130,12 +130,12 @@ export class PostService {
   }
 
   async togglePostLike(postId: number, guestId: string) {
-    await this.findPostById(postId);
+    const foundPost = await this.findPostById(postId);
 
     const isLiked = await this.prismaService.postLike.findUnique({
       where: {
         postId_guestId: {
-          postId,
+          postId: foundPost.id,
           guestId,
         },
       },
@@ -145,12 +145,12 @@ export class PostService {
     // 좋아요 X -> 생성
     if (isLiked) {
       await this.prismaService.postLike.delete({
-        where: { postId_guestId: { postId, guestId } },
+        where: { postId_guestId: { postId: foundPost.id, guestId } },
       });
     } else {
       await this.prismaService.postLike.create({
         data: {
-          post: { connect: { id: postId } },
+          post: { connect: { id: foundPost.id } },
           guest: {
             connectOrCreate: { where: { guestId }, create: { guestId } },
           },
@@ -159,7 +159,7 @@ export class PostService {
     }
 
     const foundPostLike = await this.prismaService.postLike.findUnique({
-      where: { postId_guestId: { postId, guestId } },
+      where: { postId_guestId: { postId: foundPost.id, guestId } },
     });
 
     return {
@@ -169,8 +169,8 @@ export class PostService {
 
   // ====================================== Utils ======================================
 
-  async applyCursorPaginationToPost(dto: GetPostsDto) {
-    const { cursor, take, search, draft } = dto;
+  async applyCursorPaginationToPost(getPostsDto: GetPostsDto) {
+    const { cursor, take, search, draft } = getPostsDto;
 
     const whereConditions = {
       ...(search
@@ -184,7 +184,7 @@ export class PostService {
       draft,
     };
 
-    let { order } = dto;
+    let { order } = getPostsDto;
     let cursorCondition;
 
     if (cursor) {
