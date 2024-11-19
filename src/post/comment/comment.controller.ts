@@ -13,10 +13,10 @@ import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
 import { UserId } from 'src/user/decorator/user-id.decorator';
 import { Public } from 'src/auth/decorator/public.decorator';
-import { CreateCommentByGuestDto } from './dto/create-comment-by-guest';
+import { CreateCommentByGuestDto } from './dto/create-comment-by-guest.dto';
 import { Cookies } from 'src/common/decorator/cookies.decorator';
-import { UpdateCommentByGuestDto } from './dto/update-comment-by-guest';
-import { DeleteCommentByGuestDto } from './dto/delete-comment-by-guest';
+import { UpdateCommentByGuestDto } from './dto/update-comment-by-guest.dto';
+import { DeleteCommentByGuestDto } from './dto/delete-comment-by-guest.dto';
 
 @Controller('post/comment')
 export class CommentController {

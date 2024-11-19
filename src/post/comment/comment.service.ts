@@ -11,10 +11,10 @@ import { PostService } from '../post.service';
 import { Prisma } from '@prisma/client';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MailService } from 'src/common/mail.service';
-import { CreateCommentByGuestDto } from './dto/create-comment-by-guest';
+import { CreateCommentByGuestDto } from './dto/create-comment-by-guest.dto';
 import { AuthService } from 'src/auth/auth.service';
-import { UpdateCommentByGuestDto } from './dto/update-comment-by-guest';
-import { DeleteCommentByGuestDto } from './dto/delete-comment-by-guest';
+import { UpdateCommentByGuestDto } from './dto/update-comment-by-guest.dto';
+import { DeleteCommentByGuestDto } from './dto/delete-comment-by-guest.dto';
 
 @Injectable()
 export class CommentService {
@@ -23,7 +23,7 @@ export class CommentService {
     private readonly postService: PostService,
     private readonly userService: UserService,
     private readonly authService: AuthService,
-    private readonly eventEmitter: EventEmitter2,
+    // private readonly eventEmitter: EventEmitter2,
     private readonly mailService: MailService,
   ) {}
 
