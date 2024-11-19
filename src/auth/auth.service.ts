@@ -103,12 +103,7 @@ export class AuthService {
     const foundUser = await this.userService.findUserByEmail(email);
     if (!foundUser) throw new NotFoundException('가입된 이메일이 아닙니다');
 
-    const isCorrectPassword = await bcrypt.compare(
-      password,
-      foundUser.password,
-    );
-    if (!isCorrectPassword)
-      throw new BadRequestException('잘못된 로그인 정보입니다');
+    await this.comparePassword(password, foundUser.password);
 
     return foundUser;
   }
@@ -199,5 +194,11 @@ export class AuthService {
       password,
       this.configService.get(envVariableKeys.hashRounds),
     );
+  }
+
+  async comparePassword(a: string, b: string) {
+    const isCorrectPassword = await bcrypt.compare(a, b);
+    if (!isCorrectPassword)
+      throw new UnauthorizedException('잘못된 인증 정보입니다');
   }
 }

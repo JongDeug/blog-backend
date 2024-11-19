@@ -15,6 +15,8 @@ import { UserId } from 'src/user/decorator/user-id.decorator';
 import { Public } from 'src/auth/decorator/public.decorator';
 import { CreateCommentByGuestDto } from './dto/create-comment-by-guest';
 import { Cookies } from 'src/common/decorator/cookies.decorator';
+import { UpdateCommentByGuestDto } from './dto/update-comment-by-guest';
+import { DeleteCommentByGuestDto } from './dto/delete-comment-by-guest';
 
 @Controller('post/comment')
 export class CommentController {
@@ -64,5 +66,33 @@ export class CommentController {
         createCommentByGuestDto,
       );
     }
+  }
+
+  @Patch('guest/:id')
+  @Public()
+  updateByGuest(
+    @Param('id', ParseIntPipe) id: number,
+    @Cookies('guestId') guestId: string,
+    @Body() updateCommentByGuestDto: UpdateCommentByGuestDto,
+  ) {
+    return this.commentService.updateCommentByGuest(
+      id,
+      guestId,
+      updateCommentByGuestDto,
+    );
+  }
+
+  @Delete('guest/:id')
+  @Public()
+  removeByGuest(
+    @Param('id', ParseIntPipe) id: number,
+    @Cookies('guestId') guestId: string,
+    @Body() deleteCommentByGuestDto: DeleteCommentByGuestDto,
+  ) {
+    return this.commentService.removeCommentByGuest(
+      id,
+      guestId,
+      deleteCommentByGuestDto,
+    );
   }
 }

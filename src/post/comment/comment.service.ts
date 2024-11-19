@@ -13,6 +13,8 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MailService } from 'src/common/mail.service';
 import { CreateCommentByGuestDto } from './dto/create-comment-by-guest';
 import { AuthService } from 'src/auth/auth.service';
+import { UpdateCommentByGuestDto } from './dto/update-comment-by-guest';
+import { DeleteCommentByGuestDto } from './dto/delete-comment-by-guest';
 
 @Injectable()
 export class CommentService {
@@ -100,11 +102,11 @@ export class CommentService {
     // 댓글 작성자 vs 대댓글 작성자 // 댓글 작성부터는 guest, author 둘 다 가능하기 때문에 다 넣어봐야?
     // 대댓글 작성자 vs 대댓글 작성자
     // set에 다 모아서 빼면되는거 아닌가?
-    const toSet = new Set();
-    toSet.add(foundParentComment.post.author.email);
-    toSet.add(foundParentComment?.author.email);
-    toSet.add(foundParentComment?.guest.email);
-    toSet.add(foundParentComment.childComments);
+    // const toSet = new Set();
+    // toSet.add(foundParentComment.post.author.email);
+    // toSet.add(foundParentComment?.author.email);
+    // toSet.add(foundParentComment?.guest.email);
+    // toSet.add(foundParentComment.childComments);
 
     // this.mailService.sendMailToPostCommentChildCommentAuthors(
     //   foundUser, // 전송하는 사람 정보
@@ -237,7 +239,56 @@ export class CommentService {
     return newChildComment.id;
   }
 
-  // ----------
+  async updateCommentByGuest(
+    id: number,
+    guestId: string,
+    updateCommentByGuestDto: UpdateCommentByGuestDto,
+  ) {
+    const { password, content } = updateCommentByGuestDto;
+
+    const foundComment = await this.findCommentWithGuest(id);
+
+    // 비밀번호 인증
+    await this.authService.comparePassword(
+      password,
+      foundComment.guest.password,
+    );
+
+    // guestId 추가 인증
+    if (guestId !== foundComment.guest.guestId) {
+      throw new UnauthorizedException('잘못된 인증 정보입니다');
+    }
+
+    await this.prismaService.comment.update({
+      where: { id },
+      data: { content },
+    });
+  }
+
+  // async removeCommentByGuest(
+  //   id: number,
+  //   guestId: string,
+  //   deleteCommentByGuestDto: DeleteCommentByGuestDto,
+  // ) {
+  //   const foundComment = await this.findCommentWithGuest(id);
+
+  //   // 비밀번호 인증
+  //   await this.authService.comparePassword(
+  //     deleteCommentByGuestDto.password,
+  //     foundComment.guest.password,
+  //   );
+
+  //   // guestId 추가 인증
+  //   if (guestId !== foundComment.guest.guestId) {
+  //     throw new UnauthorizedException('잘못된 인증 정보입니다');
+  //   }
+
+  //   await this.prismaService.comment.delete({
+  //     where: {
+  //       id: foundComment.id,
+  //     },
+  //   });
+  // }
 
   async findCommentById(id: number, isParent: boolean) {
     const foundComment = await this.prismaService.comment.findUnique({
@@ -246,6 +297,19 @@ export class CommentService {
     if (!foundComment)
       throw new NotFoundException(
         `${isParent ? '부모 ' : ''}댓글이 존재하지 않습니다`,
+      );
+
+    return foundComment;
+  }
+
+  async findCommentWithGuest(id: number) {
+    const foundComment = await this.prismaService.comment.findUnique({
+      where: { id, authorId: null },
+      include: { guest: true },
+    });
+    if (!foundComment)
+      throw new NotFoundException(
+        '댓글이 존재하지 않거나 권한이 없는 댓글입니다',
       );
 
     return foundComment;
