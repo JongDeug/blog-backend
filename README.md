@@ -40,11 +40,13 @@
 
 #### 전체적인 서비스 구조
 
-![app.png](public/app.png)
+![image](https://github.com/user-attachments/assets/7242ee85-c15a-41a7-a556-57b10cbd902c)
+
 
 #### 백엔드 구조
 
-![back-end.png](public/back-end.png)
+![image](https://github.com/user-attachments/assets/5458ff73-aebc-4b68-8e5a-cc6a287a37c2)
+
 
 [//]: # '## 📌 기타 추가 사항들'
 [//]: # '## 📌 화면 구성/API 주소'
