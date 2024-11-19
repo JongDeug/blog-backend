@@ -265,30 +265,30 @@ export class CommentService {
     });
   }
 
-  // async removeCommentByGuest(
-  //   id: number,
-  //   guestId: string,
-  //   deleteCommentByGuestDto: DeleteCommentByGuestDto,
-  // ) {
-  //   const foundComment = await this.findCommentWithGuest(id);
+  async removeCommentByGuest(
+    id: number,
+    guestId: string,
+    deleteCommentByGuestDto: DeleteCommentByGuestDto,
+  ) {
+    const foundComment = await this.findCommentWithGuest(id);
 
-  //   // 비밀번호 인증
-  //   await this.authService.comparePassword(
-  //     deleteCommentByGuestDto.password,
-  //     foundComment.guest.password,
-  //   );
+    // 비밀번호 인증
+    await this.authService.comparePassword(
+      deleteCommentByGuestDto.password,
+      foundComment.guest.password,
+    );
 
-  //   // guestId 추가 인증
-  //   if (guestId !== foundComment.guest.guestId) {
-  //     throw new UnauthorizedException('잘못된 인증 정보입니다');
-  //   }
+    // guestId 추가 인증
+    if (guestId !== foundComment.guest.guestId) {
+      throw new UnauthorizedException('잘못된 인증 정보입니다');
+    }
 
-  //   await this.prismaService.comment.delete({
-  //     where: {
-  //       id: foundComment.id,
-  //     },
-  //   });
-  // }
+    await this.prismaService.comment.delete({
+      where: {
+        id: foundComment.id,
+      },
+    });
+  }
 
   async findCommentById(id: number, isParent: boolean) {
     const foundComment = await this.prismaService.comment.findUnique({
