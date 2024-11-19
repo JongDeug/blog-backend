@@ -17,7 +17,6 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { tokenAge } from './const/token-age.const';
 import { UserService } from 'src/user/user.service';
-import { NotFoundError } from 'rxjs';
 
 @Injectable()
 export class AuthService {

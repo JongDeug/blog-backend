@@ -72,22 +72,20 @@ describe('AuthService', () => {
         email: registerDto.email,
       } as User;
 
-      jest.spyOn(prismaMock.user, 'findUnique').mockResolvedValue(null);
+      jest.spyOn(userService, 'findUserByEmail').mockResolvedValue(null);
       jest
-        .spyOn(bcrypt, 'hash')
-        .mockImplementation(() => Promise.resolve('hashedPassword'));
-      jest.spyOn(configService, 'get').mockReturnValue(expect.any(String));
+        .spyOn(authService, 'hashPassword')
+        .mockResolvedValueOnce('hashedPassword');
       jest.spyOn(prismaMock.user, 'create').mockResolvedValue(newUser);
 
       const result = await authService.register(registerDto);
 
       expect(result).toEqual(newUser);
-      expect(prismaMock.user.findUnique).toHaveBeenCalledWith({
-        where: { email: registerDto.email },
-      });
-      expect(bcrypt.hash).toHaveBeenCalledWith(
+      expect(userService.findUserByEmail).toHaveBeenCalledWith(
+        registerDto.email,
+      );
+      expect(authService.hashPassword).toHaveBeenCalledWith(
         registerDto.password,
-        expect.any(String),
       );
       expect(prismaMock.user.create).toHaveBeenCalledWith({
         data: {
@@ -103,12 +101,13 @@ describe('AuthService', () => {
     it('should throw a ConflictException when the user exists', async () => {
       const foundUser = { name: 'test', email: 'test@gmail.com' } as User;
 
-      jest.spyOn(prismaMock.user, 'findUnique').mockResolvedValue(foundUser);
+      jest.spyOn(authService, 'hashPassword');
+      jest.spyOn(userService, 'findUserByEmail').mockResolvedValue(foundUser);
 
       await expect(authService.register(registerDto)).rejects.toThrow(
         ConflictException,
       );
-      expect(bcrypt.hash).not.toHaveBeenCalled();
+      expect(authService.hashPassword).not.toHaveBeenCalled();
     });
   });
 
@@ -121,7 +120,7 @@ describe('AuthService', () => {
       expect(result).toEqual({ email: 'test@gmail.com', password: '1234' });
     });
 
-    it('should throw an error for invalid token format', () => {
+    it('should throw a BadRequestException for invalid token format', () => {
       const rawToken = 'Basic dGVzdEBnbWFpbC5jb206MTIzNA== XXXXXX';
 
       expect(() => authService.parseBasicToken(rawToken)).toThrow(
@@ -129,7 +128,7 @@ describe('AuthService', () => {
       );
     });
 
-    it('should throw an error for invalid token format', () => {
+    it('should throw a BadRequestException for invalid token format', () => {
       const rawToken = 'Bearer dGVzdEBnbWFpbC5jb206MTIzNA==';
 
       expect(() => authService.parseBasicToken(rawToken)).toThrow(
@@ -137,7 +136,7 @@ describe('AuthService', () => {
       );
     });
 
-    it('should throw an error for invalid token format', () => {
+    it('should throw a BadRequestException for invalid token format', () => {
       const rawToken = 'Basic invalidBase64token==';
 
       expect(() => authService.parseBasicToken(rawToken)).toThrow(
@@ -150,39 +149,37 @@ describe('AuthService', () => {
     const email = 'test@gmail.com';
     const password = '1234';
     let foundUser;
+    let mockFindUserByEmail: jest.SpyInstance;
+    let mockComparePassword: jest.SpyInstance;
 
     beforeEach(() => {
       foundUser = { email, password } as User;
-      jest
-        .spyOn(userService, 'findUserWithNotFoundException')
-        .mockResolvedValue(foundUser);
+      mockFindUserByEmail = jest.spyOn(userService, 'findUserByEmail');
+      mockComparePassword = jest.spyOn(authService, 'comparePassword');
     });
 
     it('should authenticate a user with correct credentials', async () => {
-      jest
-        .spyOn(bcrypt, 'compare')
-        .mockImplementation(() => Promise.resolve(true));
+      mockFindUserByEmail.mockResolvedValue(foundUser);
+      mockComparePassword.mockResolvedValue(undefined);
 
       const result = await authService.authenticate(email, password);
 
       expect(result).toEqual(foundUser);
-      expect(userService.findUserWithNotFoundException).toHaveBeenCalledWith(
-        { email },
-        '가입된 이메일이 아닙니다',
+      expect(mockFindUserByEmail).toHaveBeenCalledWith(email);
+      expect(mockComparePassword).toHaveBeenCalledWith(
+        password,
+        foundUser.password,
       );
-      expect(bcrypt.compare).toHaveBeenCalledWith(password, foundUser.password);
     });
 
-    it('should throw an error for invalid credentials', async () => {
-      jest
-        .spyOn(bcrypt, 'compare')
-        .mockImplementation(() => Promise.resolve(false));
+    it('should throw a NotFoundException if the user does not exist', async () => {
+      mockFindUserByEmail.mockResolvedValue(null);
 
       await expect(authService.authenticate(email, password)).rejects.toThrow(
-        BadRequestException,
+        NotFoundException,
       );
-      expect(userService.findUserWithNotFoundException).toHaveBeenCalled();
-      expect(bcrypt.compare).toHaveBeenCalled();
+
+      expect(mockComparePassword).not.toHaveBeenCalled();
     });
   });
 
@@ -388,14 +385,58 @@ describe('AuthService', () => {
   describe('revokeToken', () => {
     it('should revoke the token using userId', async () => {
       const userId = 1;
+      const foundUser = { id: userId } as User;
+
+      jest.spyOn(userService, 'findUserById').mockResolvedValue(foundUser);
 
       await authService.revokeToken(userId);
 
-      expect(userService.findUserWithNotFoundException).toHaveBeenCalledWith(
-        { id: userId },
-        '유저를 찾을 수 없습니다',
+      expect(userService.findUserById).toHaveBeenCalledWith(userId);
+      expect(cacheManager.del).toHaveBeenCalledWith(
+        `REFRESH_TOKEN_${foundUser.id}`,
       );
-      expect(cacheManager.del).toHaveBeenCalledWith(`REFRESH_TOKEN_${userId}`);
+    });
+  });
+
+  describe('hashPassword', () => {
+    it('should hash the password', async () => {
+      jest
+        .spyOn(bcrypt, 'hash')
+        .mockImplementation(() => Promise.resolve('hashedPassword'));
+      jest.spyOn(configService, 'get').mockReturnValue(expect.any(String));
+
+      const result = await authService.hashPassword('password');
+
+      expect(result).toEqual('hashedPassword');
+      expect(bcrypt.hash).toHaveBeenCalledWith('password', expect.any(String));
+    });
+  });
+
+  describe('comparePassword', () => {
+    it('should not throw an error if the password matches the hashed password', async () => {
+      const isCorrectPassword = true;
+
+      jest
+        .spyOn(bcrypt, 'compare')
+        .mockImplementation(() => Promise.resolve(isCorrectPassword));
+
+      await expect(
+        authService.comparePassword('password', 'hashedPassword'),
+      ).resolves.toEqual(undefined);
+      expect(bcrypt.compare).toHaveBeenCalledWith('password', 'hashedPassword');
+    });
+
+    it('should throw an UnauthorizedException if the password does not match the hashed password', async () => {
+      const isCorrectPassword = false;
+
+      jest
+        .spyOn(bcrypt, 'compare')
+        .mockImplementation(() => Promise.resolve(isCorrectPassword));
+
+      await expect(
+        authService.comparePassword('password', 'hashedPassword'),
+      ).rejects.toThrow(UnauthorizedException);
+      expect(bcrypt.compare).toHaveBeenCalled();
     });
   });
 });
