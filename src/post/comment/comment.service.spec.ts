@@ -17,13 +17,12 @@ import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
 import { NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { CreateCommentByGuestDto } from './dto/create-comment-by-guest.dto';
-import { create } from 'domain';
 import { UpdateCommentByGuestDto } from './dto/update-comment-by-guest.dto';
 import { DeleteCommentByGuestDto } from './dto/delete-comment-by-guest.dto';
 
 describe('CommentService', () => {
   let commentService: CommentService;
-  let prismaService: DeepMockProxy<PrismaService>;
+  let prismaMock: DeepMockProxy<PrismaService>;
   let postService: MockProxy<PostService>;
   let userService: MockProxy<UserService>;
   let authService: MockProxy<AuthService>;
@@ -52,7 +51,7 @@ describe('CommentService', () => {
     }).compile();
 
     commentService = module.get<CommentService>(CommentService);
-    prismaService = module.get(PrismaService);
+    prismaMock = module.get(PrismaService);
     postService = module.get(PostService);
     userService = module.get(UserService);
     authService = module.get(AuthService);
@@ -82,7 +81,7 @@ describe('CommentService', () => {
       jest
         .spyOn(postService, 'findPostWithAuthor')
         .mockResolvedValue(foundPost);
-      jest.spyOn(prismaService.comment, 'create').mockResolvedValue(newComment);
+      jest.spyOn(prismaMock.comment, 'create').mockResolvedValue(newComment);
 
       const result = await commentService.createComment(
         userId,
@@ -94,7 +93,7 @@ describe('CommentService', () => {
       expect(postService.findPostWithAuthor).toHaveBeenCalledWith(
         createCommentDto.postId,
       );
-      expect(prismaService.comment.create).toHaveBeenCalledWith({
+      expect(prismaMock.comment.create).toHaveBeenCalledWith({
         data: {
           content: createCommentDto.content,
           author: {
@@ -135,7 +134,7 @@ describe('CommentService', () => {
         .spyOn(commentService, 'findParentCommentWithAuthors')
         .mockResolvedValue(foundParentComment);
       jest
-        .spyOn(prismaService.comment, 'create')
+        .spyOn(prismaMock.comment, 'create')
         .mockResolvedValue(newChildComment);
 
       const result = await commentService.createChildComment(
@@ -148,7 +147,7 @@ describe('CommentService', () => {
       expect(commentService.findParentCommentWithAuthors).toHaveBeenCalledWith(
         createCommentDto.parentCommentId,
       );
-      expect(prismaService.comment.create).toHaveBeenCalledWith({
+      expect(prismaMock.comment.create).toHaveBeenCalledWith({
         data: {
           content: createCommentDto.content,
           parentComment: {
@@ -189,7 +188,7 @@ describe('CommentService', () => {
       ).resolves.toBeUndefined();
       expect(userService.findUserById).toHaveBeenCalledWith(userId);
       expect(commentService.findCommentById).toHaveBeenCalledWith(id);
-      expect(prismaService.comment.update).toHaveBeenCalledWith({
+      expect(prismaMock.comment.update).toHaveBeenCalledWith({
         where: { id: foundComment.id },
         data: {
           content: updateCommentDto.content,
@@ -216,7 +215,7 @@ describe('CommentService', () => {
       ).resolves.toBeUndefined();
       expect(userService.findUserById).toHaveBeenCalled();
       expect(commentService.findCommentById).toHaveBeenCalled();
-      expect(prismaService.comment.update).toHaveBeenCalled();
+      expect(prismaMock.comment.update).toHaveBeenCalled();
     });
 
     it('should throw an UnauthorizedException if the user does not have the permission to edit the comment', async () => {
@@ -238,7 +237,7 @@ describe('CommentService', () => {
       ).rejects.toThrow(UnauthorizedException);
       expect(userService.findUserById).toHaveBeenCalled();
       expect(commentService.findCommentById).toHaveBeenCalled();
-      expect(prismaService.comment.update).not.toHaveBeenCalled();
+      expect(prismaMock.comment.update).not.toHaveBeenCalled();
     });
   });
 
@@ -257,7 +256,7 @@ describe('CommentService', () => {
       await expect(commentService.remove(id, userId)).resolves.toBeUndefined();
       expect(userService.findUserById).toHaveBeenCalledWith(userId);
       expect(commentService.findCommentById).toHaveBeenCalledWith(id);
-      expect(prismaService.comment.delete).toHaveBeenCalledWith({
+      expect(prismaMock.comment.delete).toHaveBeenCalledWith({
         where: { id: foundComment.id },
       });
     });
@@ -276,7 +275,7 @@ describe('CommentService', () => {
       await expect(commentService.remove(id, userId)).resolves.toBeUndefined();
       expect(userService.findUserById).toHaveBeenCalled();
       expect(commentService.findCommentById).toHaveBeenCalled();
-      expect(prismaService.comment.delete).toHaveBeenCalled();
+      expect(prismaMock.comment.delete).toHaveBeenCalled();
     });
 
     it('should throw an UnauthorizedException if the user does not have the permission to delete the comment', async () => {
@@ -295,7 +294,7 @@ describe('CommentService', () => {
       );
       expect(userService.findUserById).toHaveBeenCalled();
       expect(commentService.findCommentById).toHaveBeenCalled();
-      expect(prismaService.comment.delete).not.toHaveBeenCalled();
+      expect(prismaMock.comment.delete).not.toHaveBeenCalled();
     });
   });
 
@@ -319,12 +318,12 @@ describe('CommentService', () => {
         .spyOn(postService, 'findPostWithAuthor')
         .mockResolvedValue(foundPost);
       jest
-        .spyOn(prismaService, '$transaction')
-        .mockImplementation(async (cb) => cb(prismaService));
+        .spyOn(prismaMock, '$transaction')
+        .mockImplementation(async (cb) => cb(prismaMock));
       jest
         .spyOn(commentService, 'createGuestComment')
         .mockResolvedValue(newGuestComment);
-      jest.spyOn(prismaService.comment, 'create').mockResolvedValue(newComment);
+      jest.spyOn(prismaMock.comment, 'create').mockResolvedValue(newComment);
 
       const result = await commentService.createCommentByGuest(
         guestId,
@@ -335,13 +334,13 @@ describe('CommentService', () => {
       expect(postService.findPostWithAuthor).toHaveBeenCalledWith(
         createCommentByGuestDto.postId,
       );
-      expect(prismaService.$transaction).toHaveBeenCalled();
+      expect(prismaMock.$transaction).toHaveBeenCalled();
       expect(commentService.createGuestComment).toHaveBeenCalledWith(
-        prismaService,
+        prismaMock,
         guestId,
         createCommentByGuestDto,
       );
-      expect(prismaService.comment.create).toHaveBeenCalledWith({
+      expect(prismaMock.comment.create).toHaveBeenCalledWith({
         data: {
           content: createCommentByGuestDto.content,
           guest: {
@@ -380,13 +379,13 @@ describe('CommentService', () => {
         .spyOn(commentService, 'findParentCommentWithAuthors')
         .mockResolvedValue(foundParentComment);
       jest
-        .spyOn(prismaService, '$transaction')
-        .mockImplementation(async (cb) => cb(prismaService));
+        .spyOn(prismaMock, '$transaction')
+        .mockImplementation(async (cb) => cb(prismaMock));
       jest
         .spyOn(commentService, 'createGuestComment')
         .mockResolvedValue(newGuestComment);
       jest
-        .spyOn(prismaService.comment, 'create')
+        .spyOn(prismaMock.comment, 'create')
         .mockResolvedValue(newChildComment);
 
       const result = await commentService.createChildCommentByGuest(
@@ -398,13 +397,13 @@ describe('CommentService', () => {
       expect(commentService.findParentCommentWithAuthors).toHaveBeenCalledWith(
         createCommentByGuestDto.parentCommentId,
       );
-      expect(prismaService.$transaction).toHaveBeenCalled();
+      expect(prismaMock.$transaction).toHaveBeenCalled();
       expect(commentService.createGuestComment).toHaveBeenCalledWith(
-        prismaService,
+        prismaMock,
         guestId,
         createCommentByGuestDto,
       );
-      expect(prismaService.comment.create).toHaveBeenCalledWith({
+      expect(prismaMock.comment.create).toHaveBeenCalledWith({
         data: {
           content: createCommentByGuestDto.content,
           guest: {
@@ -454,7 +453,7 @@ describe('CommentService', () => {
         updateCommentByGuestDto.password,
         foundComment.guest.password,
       );
-      expect(prismaService.comment.update).toHaveBeenCalledWith({
+      expect(prismaMock.comment.update).toHaveBeenCalledWith({
         where: { id: foundComment.id },
         data: { content: updateCommentByGuestDto.content },
       });
@@ -488,7 +487,7 @@ describe('CommentService', () => {
       ).rejects.toThrow(UnauthorizedException);
       expect(commentService.findCommentWithGuest).toHaveBeenCalled();
       expect(authService.comparePassword).toHaveBeenCalled();
-      expect(prismaService.comment.update).not.toHaveBeenCalled();
+      expect(prismaMock.comment.update).not.toHaveBeenCalled();
     });
   });
 
@@ -519,7 +518,7 @@ describe('CommentService', () => {
         deleteCommentByGuestDto.password,
         foundComment.guest.password,
       );
-      expect(prismaService.comment.delete).toHaveBeenCalledWith({
+      expect(prismaMock.comment.delete).toHaveBeenCalledWith({
         where: { id: foundComment.id },
       });
     });
@@ -551,7 +550,7 @@ describe('CommentService', () => {
       ).rejects.toThrow(UnauthorizedException);
       expect(commentService.findCommentWithGuest).toHaveBeenCalled();
       expect(authService.comparePassword).toHaveBeenCalled();
-      expect(prismaService.comment.delete).not.toHaveBeenCalled();
+      expect(prismaMock.comment.delete).not.toHaveBeenCalled();
     });
   });
 
@@ -560,24 +559,24 @@ describe('CommentService', () => {
       const foundComment = { id: 1 } as Comment;
 
       jest
-        .spyOn(prismaService.comment, 'findUnique')
+        .spyOn(prismaMock.comment, 'findUnique')
         .mockResolvedValue(foundComment);
 
       const result = await commentService.findCommentById(1);
 
       expect(result).toEqual(foundComment);
-      expect(prismaService.comment.findUnique).toHaveBeenCalledWith({
+      expect(prismaMock.comment.findUnique).toHaveBeenCalledWith({
         where: { id: 1 },
       });
     });
 
     it('should throw a NotFoundException when the comment does not exist', async () => {
-      jest.spyOn(prismaService.comment, 'findUnique').mockResolvedValue(null);
+      jest.spyOn(prismaMock.comment, 'findUnique').mockResolvedValue(null);
 
       await expect(commentService.findCommentById(1)).rejects.toThrow(
         NotFoundException,
       );
-      expect(prismaService.comment.findUnique).toHaveBeenCalled();
+      expect(prismaMock.comment.findUnique).toHaveBeenCalled();
     });
   });
 
@@ -586,25 +585,25 @@ describe('CommentService', () => {
       const foundComment = { id: 1 } as Comment;
 
       jest
-        .spyOn(prismaService.comment, 'findUnique')
+        .spyOn(prismaMock.comment, 'findUnique')
         .mockResolvedValue(foundComment);
 
       const result = await commentService.findCommentWithGuest(1);
 
       expect(result).toEqual(foundComment);
-      expect(prismaService.comment.findUnique).toHaveBeenCalledWith({
+      expect(prismaMock.comment.findUnique).toHaveBeenCalledWith({
         where: { id: 1, authorId: null },
         include: { guest: true },
       });
     });
 
     it('should throw a NotFoundException when the comment does not exist', async () => {
-      jest.spyOn(prismaService.comment, 'findUnique').mockResolvedValue(null);
+      jest.spyOn(prismaMock.comment, 'findUnique').mockResolvedValue(null);
 
       await expect(commentService.findCommentWithGuest(1)).rejects.toThrow(
         NotFoundException,
       );
-      expect(prismaService.comment.findUnique).toHaveBeenCalled();
+      expect(prismaMock.comment.findUnique).toHaveBeenCalled();
     });
   });
 
@@ -613,13 +612,13 @@ describe('CommentService', () => {
       const foundParentComment = { id: 1 } as Comment;
 
       jest
-        .spyOn(prismaService.comment, 'findUnique')
+        .spyOn(prismaMock.comment, 'findUnique')
         .mockResolvedValue(foundParentComment);
 
       const result = await commentService.findParentCommentWithAuthors(1);
 
       expect(result).toEqual(foundParentComment);
-      expect(prismaService.comment.findUnique).toHaveBeenCalledWith({
+      expect(prismaMock.comment.findUnique).toHaveBeenCalledWith({
         where: { id: 1 },
         include: {
           post: { include: { author: true } },
@@ -631,18 +630,18 @@ describe('CommentService', () => {
     });
 
     it('should throw a NotFoundException when the parent comment does not exist', async () => {
-      jest.spyOn(prismaService.comment, 'findUnique').mockResolvedValue(null);
+      jest.spyOn(prismaMock.comment, 'findUnique').mockResolvedValue(null);
 
       await expect(
         commentService.findParentCommentWithAuthors(1),
       ).rejects.toThrow(NotFoundException);
-      expect(prismaService.comment.findUnique).toHaveBeenCalled();
+      expect(prismaMock.comment.findUnique).toHaveBeenCalled();
     });
   });
 
   describe('createGuestComment', () => {
     it('should create a guestComment with password hashing', async () => {
-      const database = prismaService;
+      const database = prismaMock;
       const guestId = 'uuid';
       const createCommentByGuestDto: CreateCommentByGuestDto = {
         nickName: 'nick',

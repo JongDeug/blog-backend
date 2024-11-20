@@ -1,20 +1,28 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CommentController } from './comment.controller';
 import { CommentService } from './comment.service';
+import { mock, MockProxy } from 'jest-mock-extended';
 
 describe('CommentController', () => {
-  let controller: CommentController;
+  let commentController: CommentController;
+  let commentService: MockProxy<CommentService>;
 
   beforeEach(async () => {
-    // const module: TestingModule = await Test.createTestingModule({
-    //   controllers: [CommentController],
-    //   providers: [CommentService],
-    // }).compile();
-    // controller = module.get<CommentController>(CommentController);
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [CommentController],
+      providers: [
+        {
+          provide: CommentService,
+          useValue: mock<CommentService>(),
+        },
+      ],
+    }).compile();
+
+    commentController = module.get<CommentController>(CommentController);
+    commentService = module.get(CommentService);
   });
 
   it('should be defined', () => {
-    // expect(controller).toBeDefined();
-    expect(true).toBeDefined();
+    expect(commentController).toBeDefined();
   });
 });
