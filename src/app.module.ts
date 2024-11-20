@@ -22,7 +22,6 @@ import { LoggingInterceptor } from './common/interceptor/logging.interceptor';
 import { join } from 'path';
 import { PrismaClientExceptionFilter } from './prisma/filter/prisma-client-exception.filter';
 import { CommentModule } from './post/comment/comment.module';
-import { EventEmitterModule } from '@nestjs/event-emitter';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { envVariableKeys } from './common/const/env.const';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
@@ -82,7 +81,6 @@ import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handleba
     MulterModule.registerAsync({
       useClass: MulterConfigService,
     }),
-    EventEmitterModule.forRoot(),
     MailerModule.forRootAsync({
       useFactory: (configService: ConfigService) => ({
         transport: {

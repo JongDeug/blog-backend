@@ -449,11 +449,11 @@ export class PostService {
           include: {
             childComments: {
               include: {
-                author: { select: { id: true, name: true } },
+                author: { omit: { password: true, role: true } },
                 guest: { omit: { password: true } },
               },
             },
-            author: { select: { id: true, name: true } },
+            author: { omit: { password: true, role: true } },
             guest: { omit: { password: true } },
           },
         },
