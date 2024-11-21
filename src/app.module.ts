@@ -45,7 +45,11 @@ import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handleba
         EMAIL_PWD: Joi.string().required(),
       }),
       isGlobal: true,
-      envFilePath: '.env.test',
+      envFilePath: [
+        // 'env.development.local',
+        '.env.test.local',
+        // '.env.production.local',
+      ],
     }),
     WinstonModule.forRoot({
       transports: [
