@@ -34,7 +34,7 @@ export class CommentController {
   }
 
   @Patch('user/:id')
-  userUpdate(
+  update(
     @Param('id', ParseIntPipe) id: number,
     @UserId() userId: number,
     @Body() updateCommentDto: UpdateCommentDto,

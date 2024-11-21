@@ -94,10 +94,12 @@
       "json",
       "ts"
     ],
-    "rootDir": "./",
-    "modulePaths": [
-      "<rootDir>"
+    "roots": [
+      "src"
     ],
+    "moduleNameMapper": {
+      "^src/(.*)": "<rootDir>/src/$1"
+    },
     "testRegex": ".*\\.spec\\.ts$",
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
@@ -112,9 +114,12 @@
       "const.ts",
       "guard.ts",
       "decorator.ts",
-      "middleware.ts"
+      "middleware.ts",
+      "util.ts",
+      "filter.ts",
+      "prisma"
     ],
-    "coverageDirectory": "./coverage",
+    "coverageDirectory": "../coverage",
     "testEnvironment": "node"
   },
   "packageManager": "pnpm@9.1.1+sha512.14e915759c11f77eac07faba4d019c193ec8637229e62ec99eefb7cf3c3b75c64447882b7c485142451ee3a6b408059cdfb7b7fa0341b975f12d0f7629c71195"
