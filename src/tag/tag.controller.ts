@@ -34,7 +34,7 @@ export class TagController {
   @Get(':id')
   @Public()
   findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.tagService.findOne(id);
+    return this.tagService.findTagById(id);
   }
 
   @Patch(':id')

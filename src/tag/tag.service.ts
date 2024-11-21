@@ -27,8 +27,14 @@ export class TagService {
     return this.prismaService.tag.findMany({});
   }
 
-  findOne(id: number) {
-    return this.findTagById(id);
+  async findTagById(id: number) {
+    const foundTag = await this.prismaService.tag.findUnique({
+      where: { id },
+      include: { posts: true },
+    });
+    if (!foundTag) throw new NotFoundException('존재하지 않는 태그입니다');
+
+    return foundTag;
   }
 
   async update(id: number, updateTagDto: UpdateTagDto) {
@@ -38,14 +44,12 @@ export class TagService {
     await this.findTagByName(updateTagDto.name);
 
     // 태그 업데이트
-    const newTag = await this.prismaService.tag.update({
+    await this.prismaService.tag.update({
       where: { id: foundTag.id },
       data: {
         name: updateTagDto.name,
       },
     });
-
-    return newTag;
   }
 
   async remove(id: number) {
@@ -56,16 +60,6 @@ export class TagService {
     }
 
     await this.prismaService.tag.delete({ where: { id } });
-  }
-
-  async findTagById(id: number) {
-    const foundTag = await this.prismaService.tag.findUnique({
-      where: { id },
-      include: { posts: true },
-    });
-    if (!foundTag) throw new NotFoundException('존재하지 않는 태그입니다');
-
-    return foundTag;
   }
 
   async findTagByName(name: string) {

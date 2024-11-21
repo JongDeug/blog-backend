@@ -56,12 +56,12 @@ describe('TagController', () => {
     it('should return a tag', async () => {
       const foundTag = { id: 1, name: '리눅스', posts: [] };
 
-      jest.spyOn(tagService, 'findOne').mockResolvedValue(foundTag);
+      jest.spyOn(tagService, 'findTagById').mockResolvedValue(foundTag);
 
       const result = await tagController.findOne(1);
 
       expect(result).toEqual(foundTag);
-      expect(tagService.findOne).toHaveBeenCalledWith(1);
+      expect(tagService.findTagById).toHaveBeenCalledWith(1);
     });
   });
 
@@ -70,11 +70,11 @@ describe('TagController', () => {
       const updateTagDto: UpdateTagDto = { name: '윈도우' };
       const updatedTag = { id: 1, name: updateTagDto.name };
 
-      jest.spyOn(tagService, 'update').mockResolvedValue(updatedTag);
+      jest.spyOn(tagService, 'update').mockResolvedValue(undefined);
 
-      const result = await tagController.update(1, updateTagDto);
-
-      expect(result).toEqual(updatedTag);
+      await expect(
+        tagController.update(1, updateTagDto),
+      ).resolves.toBeUndefined();
       expect(tagService.update).toHaveBeenCalledWith(1, updateTagDto);
     });
   });
