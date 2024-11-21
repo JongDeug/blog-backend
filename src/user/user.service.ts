@@ -1,4 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { Role } from '@prisma/client';
+import { RBAC } from 'src/auth/decorator/rbac.decorator';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
@@ -13,8 +15,14 @@ export class UserService {
     });
   }
 
-  findOne(id: number) {
-    return this.findUserWithoutPassword(id);
+  async findUserWithoutPassword(id: number) {
+    const foundUser = await this.prismaService.user.findUnique({
+      where: { id },
+      omit: { password: true },
+    });
+    if (!foundUser) throw new NotFoundException('사용자가 존재하지 않습니다');
+
+    return foundUser;
   }
 
   async remove(id: number) {
@@ -26,16 +34,6 @@ export class UserService {
   async findUserById(id: number) {
     const foundUser = await this.prismaService.user.findUnique({
       where: { id },
-    });
-    if (!foundUser) throw new NotFoundException('사용자가 존재하지 않습니다');
-
-    return foundUser;
-  }
-
-  async findUserWithoutPassword(id: number) {
-    const foundUser = await this.prismaService.user.findUnique({
-      where: { id },
-      omit: { password: true },
     });
     if (!foundUser) throw new NotFoundException('사용자가 존재하지 않습니다');
 

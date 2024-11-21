@@ -37,9 +37,6 @@ import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handleba
         DB_URL: Joi.string().required(),
         DB_PORT: Joi.number().required(),
         DB_PWD: Joi.number().required(),
-        REDIS_URL: Joi.string().required(),
-        REDIS_PORT: Joi.number().required(),
-        REDIS_PWD: Joi.number().required(),
         HASH_ROUNDS: Joi.number().required(),
         ACCESS_TOKEN_SECRET: Joi.string().required(),
         REFRESH_TOKEN_SECRET: Joi.string().required(),
@@ -48,6 +45,7 @@ import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handleba
         EMAIL_PWD: Joi.string().required(),
       }),
       isGlobal: true,
+      envFilePath: '.env.test',
     }),
     WinstonModule.forRoot({
       transports: [

@@ -16,7 +16,7 @@ export class UserController {
   @Get(':id')
   @RBAC(Role.ADMIN)
   findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.userService.findOne(id);
+    return this.userService.findUserWithoutPassword(id);
   }
 
   @Delete(':id')

@@ -43,21 +43,28 @@ describe('UserService', () => {
     });
   });
 
-  describe('findOne', () => {
-    it('should return a user when the user exists', async () => {
-      const foundUser = {
-        id: 1,
-        email: 'test@gmail.com',
-      } as User;
+  describe('findUserWithoutPassword', () => {
+    it('should return a user without password when the user exists', async () => {
+      const foundUser = { id: 1 } as User;
 
-      jest
-        .spyOn(userService, 'findUserWithoutPassword')
-        .mockResolvedValue(foundUser);
+      jest.spyOn(prismaMock.user, 'findUnique').mockResolvedValue(foundUser);
 
-      const result = await userService.findOne(1);
+      const result = await userService.findUserWithoutPassword(1);
 
       expect(result).toEqual(foundUser);
-      expect(userService.findUserWithoutPassword).toHaveBeenCalledWith(1);
+      expect(prismaMock.user.findUnique).toHaveBeenCalledWith({
+        where: { id: 1 },
+        omit: { password: true },
+      });
+    });
+
+    it('should throw a NotFoundException when the user does not exists', async () => {
+      jest.spyOn(prismaMock.user, 'findUnique').mockResolvedValue(null);
+
+      await expect(userService.findUserWithoutPassword(1)).rejects.toThrow(
+        NotFoundException,
+      );
+      expect(prismaMock.user.findUnique).toHaveBeenCalled();
     });
   });
 
@@ -96,31 +103,6 @@ describe('UserService', () => {
       jest.spyOn(prismaMock.user, 'findUnique').mockResolvedValue(null);
 
       await expect(userService.findUserById(1)).rejects.toThrow(
-        NotFoundException,
-      );
-      expect(prismaMock.user.findUnique).toHaveBeenCalled();
-    });
-  });
-
-  describe('findUserWithoutPassword', () => {
-    it('should return a user without password when the user exists', async () => {
-      const foundUser = { id: 1 } as User;
-
-      jest.spyOn(prismaMock.user, 'findUnique').mockResolvedValue(foundUser);
-
-      const result = await userService.findUserWithoutPassword(1);
-
-      expect(result).toEqual(foundUser);
-      expect(prismaMock.user.findUnique).toHaveBeenCalledWith({
-        where: { id: 1 },
-        omit: { password: true },
-      });
-    });
-
-    it('should throw a NotFoundException when the user does not exists', async () => {
-      jest.spyOn(prismaMock.user, 'findUnique').mockResolvedValue(null);
-
-      await expect(userService.findUserWithoutPassword(1)).rejects.toThrow(
         NotFoundException,
       );
       expect(prismaMock.user.findUnique).toHaveBeenCalled();

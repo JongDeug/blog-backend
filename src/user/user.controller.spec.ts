@@ -47,13 +47,13 @@ describe('UserController', () => {
       const foundUser = { id: 1, email: 'test@gmail.com' };
 
       jest
-        .spyOn(mockUserService, 'findOne')
+        .spyOn(mockUserService, 'findUserWithoutPassword')
         .mockResolvedValue(foundUser as User);
 
       const result = await userController.findOne(1);
 
       expect(result).toEqual(foundUser);
-      expect(mockUserService.findOne).toHaveBeenCalledWith(1);
+      expect(mockUserService.findUserWithoutPassword).toHaveBeenCalledWith(1);
     });
   });
 
