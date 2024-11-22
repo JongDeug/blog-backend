@@ -13,8 +13,7 @@ export class TagService {
   constructor(private readonly prismaService: PrismaService) {}
 
   async create(createTagDto: CreateTagDto) {
-    // 이미 존재하는 태그인지 확인
-    await this.findTagByName(createTagDto.name);
+    await this.checkTagExists(createTagDto.name);
 
     const newTag = await this.prismaService.tag.create({
       data: { name: createTagDto.name },
@@ -40,8 +39,7 @@ export class TagService {
   async update(id: number, updateTagDto: UpdateTagDto) {
     const foundTag = await this.findTagById(id);
 
-    // 업데이트 하려는 태그가 존재하는지 확인
-    await this.findTagByName(updateTagDto.name);
+    await this.checkTagExists(updateTagDto.name);
 
     // 태그 업데이트
     await this.prismaService.tag.update({
@@ -62,7 +60,7 @@ export class TagService {
     await this.prismaService.tag.delete({ where: { id } });
   }
 
-  async findTagByName(name: string) {
+  async checkTagExists(name: string) {
     const foundTag = await this.prismaService.tag.findUnique({
       where: { name },
     });

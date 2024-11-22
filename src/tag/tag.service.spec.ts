@@ -51,13 +51,13 @@ describe('TagService', () => {
         name: createTagDto.name,
       };
 
-      jest.spyOn(tagService, 'findTagByName');
+      jest.spyOn(tagService, 'checkTagExists');
       jest.spyOn(prismaMock.tag, 'create').mockResolvedValue(newTag);
 
       const result = await tagService.create(createTagDto);
 
       expect(result).toEqual(newTag);
-      expect(tagService.findTagByName).toHaveBeenCalledWith(createTagDto.name);
+      expect(tagService.checkTagExists).toHaveBeenCalledWith(createTagDto.name);
       expect(prismaMock.tag.create).toHaveBeenCalledWith({
         data: { name: createTagDto.name },
       });
@@ -108,12 +108,12 @@ describe('TagService', () => {
       const newTag = { id: 1, name: updateTagDto.name };
 
       jest.spyOn(tagService, 'findTagById').mockResolvedValue(foundTag);
-      jest.spyOn(tagService, 'findTagByName');
+      jest.spyOn(tagService, 'checkTagExists');
       jest.spyOn(prismaMock.tag, 'update').mockResolvedValue(newTag);
 
       await expect(tagService.update(1, updateTagDto)).resolves.toBeUndefined();
       expect(tagService.findTagById).toHaveBeenCalledWith(1);
-      expect(tagService.findTagByName).toHaveBeenCalledWith(updateTagDto.name);
+      expect(tagService.checkTagExists).toHaveBeenCalledWith(updateTagDto.name);
       expect(prismaMock.tag.update).toHaveBeenCalledWith({
         where: { id: 1 },
         data: {
@@ -150,13 +150,13 @@ describe('TagService', () => {
     });
   });
 
-  describe('findTagByName', () => {
+  describe('checkTagExists', () => {
     it('should not throw an error when the tag does not exist', async () => {
       const name = '태그';
 
       jest.spyOn(prismaMock.tag, 'findUnique').mockResolvedValue(null);
 
-      await expect(tagService.findTagByName(name)).resolves.toBeUndefined();
+      await expect(tagService.checkTagExists(name)).resolves.toBeUndefined();
       expect(prismaMock.tag.findUnique).toHaveBeenCalledWith({
         where: { name },
       });
@@ -168,7 +168,7 @@ describe('TagService', () => {
 
       jest.spyOn(prismaMock.tag, 'findUnique').mockResolvedValue(foundTag);
 
-      await expect(tagService.findTagByName(name)).rejects.toThrow(
+      await expect(tagService.checkTagExists(name)).rejects.toThrow(
         ConflictException,
       );
       expect(prismaMock.tag.findUnique).toHaveBeenCalled();

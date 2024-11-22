@@ -53,13 +53,13 @@ describe('CategoryService', () => {
         name: createCategoryDto.name,
       } as Category;
 
-      jest.spyOn(categoryService, 'findCategoryByName');
+      jest.spyOn(categoryService, 'checkCategoryExists');
       jest.spyOn(prismaMock.category, 'create').mockResolvedValue(newCategory);
 
       const result = await categoryService.create(createCategoryDto);
 
       expect(result).toEqual(newCategory);
-      expect(categoryService.findCategoryByName).toHaveBeenCalledWith(
+      expect(categoryService.checkCategoryExists).toHaveBeenCalledWith(
         createCategoryDto.name,
       );
       expect(prismaMock.category.create).toHaveBeenCalledWith({
@@ -85,39 +85,22 @@ describe('CategoryService', () => {
     });
   });
 
-  describe('findOne', () => {
-    it('should return a category when the category exists', async () => {
-      const foundCategory = { id: 1, name: '운영체제' } as CategoryType;
-
-      jest
-        .spyOn(categoryService, 'findCategoryById')
-        .mockResolvedValue(foundCategory);
-
-      const result = await categoryService.findOne(1);
-
-      expect(result).toEqual(foundCategory);
-      expect(categoryService.findCategoryById).toHaveBeenCalledWith(1);
-    });
-  });
-
   describe('update', () => {
     const updateCategoryDto: UpdateCategoryDto = { name: '윈도우' };
     const foundCategory = { id: 1, name: '리눅스' } as CategoryType;
 
     it('should update a category', async () => {
-      const newCategory = { id: 1, name: updateCategoryDto.name } as Category;
-
       jest
         .spyOn(categoryService, 'findCategoryById')
         .mockResolvedValue(foundCategory);
-      jest.spyOn(categoryService, 'findCategoryByName');
-      jest.spyOn(prismaMock.category, 'update').mockResolvedValue(newCategory);
+      jest.spyOn(categoryService, 'checkCategoryExists');
+      jest.spyOn(prismaMock.category, 'update').mockResolvedValue(undefined);
 
-      const result = await categoryService.update(1, updateCategoryDto);
-
-      expect(result).toEqual(newCategory);
+      await expect(
+        categoryService.update(1, updateCategoryDto),
+      ).resolves.toBeUndefined();
       expect(categoryService.findCategoryById).toHaveBeenCalledWith(1);
-      expect(categoryService.findCategoryByName).toHaveBeenCalledWith(
+      expect(categoryService.checkCategoryExists).toHaveBeenCalledWith(
         updateCategoryDto.name,
       );
       expect(prismaMock.category.update).toHaveBeenCalledWith({
@@ -199,14 +182,14 @@ describe('CategoryService', () => {
     });
   });
 
-  describe('findCategoryByName', () => {
+  describe('checkCategoryExists', () => {
     it('should not throw an error when the category does not exist', async () => {
       const name = '운영체제';
 
       jest.spyOn(prismaMock.category, 'findUnique').mockResolvedValue(null);
 
       await expect(
-        categoryService.findCategoryByName(name),
+        categoryService.checkCategoryExists(name),
       ).resolves.toBeUndefined();
       expect(prismaMock.category.findUnique).toHaveBeenCalledWith({
         where: { name },
@@ -221,7 +204,7 @@ describe('CategoryService', () => {
         .spyOn(prismaMock.category, 'findUnique')
         .mockResolvedValue(categoryExists);
 
-      await expect(categoryService.findCategoryByName(name)).rejects.toThrow(
+      await expect(categoryService.checkCategoryExists(name)).rejects.toThrow(
         ConflictException,
       );
       expect(prismaMock.category.findUnique).toHaveBeenCalled();

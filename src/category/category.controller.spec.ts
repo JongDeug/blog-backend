@@ -67,28 +67,26 @@ describe('CategoryController', () => {
         posts: [],
       } as CategoryWithPosts;
 
-      jest.spyOn(categoryService, 'findOne').mockResolvedValue(foundCategory);
+      jest
+        .spyOn(categoryService, 'findCategoryById')
+        .mockResolvedValue(foundCategory);
 
       const result = await categoryController.findOne(1);
 
       expect(result).toEqual(foundCategory);
-      expect(categoryService.findOne).toHaveBeenCalledWith(1);
+      expect(categoryService.findCategoryById).toHaveBeenCalledWith(1);
     });
   });
 
   describe('update', () => {
     it('should update a category', async () => {
       const updateCategoryDto: UpdateCategoryDto = { name: '윈도우' };
-      const updatedCategory = {
-        id: 1,
-        name: updateCategoryDto.name,
-      } as Category;
 
-      jest.spyOn(categoryService, 'update').mockResolvedValue(updatedCategory);
+      jest.spyOn(categoryService, 'update').mockResolvedValue(undefined);
 
-      const result = await categoryController.update(1, updateCategoryDto);
-
-      expect(result).toEqual(updatedCategory);
+      await expect(
+        categoryController.update(1, updateCategoryDto),
+      ).resolves.toBeUndefined();
       expect(categoryService.update).toHaveBeenCalledWith(1, updateCategoryDto);
     });
   });

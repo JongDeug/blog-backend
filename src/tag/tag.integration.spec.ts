@@ -148,18 +148,18 @@ describe('UserService - Integration Test', () => {
       );
     });
 
-    it('should throw a BadRequestException when the tag is associated with one or more posts', async () => {
+    it('should throw a BadRequestException when the length of tag.posts is greater than 0', async () => {
       await expect(tagService.remove(1)).rejects.toThrow(BadRequestException);
     });
   });
 
-  describe('findTagByName', () => {
+  describe('checkTagExists', () => {
     it('should check if the tag exists', async () => {
-      await expect(tagService.findTagByName('tag5')).resolves.toBeUndefined();
+      await expect(tagService.checkTagExists('tag5')).resolves.toBeUndefined();
     });
 
     it('should throw a ConflictException when the tag exists', async () => {
-      await expect(tagService.findTagByName('updatedTag')).rejects.toThrow(
+      await expect(tagService.checkTagExists('updatedTag')).rejects.toThrow(
         ConflictException,
       );
     });
