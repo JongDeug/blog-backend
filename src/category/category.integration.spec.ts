@@ -1,10 +1,8 @@
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CategoryModule } from './category.module';
 import { CategoryService } from './category.service';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppModule } from 'src/app.module';
 import { CreateCategoryDto } from './dto/create-category.dto';
-import { TagService } from 'src/tag/tag.service';
 import {
   BadRequestException,
   ConflictException,

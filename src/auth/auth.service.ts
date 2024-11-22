@@ -107,7 +107,7 @@ export class AuthService {
     return foundUser;
   }
 
-  async issueToken(payload: { id: number; role: Role }, isRefresh: boolean) {
+  issueToken(payload: { id: number; role: Role }, isRefresh: boolean) {
     const accessTokenSecret = this.configService.get(
       envVariableKeys.accessTokenSecret,
     );
