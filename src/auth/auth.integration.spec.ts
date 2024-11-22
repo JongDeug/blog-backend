@@ -169,7 +169,30 @@ describe('AuthService - Integration Test', () => {
     });
   });
 
-  // hashedPassword 제외
+  describe('bcrypt', () => {
+    const password = '1234';
+    let hashedPassword: string;
 
-  // comparePassword 제외
+    describe('hashedPassword', () => {
+      it('should hash the password and return the hashed value', async () => {
+        const result = await authService.hashPassword(password);
+        expect(result).toBeDefined();
+        hashedPassword = result;
+      });
+    });
+
+    describe('comparePassword', () => {
+      it('should verify that the password matches the hashed password', async () => {
+        await expect(
+          authService.comparePassword(password, hashedPassword),
+        ).resolves.toBeUndefined();
+      });
+
+      it('should throw an UnauthorizedException when the password does not match the hashed password', async () => {
+        await expect(
+          authService.comparePassword('wrong', hashedPassword),
+        ).rejects.toThrow(UnauthorizedException);
+      });
+    });
+  });
 });
