@@ -28,7 +28,8 @@
     "test:common": "jest --watch --testPathPattern=src/common --coverage --collectCoverageFrom=src/common/**",
     "test:auth": "jest --watch --testPathPattern=src/auth --coverage --collectCoverageFrom=src/auth/**",
     "test:post": "jest --watch --testPathPattern=src/post --coverage --collectCoverageFrom=src/post/**",
-    "prisma:migrate:dev": "npx prisma migrate dev",
+    "prisma:migrate:dev": "dotenv -e .env.development.local -- npx prisma migrate dev",
+    "prisma:migrate:test": "dotenv -e .env.test.local -- npx prisma migrate dev",
     "prisma:migrate:prod": "npx prisma migrate prod",
     "prisma:generate": "npx prisma generate"
   },

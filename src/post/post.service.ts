@@ -410,18 +410,20 @@ export class PostService {
     ]);
   }
 
-  async findPostById(id?: number) {
+  async findPostById(id: number) {
     const foundPost = await this.prismaService.post.findUnique({
-      where: { id: id ?? Prisma.skip },
+      where: { id },
+      // where: { id: id ?? Prisma.skip }, // findUnique에서는 Prisma.skip 작동 x
     });
     if (!foundPost) throw new NotFoundException('게시글이 존재하지 않습니다');
 
     return foundPost;
   }
 
-  async findPostWithAuthor(id?: number) {
+  async findPostWithAuthor(id: number) {
     const foundPost = await this.prismaService.post.findUnique({
-      where: { id: id ?? Prisma.skip },
+      where: { id },
+      // where: { id: id ?? Prisma.skip }, // findUnique에서는 Prisma.skip 작동 x
       include: { author: true },
     });
     if (!foundPost) throw new NotFoundException('게시글이 존재하지 않습니다');

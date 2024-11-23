@@ -10,8 +10,7 @@ import { IsPassword } from 'src/auth/dto/register.dto';
 export class CreateCommentByGuestDto {
   @IsNumber()
   @IsNotEmpty()
-  @IsOptional()
-  postId?: number; // 댓글
+  postId: number; // 댓글, 대댓글
 
   @IsNumber()
   @IsNotEmpty()

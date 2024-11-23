@@ -46,7 +46,7 @@ import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handleba
       }),
       isGlobal: true,
       envFilePath: [
-        // 'env.development.local',
+        // '.env.development.local',
         '.env.test.local',
         // '.env.production.local',
       ],

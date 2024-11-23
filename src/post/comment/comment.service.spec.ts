@@ -15,7 +15,11 @@ import {
 } from '@prisma/client';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
-import { NotFoundException, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { CreateCommentByGuestDto } from './dto/create-comment-by-guest.dto';
 import { UpdateCommentByGuestDto } from './dto/update-comment-by-guest.dto';
 import { DeleteCommentByGuestDto } from './dto/delete-comment-by-guest.dto';
@@ -119,13 +123,14 @@ describe('CommentService', () => {
     it('should create a child comment by a user and trigger email notification', async () => {
       const userId = 1;
       const createCommentDto: CreateCommentDto = {
+        postId: 999,
         parentCommentId: 40,
         content: 'content',
       };
       const foundUser = { id: userId } as User;
       const foundParentComment = {
         id: createCommentDto.parentCommentId,
-        postId: 10,
+        postId: createCommentDto.postId,
       } as FoundParentCommentWithAuthors;
       const newChildComment = { id: 41 } as Comment;
 
@@ -165,6 +170,32 @@ describe('CommentService', () => {
         foundParentComment,
         foundUser,
       );
+    });
+
+    it('should throw a BadRequestException if postId does not match foundParentComment.postId', async () => {
+      const userId = 1;
+      const createCommentDto: CreateCommentDto = {
+        postId: 999,
+        parentCommentId: 40,
+        content: 'content',
+      };
+      const foundUser = { id: userId } as User;
+      const foundParentComment = {
+        id: createCommentDto.parentCommentId,
+        postId: 123123132123,
+      } as FoundParentCommentWithAuthors;
+
+      jest.spyOn(userService, 'findUserById').mockResolvedValue(foundUser);
+      jest
+        .spyOn(commentService, 'findParentCommentWithAuthors')
+        .mockResolvedValue(foundParentComment);
+
+      await expect(
+        commentService.createChildComment(userId, createCommentDto),
+      ).rejects.toThrow(BadRequestException);
+      expect(userService.findUserById).toHaveBeenCalled();
+      expect(commentService.findParentCommentWithAuthors).toHaveBeenCalled();
+      expect(prismaMock.comment.create).not.toHaveBeenCalled();
     });
   });
 
@@ -362,6 +393,7 @@ describe('CommentService', () => {
     it('should create a child comment by a guest and trigger email notification', async () => {
       const guestId = 'uuid';
       const createCommentByGuestDto: CreateCommentByGuestDto = {
+        postId: 100,
         nickName: 'nick',
         email: 'test@gmail.com',
         password: '1234',
@@ -370,7 +402,7 @@ describe('CommentService', () => {
       };
       const foundParentComment = {
         id: createCommentByGuestDto.parentCommentId,
-        postId: 1,
+        postId: createCommentByGuestDto.postId,
       } as FoundParentCommentWithAuthors;
       const newChildComment = { id: 2 } as Comment;
       const newGuestComment = { id: 3 } as GuestComment;
@@ -421,6 +453,38 @@ describe('CommentService', () => {
         foundParentComment,
         newGuestComment,
       );
+    });
+
+    it('should throw a BadRequestException if postId does not match foundParentComment.postId', async () => {
+      const guestId = 'uuid';
+      const createCommentByGuestDto: CreateCommentByGuestDto = {
+        postId: 100,
+        nickName: 'nick',
+        email: 'test@gmail.com',
+        password: '1234',
+        content: 'content',
+        parentCommentId: 10,
+      };
+      const foundParentComment = {
+        id: createCommentByGuestDto.parentCommentId,
+        postId: 123123123,
+      } as FoundParentCommentWithAuthors;
+
+      jest
+        .spyOn(commentService, 'findParentCommentWithAuthors')
+        .mockResolvedValue(foundParentComment);
+      jest
+        .spyOn(prismaMock, '$transaction')
+        .mockImplementation(async (cb) => cb(prismaMock));
+
+      await expect(
+        commentService.createChildCommentByGuest(
+          guestId,
+          createCommentByGuestDto,
+        ),
+      ).rejects.toThrow(BadRequestException);
+      expect(commentService.findParentCommentWithAuthors).toHaveBeenCalled();
+      expect(prismaMock.$transaction).not.toHaveBeenCalled();
     });
   });
 
@@ -644,6 +708,7 @@ describe('CommentService', () => {
       const database = prismaMock;
       const guestId = 'uuid';
       const createCommentByGuestDto: CreateCommentByGuestDto = {
+        postId: 999,
         nickName: 'nick',
         email: 'test@gmail.com',
         password: '1234',

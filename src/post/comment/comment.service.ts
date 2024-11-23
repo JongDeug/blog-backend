@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -55,12 +56,17 @@ export class CommentService {
   }
 
   async createChildComment(userId: number, createCommentDto: CreateCommentDto) {
-    const { parentCommentId, content } = createCommentDto;
+    const { parentCommentId, content, postId } = createCommentDto;
 
     const foundUser = await this.userService.findUserById(userId);
 
     const foundParentComment =
       await this.findParentCommentWithAuthors(parentCommentId);
+
+    if (postId !== foundParentComment.postId)
+      throw new BadRequestException(
+        'postId, parentCommentId가 유효한지 다시 확인해주세요',
+      );
 
     const newChildComment = await this.prismaService.comment.create({
       data: {
@@ -160,10 +166,15 @@ export class CommentService {
     guestId: string,
     createCommentByGuestDto: CreateCommentByGuestDto,
   ) {
-    const { parentCommentId, content } = createCommentByGuestDto;
+    const { parentCommentId, content, postId } = createCommentByGuestDto;
 
     const foundParentComment =
       await this.findParentCommentWithAuthors(parentCommentId);
+
+    if (postId !== foundParentComment.postId)
+      throw new BadRequestException(
+        'postId, parentCommentId가 유효한지 다시 확인해주세요',
+      );
 
     const { newChildComment, newGuestComment } =
       await this.prismaService.$transaction(async (database) => {

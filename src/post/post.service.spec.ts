@@ -327,7 +327,7 @@ describe('PostService', () => {
   describe('togglePostLike', () => {
     type PostType = Prisma.PromiseReturnType<typeof postService.findPostById>;
 
-    it('should add a like on the post like', async () => {
+    it('should add a like to the post', async () => {
       const postId = 1;
       const guestId = 'uuid';
       const foundPost = { id: postId } as PostType;
@@ -368,7 +368,7 @@ describe('PostService', () => {
       });
     });
 
-    it('should remove a like on the post like', async () => {
+    it('should remove a like from the post', async () => {
       const postId = 1;
       const guestId = 'uuid';
       const foundPost = { id: postId } as PostType;
@@ -654,17 +654,6 @@ describe('PostService', () => {
       );
       expect(prismaMock.post.findUnique).toHaveBeenCalled();
     });
-
-    it('should throw a NotFoundException when the id is undefined', async () => {
-      jest.spyOn(prismaMock.post, 'findUnique').mockResolvedValue(null);
-
-      await expect(postService.findPostById(undefined)).rejects.toThrow(
-        NotFoundException,
-      );
-      expect(prismaMock.post.findUnique).toHaveBeenCalledWith({
-        where: { id: Prisma.skip },
-      });
-    });
   });
 
   describe('findPostWithAuthor', () => {
@@ -689,18 +678,6 @@ describe('PostService', () => {
         NotFoundException,
       );
       expect(prismaMock.post.findUnique).toHaveBeenCalled();
-    });
-
-    it('should throw a NotFoundException when the id is undefined', async () => {
-      jest.spyOn(prismaMock.post, 'findUnique').mockResolvedValue(null);
-
-      await expect(postService.findPostWithAuthor(undefined)).rejects.toThrow(
-        NotFoundException,
-      );
-      expect(prismaMock.post.findUnique).toHaveBeenCalledWith({
-        where: { id: Prisma.skip },
-        include: { author: true },
-      });
     });
   });
 

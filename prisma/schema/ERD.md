@@ -54,7 +54,7 @@ erDiagram
   Boolean draft
   String summary
   Int authorId FK
-  Int categoryName FK
+  Int categoryId FK
 }
 "Tag" {
   Int id PK
@@ -182,7 +182,7 @@ erDiagram
     > Foreign Key
     > 
     > 작성자 ID [User.id](#User)
-  - `categoryName`
+  - `categoryId`
     > Foreign Key
     > 
     > 작성자 ID [Category.id](#Category)

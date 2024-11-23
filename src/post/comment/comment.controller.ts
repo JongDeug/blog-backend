@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   ParseIntPipe,
+  BadRequestException,
 } from '@nestjs/common';
 import { CommentService } from './comment.service';
 import { CreateCommentDto } from './dto/create-comment.dto';

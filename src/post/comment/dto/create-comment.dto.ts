@@ -3,8 +3,7 @@ import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 export class CreateCommentDto {
   @IsNumber()
   @IsNotEmpty()
-  @IsOptional()
-  postId?: number; // 댓글
+  postId: number; // 댓글
 
   @IsNumber()
   @IsNotEmpty()

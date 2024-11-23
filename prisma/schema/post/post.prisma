@@ -46,6 +46,6 @@ model Post {
   /// Foreign Key
   ///
   /// 작성자 ID {@link Category.id}
-  categoryName Int 
-  category     Category @relation(fields: [categoryName], references: [id], onUpdate: Cascade, onDelete: Restrict)
+  categoryId Int 
+  category     Category @relation(fields: [categoryId], references: [id], onUpdate: Cascade, onDelete: Restrict)
 }

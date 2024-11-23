@@ -24,6 +24,7 @@ describe('AuthService - Integration Test', () => {
     userService = module.get<UserService>(UserService);
     cacheManager = module.get<Cache>(CACHE_MANAGER);
 
+    // SEEDING
     await prismaService.user.create({
       data: {
         id: 1,

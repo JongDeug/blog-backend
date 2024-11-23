@@ -61,6 +61,7 @@ describe('CommentController', () => {
     it('should create a child comment by a user when a parentCommentId is provided', async () => {
       const userId = 1;
       const createCommentDto: CreateCommentDto = {
+        postId: 999,
         parentCommentId: 99,
         content: 'content',
       };
@@ -148,6 +149,7 @@ describe('CommentController', () => {
     it('should create a child comment by a guest when a parentCommentId is provided', async () => {
       const guestId = 'uuid';
       const createCommentByGuestDto: CreateCommentByGuestDto = {
+        postId: 100,
         parentCommentId: 10,
         nickName: 'nick',
         email: 'test@gmail.com',
