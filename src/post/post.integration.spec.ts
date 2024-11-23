@@ -6,10 +6,7 @@ import { CreatePostDto } from './dto/create-post.dto';
 import { GetPostsDto } from './dto/get-posts.dto';
 import { Post } from '@prisma/client';
 import { UpdatePostDto } from './dto/update-post.dto';
-import { UserId } from '../user/decorator/user-id.decorator';
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { envVariableKeys } from 'src/common/const/env.const';
 
 describe('PostService - Integration Test', () => {
   let postService: PostService;
