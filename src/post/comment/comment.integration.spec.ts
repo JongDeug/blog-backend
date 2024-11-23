@@ -261,4 +261,8 @@ describe('CommentService - Integration Test', () => {
       );
     });
   });
+
+  describe('createCommentByGuest', () => {
+    it('should create');
+  });
 });
