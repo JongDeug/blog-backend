@@ -122,6 +122,13 @@ export class CommentService {
     await this.prismaService.comment.delete({
       where: { id: foundComment.id },
     });
+
+    // 관리자가 guest comment를 지웠을 경우
+    if (!foundComment.authorId) {
+      await this.prismaService.guestComment.delete({
+        where: { id: foundComment.guestId },
+      });
+    }
   }
 
   async createCommentByGuest(
@@ -260,6 +267,10 @@ export class CommentService {
       where: {
         id: foundComment.id,
       },
+    });
+
+    await this.prismaService.guestComment.delete({
+      where: { id: foundComment.guestId },
     });
   }
 
