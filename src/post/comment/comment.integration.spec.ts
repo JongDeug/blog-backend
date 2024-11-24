@@ -26,6 +26,7 @@ describe('CommentService - Integration Test', () => {
   let seedComment3: Comment;
   let seedGuestComment1: Comment;
   let seedGuestComment2: Comment;
+  let seedGuestComment3: Comment;
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -88,6 +89,20 @@ describe('CommentService - Integration Test', () => {
           connectOrCreate: {
             where: { guestId: 'guestId2' },
             create: { guestId: 'guestId2' },
+          },
+        },
+      },
+    });
+
+    const guestComment3 = await prismaService.guestComment.create({
+      data: {
+        nickName: 'nick2',
+        email: 'guestEmail3@gmail.com',
+        password: await authService.hashPassword('1234'),
+        guest: {
+          connectOrCreate: {
+            where: { guestId: 'guestId3' },
+            create: { guestId: 'guestId3' },
           },
         },
       },
@@ -168,6 +183,18 @@ describe('CommentService - Integration Test', () => {
         },
         guest: {
           connect: { id: guestComment2.id },
+        },
+      },
+    });
+
+    seedGuestComment3 = await prismaService.comment.create({
+      data: {
+        content: 'guest comment content1',
+        post: {
+          connect: { id: seedPost.id },
+        },
+        guest: {
+          connect: { id: guestComment3.id },
         },
       },
     });
@@ -306,7 +333,7 @@ describe('CommentService - Integration Test', () => {
       );
     });
 
-    it('should remove a comment if the user is an admin', async () => {
+    it('should remove a comment written by a user if the user is an admin', async () => {
       const userId = 3;
       const id = seedComment2.id;
 
@@ -314,6 +341,21 @@ describe('CommentService - Integration Test', () => {
       await expect(commentService.findCommentById(id)).rejects.toThrow(
         NotFoundException,
       );
+    });
+
+    it('should remove a comment written by a guest if the user is an admin', async () => {
+      const userId = 3;
+      const id = seedGuestComment3.id;
+
+      await expect(commentService.remove(id, userId)).resolves.toBeUndefined();
+      await expect(commentService.findCommentById(id)).rejects.toThrow(
+        NotFoundException,
+      );
+      await expect(
+        prismaService.guestComment.findUnique({
+          where: { id: seedGuestComment3.guestId },
+        }),
+      ).resolves.toBeNull();
     });
 
     it('should throw a UnauthorizedException if the user does not have the permission to remove it', async () => {

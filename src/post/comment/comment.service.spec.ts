@@ -290,9 +290,10 @@ describe('CommentService', () => {
       expect(prismaMock.comment.delete).toHaveBeenCalledWith({
         where: { id: foundComment.id },
       });
+      expect(prismaMock.guestComment.delete).not.toHaveBeenCalled();
     });
 
-    it('should remove a comment by a admin', async () => {
+    it('should remove a comment by an admin when the comment was written by a user', async () => {
       const id = 10;
       const userId = 999;
       const foundUser = { id: userId, role: 'ADMIN' } as User;
@@ -307,6 +308,27 @@ describe('CommentService', () => {
       expect(userService.findUserById).toHaveBeenCalled();
       expect(commentService.findCommentById).toHaveBeenCalled();
       expect(prismaMock.comment.delete).toHaveBeenCalled();
+      expect(prismaMock.guestComment.delete).not.toHaveBeenCalled();
+    });
+
+    it('should remove a comment by an admin when the comment was written by a guest', async () => {
+      const id = 10;
+      const userId = 999;
+      const foundUser = { id: userId, role: 'ADMIN' } as User;
+      const foundComment = { id, guestId: 10 } as Comment;
+
+      jest.spyOn(userService, 'findUserById').mockResolvedValue(foundUser);
+      jest
+        .spyOn(commentService, 'findCommentById')
+        .mockResolvedValue(foundComment);
+
+      await expect(commentService.remove(id, userId)).resolves.toBeUndefined();
+      expect(userService.findUserById).toHaveBeenCalled();
+      expect(commentService.findCommentById).toHaveBeenCalled();
+      expect(prismaMock.comment.delete).toHaveBeenCalled();
+      expect(prismaMock.guestComment.delete).toHaveBeenCalledWith({
+        where: { id: foundComment.guestId },
+      });
     });
 
     it('should throw an UnauthorizedException if the user does not have the permission to delete the comment', async () => {
@@ -564,6 +586,7 @@ describe('CommentService', () => {
       };
       const foundComment = {
         guest: { id, password: deleteCommentByGuestDto.password, guestId },
+        guestId: 10,
       } as FoundCommentWithGuest;
 
       jest
@@ -585,6 +608,9 @@ describe('CommentService', () => {
       expect(prismaMock.comment.delete).toHaveBeenCalledWith({
         where: { id: foundComment.id },
       });
+      expect(prismaMock.guestComment.delete).toHaveBeenCalledWith({
+        where: { id: foundComment.guestId },
+      });
     });
 
     it('should throw an UnauthorizedException if the guest does not have the permission to delete the comment', async () => {
@@ -599,6 +625,7 @@ describe('CommentService', () => {
           password: deleteCommentByGuestDto.password,
           guestId: 'abcdefghijk',
         },
+        guestId: 10,
       } as FoundCommentWithGuest;
 
       jest
