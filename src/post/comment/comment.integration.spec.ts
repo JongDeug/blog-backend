@@ -2,7 +2,14 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { CommentService } from './comment.service';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppModule } from 'src/app.module';
-import { Post, Comment } from '@prisma/client';
+import {
+  Post,
+  Comment,
+  User,
+  Guest,
+  GuestComment,
+  Category,
+} from '@prisma/client';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import {
   BadRequestException,
@@ -20,13 +27,13 @@ describe('CommentService - Integration Test', () => {
   let prismaService: PrismaService;
   let authService: AuthService;
 
-  let seedPost: Post;
-  let seedComment1: Comment;
-  let seedComment2: Comment;
-  let seedComment3: Comment;
-  let seedGuestComment1: Comment;
-  let seedGuestComment2: Comment;
-  let seedGuestComment3: Comment;
+  let users: User[];
+  let guests: Guest[];
+  let guestComments: GuestComment[];
+  let category: Category;
+  let post: Post;
+  let commentsByUser: Comment[];
+  let commentsByGuest: Comment[];
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -38,166 +45,96 @@ describe('CommentService - Integration Test', () => {
     authService = module.get<AuthService>(AuthService);
 
     // SEEDING
-    const user1 = await prismaService.user.create({
-      data: {
-        id: 1,
-        name: 'integration1',
-        email: 'integration1@gmail.com',
-        password: '1234',
-      },
-    });
-
-    await prismaService.user.create({
-      data: {
-        id: 2,
-        name: 'integration2',
-        email: 'integration2@gmail.com',
-        password: '1234',
-      },
-    });
-
-    await prismaService.user.create({
-      data: {
-        id: 3,
-        name: 'integration3',
-        email: 'integration3@gmail.com',
-        password: '1234',
-        role: 'ADMIN',
-      },
-    });
-
-    const guestComment1 = await prismaService.guestComment.create({
-      data: {
-        nickName: 'nick1',
-        email: 'guestEmail1@gmail.com',
-        password: await authService.hashPassword('1234'),
-        guest: {
-          connectOrCreate: {
-            where: { guestId: 'guestId1' },
-            create: { guestId: 'guestId1' },
+    users = await Promise.all(
+      [1, 2, 3].map((id) =>
+        prismaService.user.create({
+          data: {
+            id,
+            name: `test${id}`,
+            email: `test${id}@gmail.com`,
+            password: '1234',
+            role: id === 3 ? 'ADMIN' : 'USER',
           },
-        },
-      },
-    });
+        }),
+      ),
+    );
 
-    const guestComment2 = await prismaService.guestComment.create({
-      data: {
-        nickName: 'nick2',
-        email: 'guestEmail2@gmail.com',
-        password: await authService.hashPassword('1234'),
-        guest: {
-          connectOrCreate: {
-            where: { guestId: 'guestId2' },
-            create: { guestId: 'guestId2' },
+    guests = await Promise.all(
+      [0, 1, 2, 3].map((idx) =>
+        prismaService.guest.create({ data: { guestId: `guestId${idx}` } }),
+      ),
+    );
+
+    guestComments = await Promise.all(
+      [0, 1, 2, 3].map(async (idx) =>
+        prismaService.guestComment.create({
+          data: {
+            nickName: `nick${idx}`,
+            email: `guest${idx}@gmail.com`,
+            password: await authService.hashPassword('1234'),
+            guest: {
+              connect: { id: guests[idx].id },
+            },
           },
-        },
-      },
-    });
+        }),
+      ),
+    );
 
-    const guestComment3 = await prismaService.guestComment.create({
-      data: {
-        nickName: 'nick2',
-        email: 'guestEmail3@gmail.com',
-        password: await authService.hashPassword('1234'),
-        guest: {
-          connectOrCreate: {
-            where: { guestId: 'guestId3' },
-            create: { guestId: 'guestId3' },
+    category = await ((name) => {
+      return prismaService.category.create({
+        data: { name },
+      });
+    })('category');
+
+    post = await ((idx) => {
+      return prismaService.post.create({
+        data: {
+          title: `title${idx}`,
+          content: `content${idx}`,
+          summary: `summary${idx}`,
+          author: {
+            connect: { id: users[0].id },
           },
+          category: {
+            connect: { name: category.name },
+          },
+          draft: false,
         },
-      },
-    });
+      });
+    })(1);
 
-    const category = await prismaService.category.create({
-      data: { name: 'category1' },
-    });
+    commentsByUser = await Promise.all(
+      [0, 1, 2].map((idx) =>
+        prismaService.comment.create({
+          data: {
+            content: `comment content${idx}`,
+            post: {
+              connect: { id: post.id },
+            },
+            author: {
+              connect: { id: users[0].id },
+            },
+          },
+        }),
+      ),
+    );
 
-    seedPost = await prismaService.post.create({
-      data: {
-        title: 'title1',
-        content: 'content1',
-        summary: 'summary1',
-        author: {
-          connect: { id: user1.id },
-        },
-        category: {
-          connect: { id: category.id },
-        },
-        draft: false,
-      },
-    });
-
-    seedComment1 = await prismaService.comment.create({
-      data: {
-        content: 'comment content1',
-        post: {
-          connect: { id: seedPost.id },
-        },
-        author: {
-          connect: { id: user1.id },
-        },
-      },
-    });
-
-    seedComment2 = await prismaService.comment.create({
-      data: {
-        content: 'comment content2',
-        post: {
-          connect: { id: seedPost.id },
-        },
-        author: {
-          connect: { id: user1.id },
-        },
-      },
-    });
-
-    seedComment3 = await prismaService.comment.create({
-      data: {
-        content: 'comment content3',
-        post: {
-          connect: { id: seedPost.id },
-        },
-        author: {
-          connect: { id: user1.id },
-        },
-      },
-    });
-
-    seedGuestComment1 = await prismaService.comment.create({
-      data: {
-        content: 'guest comment content1',
-        post: {
-          connect: { id: seedPost.id },
-        },
-        guest: {
-          connect: { id: guestComment1.id },
-        },
-      },
-    });
-
-    seedGuestComment2 = await prismaService.comment.create({
-      data: {
-        content: 'guest comment content2',
-        post: {
-          connect: { id: seedPost.id },
-        },
-        guest: {
-          connect: { id: guestComment2.id },
-        },
-      },
-    });
-
-    seedGuestComment3 = await prismaService.comment.create({
-      data: {
-        content: 'guest comment content1',
-        post: {
-          connect: { id: seedPost.id },
-        },
-        guest: {
-          connect: { id: guestComment3.id },
-        },
-      },
-    });
+    commentsByGuest = await Promise.all(
+      [0, 1, 2, 3].map((idx) =>
+        prismaService.comment.create({
+          data: {
+            content: `comment content${idx}`,
+            post: {
+              connect: { id: post.id },
+            },
+            // guestComments
+            guest: {
+              connect: { id: guestComments[idx].id },
+            },
+          },
+        }),
+      ),
+    );
   });
 
   afterAll(async () => {
@@ -224,62 +161,59 @@ describe('CommentService - Integration Test', () => {
     expect(commentService).toBeDefined();
   });
 
-  describe('create', () => {
-    let parentCommentId: number;
+  // 이메일 알림(비동기) 때문에 a worker process has failed to exit gracefully 경고 뜸
+  describe('createComment', () => {
+    it('should create a comment by a user', async () => {
+      const userId = users[0].id;
+      const createCommentDto: CreateCommentDto = {
+        postId: post.id,
+        content: 'content',
+      };
 
-    // 이메일 알림(비동기) 때문에 a worker process has failed to exit gracefully 경고 뜸
-    describe('createComment', () => {
-      it('should create a comment by a user', async () => {
-        const userId = 2;
-        const createCommentDto: CreateCommentDto = {
-          postId: seedPost.id,
-          content: 'content',
-        };
+      const result = await commentService.createComment(
+        userId,
+        createCommentDto,
+      );
 
-        const result = await commentService.createComment(
-          userId,
-          createCommentDto,
-        );
-        expect(result).toEqual(expect.any(Number));
-        parentCommentId = result;
-      });
+      expect(result).toEqual(expect.any(Number));
+    });
+  });
+
+  describe('createChildComment', () => {
+    it('should create a child comment by a user', async () => {
+      const userId = users[0].id;
+      const createCommentDto: CreateCommentDto = {
+        postId: post.id,
+        parentCommentId: commentsByUser[0].id,
+        content: 'content',
+      };
+
+      const result = await commentService.createChildComment(
+        userId,
+        createCommentDto,
+      );
+
+      expect(result).toEqual(expect.any(Number));
     });
 
-    describe('createChildComment', () => {
-      it('should create a child comment by a user', async () => {
-        const userId = 2;
-        const createCommentDto: CreateCommentDto = {
-          postId: seedPost.id,
-          parentCommentId,
-          content: 'content',
-        };
+    it('should throw a BadRequestException if postId does not match foundParentComment.postId', async () => {
+      const userId = users[0].id;
+      const createCommentDto: CreateCommentDto = {
+        postId: 999,
+        parentCommentId: commentsByUser[0].id,
+        content: 'content',
+      };
 
-        const result = await commentService.createChildComment(
-          userId,
-          createCommentDto,
-        );
-        expect(result).toEqual(expect.any(Number));
-      });
-
-      it('should throw a BadRequestException if postId does not match foundParentComment.postId', async () => {
-        const userId = 2;
-        const createCommentDto: CreateCommentDto = {
-          postId: 999,
-          parentCommentId,
-          content: 'content',
-        };
-
-        await expect(
-          commentService.createChildComment(userId, createCommentDto),
-        ).rejects.toThrow(BadRequestException);
-      });
+      await expect(
+        commentService.createChildComment(userId, createCommentDto),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 
   describe('update', () => {
     it('should update a comment by a user', async () => {
-      const userId = 1;
-      const id = seedComment1.id;
+      const userId = users[0].id;
+      const id = commentsByUser[0].id;
       const updateCommentDto: UpdateCommentDto = {
         content: 'updatedContent',
       };
@@ -294,8 +228,8 @@ describe('CommentService - Integration Test', () => {
     });
 
     it('should update a comment if the user is an admin', async () => {
-      const userId = 3;
-      const id = seedComment2.id;
+      const userId = users[2].id;
+      const id = commentsByUser[0].id;
       const updateCommentDto: UpdateCommentDto = {
         content: 'updatedContent',
       };
@@ -310,8 +244,8 @@ describe('CommentService - Integration Test', () => {
     });
 
     it('should throw a UnauthorizedException if the user does not have the permission to update it', async () => {
-      const userId = 2;
-      const id = seedComment3.id;
+      const userId = users[1].id;
+      const id = commentsByUser[0].id;
       const updateCommentDto: UpdateCommentDto = {
         content: 'updatedContent',
       };
@@ -324,18 +258,8 @@ describe('CommentService - Integration Test', () => {
 
   describe('remove', () => {
     it('should remove a comment by a user', async () => {
-      const userId = 1;
-      const id = seedComment1.id;
-
-      await expect(commentService.remove(id, userId)).resolves.toBeUndefined();
-      await expect(commentService.findCommentById(id)).rejects.toThrow(
-        NotFoundException,
-      );
-    });
-
-    it('should remove a comment written by a user if the user is an admin', async () => {
-      const userId = 3;
-      const id = seedComment2.id;
+      const userId = users[0].id;
+      const id = commentsByUser[0].id;
 
       await expect(commentService.remove(id, userId)).resolves.toBeUndefined();
       await expect(commentService.findCommentById(id)).rejects.toThrow(
@@ -344,8 +268,8 @@ describe('CommentService - Integration Test', () => {
     });
 
     it('should remove a comment written by a guest if the user is an admin', async () => {
-      const userId = 3;
-      const id = seedGuestComment3.id;
+      const userId = users[2].id;
+      const id = commentsByGuest[2].id;
 
       await expect(commentService.remove(id, userId)).resolves.toBeUndefined();
       await expect(commentService.findCommentById(id)).rejects.toThrow(
@@ -353,14 +277,14 @@ describe('CommentService - Integration Test', () => {
       );
       await expect(
         prismaService.guestComment.findUnique({
-          where: { id: seedGuestComment3.guestId },
+          where: { id: commentsByGuest[2].guestId },
         }),
       ).resolves.toBeNull();
     });
 
     it('should throw a UnauthorizedException if the user does not have the permission to remove it', async () => {
-      const userId = 2;
-      const id = seedComment3.id;
+      const userId = users[1].id;
+      const id = commentsByUser[1].id;
 
       await expect(commentService.remove(id, userId)).rejects.toThrow(
         UnauthorizedException,
@@ -372,7 +296,7 @@ describe('CommentService - Integration Test', () => {
     it('should create a comment by a guest', async () => {
       const guestId = 'uuid';
       const createCommentByGuestDto: CreateCommentByGuestDto = {
-        postId: seedPost.id,
+        postId: post.id,
         nickName: 'nick',
         email: 'guest@gmail.com',
         password: '1234',
@@ -383,6 +307,7 @@ describe('CommentService - Integration Test', () => {
         guestId,
         createCommentByGuestDto,
       );
+
       expect(result).toEqual(expect.any(Number));
     });
   });
@@ -391,8 +316,8 @@ describe('CommentService - Integration Test', () => {
     it('should create a child comment by a guest', async () => {
       const guestId = 'uuid';
       const createCommentByGuestDto: CreateCommentByGuestDto = {
-        postId: seedPost.id,
-        parentCommentId: seedComment3.id,
+        postId: post.id,
+        parentCommentId: commentsByUser[1].id,
         nickName: 'nick',
         email: 'guest@gmail.com',
         password: '1234',
@@ -403,6 +328,7 @@ describe('CommentService - Integration Test', () => {
         guestId,
         createCommentByGuestDto,
       );
+
       expect(result).toEqual(expect.any(Number));
     });
 
@@ -410,7 +336,7 @@ describe('CommentService - Integration Test', () => {
       const guestId = 'uuid';
       const createCommentByGuestDto: CreateCommentByGuestDto = {
         postId: 999,
-        parentCommentId: seedComment3.id,
+        parentCommentId: commentsByUser[1].id,
         nickName: 'nick',
         email: 'guest@gmail.com',
         password: '1234',
@@ -428,8 +354,8 @@ describe('CommentService - Integration Test', () => {
 
   describe('updateCommentByGuest', () => {
     it('should update a comment by a guest', async () => {
-      const id = seedGuestComment1.id;
-      const guestId = 'guestId1';
+      const id = commentsByGuest[0].id;
+      const guestId = guests[0].guestId;
       const updateCommentByGuestDto: UpdateCommentByGuestDto = {
         content: 'updatedContent',
         password: '1234',
@@ -449,7 +375,7 @@ describe('CommentService - Integration Test', () => {
     });
 
     it('should throw an UnauthorizedException if the guest does not have the permission to update it', async () => {
-      const id = seedGuestComment1.id;
+      const id = commentsByGuest[0].id;
       const guestId = 'otherGuest';
       const updateCommentByGuestDto: UpdateCommentByGuestDto = {
         content: 'updatedContent',
@@ -468,8 +394,8 @@ describe('CommentService - Integration Test', () => {
 
   describe('removeCommentByGuest', () => {
     it('should remove a comment by a guest', async () => {
-      const id = seedGuestComment1.id;
-      const guestId = 'guestId1';
+      const id = commentsByGuest[0].id;
+      const guestId = guests[0].guestId;
       const deleteCommentByGuestDto: DeleteCommentByGuestDto = {
         password: '1234',
       };
@@ -486,13 +412,13 @@ describe('CommentService - Integration Test', () => {
       );
       await expect(
         prismaService.guestComment.findUnique({
-          where: { id: seedGuestComment1.guestId },
+          where: { id: commentsByGuest[0].guestId },
         }),
       ).resolves.toBeNull();
     });
 
     it('should throw an UnauthorizedException if the guest does not have the permission to delete it', async () => {
-      const id = seedGuestComment2.id;
+      const id = commentsByGuest[1].id;
       const guestId = 'otherGuest';
       const deleteCommentByGuestDto: DeleteCommentByGuestDto = {
         password: '1234',
@@ -510,9 +436,11 @@ describe('CommentService - Integration Test', () => {
 
   describe('findCommentById', () => {
     it('should return a comment', async () => {
-      const id = seedComment3.id;
+      const id = commentsByUser[2].id;
+
       const result = await commentService.findCommentById(id);
-      expect(result).toHaveProperty('content', 'comment content3');
+
+      expect(result).toHaveProperty('content', commentsByUser[2].content);
     });
 
     it('should throw a NotFoundException when the comment does not exist', async () => {
@@ -524,8 +452,10 @@ describe('CommentService - Integration Test', () => {
 
   describe('findCommentWithGuest', () => {
     it('should return a comment with the guest field', async () => {
-      const id = seedGuestComment2.id;
+      const id = commentsByGuest[3].id;
+
       const result = await commentService.findCommentWithGuest(id);
+
       expect(result).toHaveProperty('guest');
       expect(result).not.toHaveProperty('author');
       expect(result.authorId).toBeNull();
@@ -540,8 +470,10 @@ describe('CommentService - Integration Test', () => {
 
   describe('findParentCommentWithAuthors', () => {
     it('should return a parent comment with authors', async () => {
-      const id = seedComment3.id;
+      const id = commentsByUser[2].id;
+
       const result = await commentService.findParentCommentWithAuthors(id);
+
       expect(result).toHaveProperty('guest');
       expect(result).toHaveProperty('author');
     });

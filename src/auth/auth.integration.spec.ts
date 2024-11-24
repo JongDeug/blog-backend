@@ -7,12 +7,15 @@ import { Cache } from 'cache-manager';
 import { RegisterDto } from './dto/register.dto';
 import { NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
+import { User } from '@prisma/client';
 
 describe('AuthService - Integration Test', () => {
   let authService: AuthService;
   let userService: UserService;
   let prismaService: PrismaService;
   let cacheManager: Cache;
+
+  let user: User;
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -25,14 +28,16 @@ describe('AuthService - Integration Test', () => {
     cacheManager = module.get<Cache>(CACHE_MANAGER);
 
     // SEEDING
-    await prismaService.user.create({
-      data: {
-        id: 1,
-        name: 'integration1',
-        email: 'integration1@gmail.com',
-        password: '1234',
-      },
-    });
+    user = await ((id) => {
+      return prismaService.user.create({
+        data: {
+          id,
+          name: `test${id}`,
+          email: `test${id}@gmail.com`,
+          password: '1234',
+        },
+      });
+    })(1);
 
     await cacheManager.reset();
   });
@@ -54,7 +59,8 @@ describe('AuthService - Integration Test', () => {
       };
 
       const result = await authService.register(registerDto);
-      expect(result).toHaveProperty('email', 'register@gmail.com');
+
+      expect(result).toHaveProperty('email', registerDto.email);
     });
   });
 
@@ -65,6 +71,7 @@ describe('AuthService - Integration Test', () => {
       const rawToken = 'Basic cmVnaXN0ZXJAZ21haWwuY29tOjEyMzQ=';
 
       const result = await authService.login(rawToken);
+
       expect(result.accessToken).toBeDefined();
       expect(result.refreshToken).toBeDefined();
     });
@@ -76,6 +83,7 @@ describe('AuthService - Integration Test', () => {
       const password = '1234';
 
       const result = await authService.authenticate(email, password);
+
       expect(result.email).toBe(email);
     });
 
@@ -92,17 +100,19 @@ describe('AuthService - Integration Test', () => {
   describe('issueToken', () => {
     it('should issue a access token when isRefresh is false', async () => {
       const result = await authService.issueToken(
-        { id: 1, role: 'USER' },
+        { id: user.id, role: user.role },
         false,
       );
+
       expect(result).toBeDefined();
     });
 
     it('should issue a refresh token when isRefresh is true', async () => {
       const result = await authService.issueToken(
-        { id: 1, role: 'USER' },
+        { id: user.id, role: user.role },
         true,
       );
+
       expect(result).toBeDefined();
     });
   });
@@ -114,7 +124,6 @@ describe('AuthService - Integration Test', () => {
       ).refreshToken;
       const id = (await userService.findUserByEmail('register@gmail.com')).id;
 
-      // 캐시 체크까지
       const result = await authService.rotateTokens(token);
       const cache = await cacheManager.get(`REFRESH_TOKEN_${id}`);
 
@@ -126,6 +135,7 @@ describe('AuthService - Integration Test', () => {
     it('should throw an UnauthorizedException when the token is expired', async () => {
       const expiredToken =
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjU1LCJyb2xlIjoiVVNFUiIsInR5cGUiOiJyZWZyZXNoIiwiaWF0IjoxNzMyMjU5MzEzLCJleHAiOjE2MzIzNDU3MTN9.6UxWvpHf7vd_RlmKw6YhkCNZxkpZ5NYT__lPMm8BNWc';
+
       await expect(authService.rotateTokens(expiredToken)).rejects.toThrow(
         UnauthorizedException,
       );
@@ -137,14 +147,12 @@ describe('AuthService - Integration Test', () => {
       // login
       await authService.login('Basic cmVnaXN0ZXJAZ21haWwuY29tOjEyMzQ=');
       const id = (await userService.findUserByEmail('register@gmail.com')).id;
-
       await expect(
         cacheManager.get(`REFRESH_TOKEN_${id}`),
       ).resolves.toBeDefined();
 
       // logout
       await expect(authService.logout(id)).resolves.toBeUndefined();
-
       await expect(
         cacheManager.get(`REFRESH_TOKEN_${id}`),
       ).resolves.toBeUndefined();
@@ -156,14 +164,12 @@ describe('AuthService - Integration Test', () => {
       // login
       await authService.login('Basic cmVnaXN0ZXJAZ21haWwuY29tOjEyMzQ=');
       const id = (await userService.findUserByEmail('register@gmail.com')).id;
-
       await expect(
         cacheManager.get(`REFRESH_TOKEN_${id}`),
       ).resolves.toBeDefined();
 
       // revoke
       await expect(authService.revokeToken(id)).resolves.toBeUndefined();
-
       await expect(
         cacheManager.get(`REFRESH_TOKEN_${id}`),
       ).resolves.toBeUndefined();
@@ -177,7 +183,9 @@ describe('AuthService - Integration Test', () => {
     describe('hashedPassword', () => {
       it('should hash the password and return the hashed value', async () => {
         const result = await authService.hashPassword(password);
+
         expect(result).toBeDefined();
+
         hashedPassword = result;
       });
     });

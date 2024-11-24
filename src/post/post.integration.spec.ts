@@ -4,7 +4,7 @@ import { PostService } from './post.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { GetPostsDto } from './dto/get-posts.dto';
-import { Post } from '@prisma/client';
+import { Category, Post, User } from '@prisma/client';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
 
@@ -12,8 +12,9 @@ describe('PostService - Integration Test', () => {
   let postService: PostService;
   let prismaService: PrismaService;
 
-  let seedPost1: Post;
-  let seedPost2: Post;
+  let users: User[];
+  let category: Category;
+  let posts: Post[];
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -24,81 +25,58 @@ describe('PostService - Integration Test', () => {
     prismaService = module.get<PrismaService>(PrismaService);
 
     // SEEDING
-    const user = await prismaService.user.create({
-      data: {
-        id: 1,
-        name: 'integration1',
-        email: 'integration1@gmail.com',
-        password: '1234',
-      },
-    });
-
-    const user2 = await prismaService.user.create({
-      data: {
-        id: 2,
-        name: 'integration2',
-        email: 'integration2@gmail.com',
-        password: '1234',
-      },
-    });
-
-    const category = await prismaService.category.create({
-      data: { name: 'category1' },
-    });
-
-    seedPost1 = await prismaService.post.create({
-      data: {
-        title: 'title1',
-        content: 'content1',
-        summary: 'summary1',
-        author: {
-          connect: { id: user.id },
-        },
-        category: {
-          connect: { id: category.id },
-        },
-        draft: false,
-      },
-    });
-
-    seedPost2 = await prismaService.post.create({
-      data: {
-        title: 'title2',
-        content: 'content2',
-        summary: 'summary2',
-        author: {
-          connect: { id: user.id },
-        },
-        category: {
-          connect: { id: category.id },
-        },
-        draft: false,
-        images: {
-          createMany: {
-            data: [
-              {
-                url: new URL('seedImage', postService.getBaseURL()).toString(),
-              },
-            ],
+    users = await Promise.all(
+      [1, 2].map((id) =>
+        prismaService.user.create({
+          data: {
+            id,
+            name: `test${id}`,
+            email: `test${id}@gmail.com`,
+            password: '1234',
           },
-        },
-      },
-    });
+        }),
+      ),
+    );
 
-    await prismaService.post.create({
-      data: {
-        title: 'title3',
-        content: 'content3',
-        summary: 'summary3',
-        author: {
-          connect: { id: user.id },
-        },
-        category: {
-          connect: { id: category.id },
-        },
-        draft: false,
-      },
-    });
+    category = await ((name) => {
+      return prismaService.category.create({
+        data: { name },
+      });
+    })('category');
+
+    posts = await Promise.all(
+      [3, 4, 5].map((id) => {
+        return prismaService.post.create({
+          data: {
+            title: `title${id}`,
+            content: `content${id}`,
+            summary: `summary${id}`,
+            author: {
+              connect: { id: users[0].id },
+            },
+            category: {
+              connect: { id: category.id },
+            },
+            draft: false,
+            images:
+              id === 5
+                ? {
+                    createMany: {
+                      data: [
+                        {
+                          url: new URL(
+                            'seedImage',
+                            postService.getBaseURL(),
+                          ).toString(),
+                        },
+                      ],
+                    },
+                  }
+                : {},
+          },
+        });
+      }),
+    );
   });
 
   afterAll(async () => {
@@ -121,7 +99,7 @@ describe('PostService - Integration Test', () => {
 
   describe('create', () => {
     it('should create a post and return the post id', async () => {
-      const userId = 1;
+      const userId = users[0].id;
       const createPostDto = new CreatePostDto();
       createPostDto.title = 'createTitle';
       createPostDto.content = 'createContent';
@@ -130,12 +108,13 @@ describe('PostService - Integration Test', () => {
       createPostDto.category = 'createCategory';
 
       const result = await postService.create(userId, createPostDto);
+
       expect(result).toEqual(expect.any(Number));
     });
 
     // console.log 출력돼서 주석 처리
     // it('should throw a NotFoundException if the image does not exist', async () => {
-    //   const userId = 1;
+    //   const userId = users[0].id;
     //   const createPostDto = new CreatePostDto();
     //   createPostDto.title = 'createTitle2';
     //   createPostDto.content = 'createContent2';
@@ -155,27 +134,28 @@ describe('PostService - Integration Test', () => {
       const getPostsDto = new GetPostsDto();
 
       const result = await postService.findAll(getPostsDto);
-      expect(result.posts).toHaveLength(4);
+
+      expect(result.posts).toHaveLength(posts.length + 1);
       expect(result.cursor).toEqual(expect.any(String));
     });
   });
 
   describe('findOne', () => {
     it('should return a post with isLiked field', async () => {
-      const id = seedPost1.id;
+      const id = posts[0].id;
       const guestId = 'uuid';
 
       const result = await postService.findOne(id, guestId);
 
-      expect(result.title).toEqual('title1');
+      expect(result.title).toEqual(posts[0].title);
       expect(result.isLiked).toEqual(false);
     });
   });
 
   describe('update', () => {
     it('should update a post successfully', async () => {
-      const postId = seedPost1.id;
-      const userId = 1;
+      const postId = posts[0].id;
+      const userId = users[0].id;
       const updatePostDto = new UpdatePostDto();
       updatePostDto.title = 'updatedTitle';
 
@@ -184,13 +164,13 @@ describe('PostService - Integration Test', () => {
       ).resolves.toBeUndefined();
       await expect(postService.findPostById(postId)).resolves.toHaveProperty(
         'title',
-        'updatedTitle',
+        updatePostDto.title,
       );
     });
 
     it('should throw a ForbiddenException if the user does not have permission to update the post', async () => {
-      const postId = seedPost1.id;
-      const userId = 2;
+      const postId = posts[0].id;
+      const userId = users[1].id;
       const updatePostDto = new UpdatePostDto();
       updatePostDto.title = 'updatedTitle';
 
@@ -201,10 +181,9 @@ describe('PostService - Integration Test', () => {
 
     // console.log 출력돼서 주석 처리
     // it('should throw a NotFoundException if the image does not exist', async () => {
-    //   const postId = seedPost1.id;
-    //   const userId = 1;
+    //   const postId = posts[1].id;
+    //   const userId = users[0].id;
     //   const updatePostDto = new UpdatePostDto();
-    //   updatePostDto.title = 'updatedTitle';
     //   updatePostDto.images = ['wrong'];
 
     //   await expect(
@@ -215,7 +194,7 @@ describe('PostService - Integration Test', () => {
 
   describe('remove', () => {
     it('should remove a post successfully', async () => {
-      const id = seedPost1.id;
+      const id = posts[0].id;
 
       await expect(postService.remove(id)).resolves.toBeUndefined();
       await expect(postService.findPostById(id)).rejects.toThrow(
@@ -225,7 +204,7 @@ describe('PostService - Integration Test', () => {
 
     // console.log 출력돼서 주석 처리
     // it('should throw a NotFoundException if the image does not exist', async () => {
-    //   const id = seedPost2.id;
+    //   const id = posts[2].id;
 
     //   await expect(postService.remove(id)).rejects.toThrow(NotFoundException);
     // });
@@ -233,7 +212,7 @@ describe('PostService - Integration Test', () => {
 
   describe('togglePostLike', () => {
     it('should add a like to the post', async () => {
-      const postId = seedPost2.id;
+      const postId = posts[1].id;
       const guestId = 'uuid';
 
       const result = await postService.togglePostLike(postId, guestId);
@@ -242,7 +221,7 @@ describe('PostService - Integration Test', () => {
     });
 
     it('should remove a like from the post', async () => {
-      const postId = seedPost2.id;
+      const postId = posts[1].id;
       const guestId = 'uuid';
 
       const result = await postService.togglePostLike(postId, guestId);
@@ -269,8 +248,11 @@ describe('PostService - Integration Test', () => {
 
   describe('findPostById', () => {
     it('should return a post by id', async () => {
-      const result = await postService.findPostById(seedPost2.id);
-      expect(result.title).toEqual(seedPost2.title);
+      const id = posts[1].id;
+
+      const result = await postService.findPostById(id);
+
+      expect(result.title).toEqual(posts[1].title);
     });
 
     it('should throw a NotFoundException when the post does not exist', async () => {
@@ -282,8 +264,12 @@ describe('PostService - Integration Test', () => {
 
   describe('findPostWithAuthor', () => {
     it('should return a post with the author by id', async () => {
-      const result = await postService.findPostWithAuthor(seedPost2.id);
-      expect(result.title).toEqual(seedPost2.title);
+      const id = posts[1].id;
+
+      const result = await postService.findPostWithAuthor(id);
+
+      expect(result.title).toEqual(posts[1].title);
+      expect(result).toHaveProperty('authorId', posts[1].authorId);
       expect(result).toHaveProperty('author');
     });
 
@@ -296,8 +282,11 @@ describe('PostService - Integration Test', () => {
 
   describe('findPostWithImages', () => {
     it('should return a post with the images by id', async () => {
-      const result = await postService.findPostWithImages(seedPost2.id);
-      expect(result.title).toEqual(seedPost2.title);
+      const id = posts[1].id;
+
+      const result = await postService.findPostWithImages(id);
+
+      expect(result.title).toEqual(posts[1].title);
       expect(result).toHaveProperty('images');
     });
 
@@ -310,13 +299,12 @@ describe('PostService - Integration Test', () => {
 
   describe('findPostWithDetails', () => {
     it('should return a post with details by id', async () => {
+      const id = posts[1].id;
       const guestId = 'uuid';
 
-      const result = await postService.findPostWithDetails(
-        seedPost2.id,
-        guestId,
-      );
-      expect(result.title).toEqual(seedPost2.title);
+      const result = await postService.findPostWithDetails(id, guestId);
+
+      expect(result.title).toEqual(posts[1].title);
       expect(result).toHaveProperty('comments');
       expect(result).toHaveProperty('category');
       expect(result).toHaveProperty('_count');

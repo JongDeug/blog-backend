@@ -31,7 +31,7 @@ import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handleba
     // 환경 변수 유효성 검사
     ConfigModule.forRoot({
       validationSchema: Joi.object({
-        ENV: Joi.string().valid('dev', 'prod').required(),
+        ENV: Joi.string().valid('test', 'dev', 'prod').required(),
         SERVER_ORIGIN: Joi.string().required(),
         SERVER_PORT: Joi.number().required(),
         DB_URL: Joi.string().required(),
@@ -45,11 +45,12 @@ import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handleba
         EMAIL_PWD: Joi.string().required(),
       }),
       isGlobal: true,
-      envFilePath: [
-        // '.env.development.local',
-        '.env.test.local',
-        // '.env.production.local',
-      ],
+      envFilePath:
+        process.env.NODE_ENV === 'test'
+          ? '.env.test.local'
+          : process.env.NODE_ENV === 'dev'
+            ? '.env.development.local'
+            : '.env.production.local',
     }),
     WinstonModule.forRoot({
       transports: [

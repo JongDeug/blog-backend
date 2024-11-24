@@ -13,25 +13,22 @@
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
-    "docker:up:dev": "docker compose -f docker-compose-dev.yaml up -d",
-    "docker:stop:dev": "docker compose -f docker-compose-dev.yaml stop",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:cov": "jest --coverage",
-    "test:integration:setup": "dotenv -e .env.test.local -- pnpm prisma:migrate:dev",
-    "test:integration": "jest --testRegex='.*\\integration.spec\\.ts$' --runInBand --watch",
-    "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json",
-    "test:user": "jest --watch --testPathPattern=src/user --coverage --collectCoverageFrom=src/user/**",
-    "test:tag": "jest --watch --testPathPattern=src/tag --coverage --collectCoverageFrom=src/tag/**",
-    "test:category": "jest --watch --testPathPattern=src/category --coverage --collectCoverageFrom=src/category/**",
-    "test:common": "jest --watch --testPathPattern=src/common --coverage --collectCoverageFrom=src/common/**",
-    "test:auth": "jest --watch --testPathPattern=src/auth --coverage --collectCoverageFrom=src/auth/**",
-    "test:post": "jest --watch --testPathPattern=src/post --coverage --collectCoverageFrom=src/post/**",
-    "test:comment": "jest --watch --testPathPattern=src/post/comment --coverage --collectCoverageFrom=src/post/comment/**",
+    "test": "NODE_ENV=test jest --runInBand",
+    "test:watch": "NODE_ENV=test jest --watch --runInBand",
+    "test:cov": "NODE_ENV=test jest --coverage --runInBand",
+    "test:debug": "NODE_ENV=test node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
+    "test:e2e": "NODE_ENV=test jest --config ./jest-e2e.json",
+    "test:integration": "NODE_ENV=test jest --runInBand --testRegex='.*\\integration.spec\\.ts$'",
+    "test:user": "NODE_ENV=test jest --testPathPattern=src/user --coverage --collectCoverageFrom=src/user/**",
+    "test:tag": "NODE_ENV=test jest --testPathPattern=src/tag --coverage --collectCoverageFrom=src/tag/**",
+    "test:category": "NODE_ENV=test jest --testPathPattern=src/category --coverage --collectCoverageFrom=src/category/**",
+    "test:common": "NODE_ENV=test jest --testPathPattern=src/common --coverage --collectCoverageFrom=src/common/**",
+    "test:auth": "NODE_ENV=test jest --testPathPattern=src/auth --coverage --collectCoverageFrom=src/auth/**",
+    "test:post": "NODE_ENV=test jest --testPathPattern=src/post --coverage --collectCoverageFrom=src/post/**",
+    "test:comment": "NODE_ENV=test jest --testPathPattern=src/post/comment --coverage --collectCoverageFrom=src/post/comment/**",
     "prisma:migrate:dev": "dotenv -e .env.development.local -- npx prisma migrate dev",
     "prisma:migrate:test": "dotenv -e .env.test.local -- npx prisma migrate dev",
-    "prisma:migrate:prod": "npx prisma migrate prod",
+    "prisma:migrate:prod": "dotenv -e .env.production.local -- npx prisma migrate prod",
     "prisma:generate": "npx prisma generate"
   },
   "dependencies": {
@@ -102,7 +99,7 @@
       "ts"
     ],
     "roots": [
-      "src"
+      "<rootDir>/src"
     ],
     "moduleNameMapper": {
       "^src/(.*)": "<rootDir>/src/$1"

@@ -13,6 +13,7 @@ import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { RBAC } from 'src/auth/decorator/rbac.decorator';
 import { Role } from '@prisma/client';
+import { Public } from 'src/auth/decorator/public.decorator';
 
 @Controller('category')
 export class CategoryController {
@@ -25,11 +26,13 @@ export class CategoryController {
   }
 
   @Get()
+  @Public()
   findAll() {
     return this.categoryService.findAll();
   }
 
   @Get(':id')
+  @Public()
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.categoryService.findCategoryById(id);
   }
