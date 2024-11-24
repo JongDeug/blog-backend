@@ -24,7 +24,7 @@
     "test:category": "NODE_ENV=test jest --testPathPattern=src/category --coverage --collectCoverageFrom=src/category/**",
     "test:common": "NODE_ENV=test jest --testPathPattern=src/common --coverage --collectCoverageFrom=src/common/**",
     "test:auth": "NODE_ENV=test jest --testPathPattern=src/auth --coverage --collectCoverageFrom=src/auth/**",
-    "test:post": "NODE_ENV=test jest --testPathPattern=src/post --coverage --collectCoverageFrom=src/post/**",
+    "test:post": "NODE_ENV=test jest --testPathPattern=src/post --testPathIgnorePatterns=src/post/comment --coverage --collectCoverageFrom=src/post/** --collectCoverageFrom='!src/post/comment/**'",
     "test:comment": "NODE_ENV=test jest --testPathPattern=src/post/comment --coverage --collectCoverageFrom=src/post/comment/**",
     "prisma:migrate:dev": "dotenv -e .env.development.local -- npx prisma migrate dev",
     "prisma:migrate:test": "dotenv -e .env.test.local -- npx prisma migrate dev",
