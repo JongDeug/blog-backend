@@ -31,39 +31,34 @@ describe('CategoryService - Integration Test', () => {
     prismaService = module.get<PrismaService>(PrismaService);
 
     categories = await Promise.all(
-      [1, 2, 3].map((id) =>
+      [0, 1, 2].map((idx) =>
         prismaService.category.create({
-          data: { id, name: `category${id}` },
+          data: { name: `category${idx}` },
         }),
       ),
     );
 
-    user = await ((id) => {
-      return prismaService.user.create({
-        data: {
-          id,
-          name: `test${id}`,
-          email: `test${id}@gmail.com`,
-          password: '1234',
-        },
-      });
-    })(3);
+    user = await prismaService.user.create({
+      data: {
+        name: 'test1',
+        email: 'test1@gmail.com',
+        password: '1234',
+      },
+    });
 
-    post = await ((id) => {
-      return prismaService.post.create({
-        data: {
-          title: `title${id}`,
-          content: `content${id}`,
-          summary: `summary${id}`,
-          author: {
-            connect: { id: user.id },
-          },
-          category: {
-            connect: { name: categories[0].name },
-          },
+    post = await prismaService.post.create({
+      data: {
+        title: 'title1',
+        content: 'content1',
+        summary: 'summary1',
+        author: {
+          connect: { id: user.id },
         },
-      });
-    })(1);
+        category: {
+          connect: { name: categories[0].name },
+        },
+      },
+    });
   });
 
   afterAll(async () => {

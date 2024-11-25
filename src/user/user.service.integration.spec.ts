@@ -2,7 +2,11 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { UserService } from './user.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AppModule } from 'src/app.module';
-import { INestApplication, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  INestApplication,
+  NotFoundException,
+} from '@nestjs/common';
 import { User } from '@prisma/client';
 
 describe('UserService - Integration Test', () => {
@@ -23,13 +27,13 @@ describe('UserService - Integration Test', () => {
 
     // SEEDING
     users = await Promise.all(
-      [1, 2].map((id) =>
+      [0, 1, 2].map((idx) =>
         prismaService.user.create({
           data: {
-            id,
-            name: `test${id}`,
-            email: `test${id}@gmail.com`,
+            name: `test${idx}`,
+            email: `test${idx}@gmail.com`,
             password: '1234',
+            role: idx === 0 ? 'ADMIN' : 'USER',
           },
         }),
       ),
@@ -79,22 +83,28 @@ describe('UserService - Integration Test', () => {
 
   describe('remove', () => {
     it('should remove a user', async () => {
-      const id = users[0].id;
+      const id = users[1].id;
 
       await userService.remove(id);
       await expect(userService.findUserWithoutPassword(id)).rejects.toThrow(
         NotFoundException,
       );
     });
+
+    it('should throw a BadRequestException when the user to remove is an admin', async () => {
+      const id = users[0].id;
+
+      await expect(userService.remove(id)).rejects.toThrow(BadRequestException);
+    });
   });
 
   describe('findUserById', () => {
     it('should return a user by id', async () => {
-      const id = users[1].id;
+      const id = users[2].id;
 
       const result = await userService.findUserById(id);
 
-      expect(result).toHaveProperty('name', users[1].name);
+      expect(result).toHaveProperty('name', users[2].name);
     });
 
     it('should throw a NotFoundException when the user does not exist', async () => {
@@ -106,7 +116,7 @@ describe('UserService - Integration Test', () => {
 
   describe('findUserByEmail', () => {
     it('should return a user by email', async () => {
-      const email = users[1].email;
+      const email = users[2].email;
 
       const result = await userService.findUserByEmail(email);
 

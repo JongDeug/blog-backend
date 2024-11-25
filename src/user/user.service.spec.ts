@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UserService } from './user.service';
-import { PrismaClient, User } from '@prisma/client';
+import { PrismaClient, Role, User } from '@prisma/client';
 import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 
 describe('UserService', () => {
   let userService: UserService;
@@ -82,6 +82,20 @@ describe('UserService', () => {
       expect(prismaMock.user.delete).toHaveBeenCalledWith({
         where: { id: 1 },
       });
+    });
+
+    it('should throw a BadRequestException when the user to remove is an admin', async () => {
+      const foundUser = {
+        id: 1,
+        email: 'test@gmail.com',
+        role: Role.ADMIN,
+      } as User;
+
+      jest.spyOn(userService, 'findUserById').mockResolvedValue(foundUser);
+
+      await expect(userService.remove(1)).rejects.toThrow(BadRequestException);
+      expect(userService.findUserById).toHaveBeenCalled();
+      expect(prismaMock.user.delete).not.toHaveBeenCalled();
     });
   });
 

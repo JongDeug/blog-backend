@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Role } from '@prisma/client';
 import { RBAC } from 'src/auth/decorator/rbac.decorator';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -27,6 +31,10 @@ export class UserService {
 
   async remove(id: number) {
     const foundUser = await this.findUserById(id);
+
+    if (foundUser.role === Role.ADMIN) {
+      throw new BadRequestException('관리자는 삭제할 수 없습니다');
+    }
 
     await this.prismaService.user.delete({ where: { id: foundUser.id } });
   }
