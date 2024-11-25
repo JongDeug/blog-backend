@@ -10,7 +10,7 @@ import {
 import { TagService } from './tag.service';
 import { CreateTagDto } from './dto/create-tag.dto';
 import { UpdateTagDto } from './dto/update-tag.dto';
-import { Category, Post, Tag, User } from '@prisma/client';
+import { Category, Post, Role, Tag, User } from '@prisma/client';
 
 describe('UserService - Integration Test', () => {
   let app: INestApplication;
@@ -32,49 +32,43 @@ describe('UserService - Integration Test', () => {
     prismaService = module.get<PrismaService>(PrismaService);
 
     // SEEDING
-    user = await ((id) => {
-      return prismaService.user.create({
-        data: {
-          id,
-          name: `test${id}`,
-          email: `test${id}@gmail.com`,
-          password: '1234',
-        },
-      });
-    })(1);
+    user = await prismaService.user.create({
+      data: {
+        name: 'test1',
+        email: 'test1@gmail.com',
+        password: '1234',
+        role: Role.USER,
+      },
+    });
 
     tags = await Promise.all(
-      [2, 3].map((id) =>
+      [0, 1].map((idx) =>
         prismaService.tag.create({
-          data: { id, name: `tag${id}` },
+          data: { name: `tag${idx}` },
         }),
       ),
     );
 
-    category = await ((name) => {
-      return prismaService.category.create({
-        data: { name },
-      });
-    })('category');
+    category = await prismaService.category.create({
+      data: { name: 'category ' },
+    });
 
-    post = await ((id) => {
-      return prismaService.post.create({
-        data: {
-          title: `title${id}`,
-          content: `content${id}`,
-          summary: `summary${id}`,
-          author: {
-            connect: { id: user.id },
-          },
-          category: {
-            connect: { name: category.name },
-          },
-          tags: {
-            connect: { name: tags[1].name },
-          },
+    post = await prismaService.post.create({
+      data: {
+        title: 'title1',
+        content: 'content1',
+        summary: 'summary1',
+        author: {
+          connect: { id: user.id },
         },
-      });
-    })(1);
+        category: {
+          connect: { name: category.name },
+        },
+        tags: {
+          connect: { name: tags[1].name },
+        },
+      },
+    });
   });
 
   afterAll(async () => {
