@@ -2,12 +2,13 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { UserService } from './user.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AppModule } from 'src/app.module';
-import { NotFoundException } from '@nestjs/common';
+import { INestApplication, NotFoundException } from '@nestjs/common';
 import { User } from '@prisma/client';
 
 describe('UserService - Integration Test', () => {
   let userService: UserService;
   let prismaService: PrismaService;
+  let app: INestApplication;
 
   let users: User[];
 
@@ -16,6 +17,7 @@ describe('UserService - Integration Test', () => {
       imports: [AppModule],
     }).compile();
 
+    app = module.createNestApplication();
     userService = module.get<UserService>(UserService);
     prismaService = module.get<PrismaService>(PrismaService);
 
@@ -35,11 +37,14 @@ describe('UserService - Integration Test', () => {
   });
 
   afterAll(async () => {
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
     const deleteUsers = prismaService.user.deleteMany();
 
     await prismaService.$transaction([deleteUsers]);
-
     await prismaService.$disconnect();
+
+    await app.close();
   });
 
   it('should be defined', () => {

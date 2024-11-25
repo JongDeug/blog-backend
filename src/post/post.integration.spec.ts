@@ -6,9 +6,14 @@ import { CreatePostDto } from './dto/create-post.dto';
 import { GetPostsDto } from './dto/get-posts.dto';
 import { Category, Post, User } from '@prisma/client';
 import { UpdatePostDto } from './dto/update-post.dto';
-import { ForbiddenException, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  INestApplication,
+  NotFoundException,
+} from '@nestjs/common';
 
 describe('PostService - Integration Test', () => {
+  let app: INestApplication;
   let postService: PostService;
   let prismaService: PrismaService;
 
@@ -21,6 +26,7 @@ describe('PostService - Integration Test', () => {
       imports: [AppModule],
     }).compile();
 
+    app = module.createNestApplication();
     postService = module.get<PostService>(PostService);
     prismaService = module.get<PrismaService>(PrismaService);
 
@@ -80,6 +86,8 @@ describe('PostService - Integration Test', () => {
   });
 
   afterAll(async () => {
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
     const deleteUsers = prismaService.user.deleteMany();
     const deleteCategory = prismaService.category.deleteMany();
     const deletePosts = prismaService.post.deleteMany();
@@ -89,8 +97,9 @@ describe('PostService - Integration Test', () => {
       deleteUsers,
       deleteCategory,
     ]);
-
     await prismaService.$disconnect();
+
+    await app.close();
   });
 
   it('should be defined', () => {

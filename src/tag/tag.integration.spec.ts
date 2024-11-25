@@ -4,6 +4,7 @@ import { AppModule } from 'src/app.module';
 import {
   BadRequestException,
   ConflictException,
+  INestApplication,
   NotFoundException,
 } from '@nestjs/common';
 import { TagService } from './tag.service';
@@ -12,6 +13,7 @@ import { UpdateTagDto } from './dto/update-tag.dto';
 import { Category, Post, Tag, User } from '@prisma/client';
 
 describe('UserService - Integration Test', () => {
+  let app: INestApplication;
   let tagService: TagService;
   let prismaService: PrismaService;
 
@@ -25,6 +27,7 @@ describe('UserService - Integration Test', () => {
       imports: [AppModule],
     }).compile();
 
+    app = module.createNestApplication();
     tagService = module.get<TagService>(TagService);
     prismaService = module.get<PrismaService>(PrismaService);
 
@@ -75,6 +78,8 @@ describe('UserService - Integration Test', () => {
   });
 
   afterAll(async () => {
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
     const deleteTags = prismaService.tag.deleteMany();
     const deleteUsers = prismaService.user.deleteMany();
     const deletePosts = prismaService.post.deleteMany();
@@ -86,8 +91,9 @@ describe('UserService - Integration Test', () => {
       deleteTags,
       deleteUsers,
     ]);
-
     await prismaService.$disconnect();
+
+    await app.close();
   });
 
   it('should be defined', () => {

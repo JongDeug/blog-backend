@@ -13,6 +13,7 @@ import {
 import { CreateCommentDto } from './dto/create-comment.dto';
 import {
   BadRequestException,
+  INestApplication,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -23,6 +24,7 @@ import { UpdateCommentByGuestDto } from './dto/update-comment-by-guest.dto';
 import { DeleteCommentByGuestDto } from './dto/delete-comment-by-guest.dto';
 
 describe('CommentService - Integration Test', () => {
+  let app: INestApplication;
   let commentService: CommentService;
   let prismaService: PrismaService;
   let authService: AuthService;
@@ -40,6 +42,7 @@ describe('CommentService - Integration Test', () => {
       imports: [AppModule],
     }).compile();
 
+    app = module.createNestApplication();
     commentService = module.get<CommentService>(CommentService);
     prismaService = module.get<PrismaService>(PrismaService);
     authService = module.get<AuthService>(AuthService);
@@ -138,6 +141,8 @@ describe('CommentService - Integration Test', () => {
   });
 
   afterAll(async () => {
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
     const deleteUsers = prismaService.user.deleteMany();
     const deleteGuest = prismaService.guest.deleteMany();
     const deleteGuestComment = prismaService.guestComment.deleteMany();
@@ -153,8 +158,9 @@ describe('CommentService - Integration Test', () => {
       deleteUsers,
       deleteCategory,
     ]);
-
     await prismaService.$disconnect();
+
+    await app.close();
   });
 
   it('should be defined', () => {

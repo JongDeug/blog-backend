@@ -6,12 +6,14 @@ import { CreateCategoryDto } from './dto/create-category.dto';
 import {
   BadRequestException,
   ConflictException,
+  INestApplication,
   NotFoundException,
 } from '@nestjs/common';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { Category, Post, User } from '@prisma/client';
 
 describe('CategoryService - Integration Test', () => {
+  let app: INestApplication;
   let categoryService: CategoryService;
   let prismaService: PrismaService;
 
@@ -24,6 +26,7 @@ describe('CategoryService - Integration Test', () => {
       imports: [AppModule],
     }).compile();
 
+    app = module.createNestApplication();
     categoryService = module.get<CategoryService>(CategoryService);
     prismaService = module.get<PrismaService>(PrismaService);
 
@@ -64,6 +67,8 @@ describe('CategoryService - Integration Test', () => {
   });
 
   afterAll(async () => {
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
     const deleteUsers = prismaService.user.deleteMany();
     const deletePosts = prismaService.post.deleteMany();
     const deleteCategories = prismaService.category.deleteMany();
@@ -73,8 +78,9 @@ describe('CategoryService - Integration Test', () => {
       deleteCategories,
       deleteUsers,
     ]);
-
     await prismaService.$disconnect();
+
+    await app.close();
   });
 
   it('should be defined', () => {
