@@ -67,7 +67,7 @@ describe('CategoryController (e2e)', () => {
       },
     });
 
-    let authService = await moduleFixture.get<AuthService>(AuthService);
+    let authService = moduleFixture.get<AuthService>(AuthService);
     token = await authService.issueToken(
       { id: user.id, role: user.role },
       false,

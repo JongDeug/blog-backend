@@ -47,7 +47,7 @@ describe('UserController (e2e)', () => {
       ),
     );
 
-    let authService = await moduleFixture.get<AuthService>(AuthService);
+    let authService = moduleFixture.get<AuthService>(AuthService);
     token = await authService.issueToken(
       { id: users[0].id, role: users[0].role },
       false,

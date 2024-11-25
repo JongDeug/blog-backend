@@ -7,7 +7,7 @@ import { AuthService } from 'src/auth/auth.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AppModule } from 'src/app.module';
 
-describe('UserController (e2e)', () => {
+describe('TagController (e2e)', () => {
   let app: INestApplication;
   let prismaService: PrismaService;
 
@@ -75,7 +75,7 @@ describe('UserController (e2e)', () => {
       },
     });
 
-    let authService = await moduleFixture.get<AuthService>(AuthService);
+    let authService = moduleFixture.get<AuthService>(AuthService);
     token = await authService.issueToken(
       { id: user.id, role: user.role },
       false,

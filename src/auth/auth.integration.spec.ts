@@ -5,11 +5,16 @@ import { AppModule } from 'src/app.module';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { RegisterDto } from './dto/register.dto';
-import { NotFoundException, UnauthorizedException } from '@nestjs/common';
+import {
+  INestApplication,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
-import { User } from '@prisma/client';
+import { Role, User } from '@prisma/client';
 
 describe('AuthService - Integration Test', () => {
+  let app: INestApplication;
   let authService: AuthService;
   let userService: UserService;
   let prismaService: PrismaService;
@@ -22,32 +27,34 @@ describe('AuthService - Integration Test', () => {
       imports: [AppModule],
     }).compile();
 
+    app = module.createNestApplication();
     authService = module.get<AuthService>(AuthService);
     prismaService = module.get<PrismaService>(PrismaService);
     userService = module.get<UserService>(UserService);
     cacheManager = module.get<Cache>(CACHE_MANAGER);
 
     // SEEDING
-    user = await ((id) => {
-      return prismaService.user.create({
-        data: {
-          id,
-          name: `test${id}`,
-          email: `test${id}@gmail.com`,
-          password: '1234',
-        },
-      });
-    })(1);
+    user = await prismaService.user.create({
+      data: {
+        name: 'test1',
+        email: 'test1@gmail.com',
+        password: '1234',
+        role: Role.ADMIN,
+      },
+    });
 
     await cacheManager.reset();
   });
 
   afterAll(async () => {
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
     const deleteUsers = prismaService.user.deleteMany();
 
     await prismaService.$transaction([deleteUsers]);
-
     await prismaService.$disconnect();
+
+    await app.close();
   });
 
   describe('register', () => {
