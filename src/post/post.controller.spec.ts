@@ -102,10 +102,11 @@ describe('PostController', () => {
   describe('remove', () => {
     it('should remove the post', async () => {
       const id = 1;
+      const userId = 10;
 
-      await postController.remove(id);
+      await postController.remove(id, userId);
 
-      expect(postService.remove).toHaveBeenCalledWith(id);
+      expect(postService.remove).toHaveBeenCalledWith(id, userId);
     });
   });
 

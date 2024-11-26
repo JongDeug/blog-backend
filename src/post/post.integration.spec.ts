@@ -32,40 +32,37 @@ describe('PostService - Integration Test', () => {
 
     // SEEDING
     users = await Promise.all(
-      [1, 2].map((id) =>
+      [0, 1].map((idx) =>
         prismaService.user.create({
           data: {
-            id,
-            name: `test${id}`,
-            email: `test${id}@gmail.com`,
+            name: `test${idx}`,
+            email: `test${idx}@gmail.com`,
             password: '1234',
           },
         }),
       ),
     );
 
-    category = await ((name) => {
-      return prismaService.category.create({
-        data: { name },
-      });
-    })('category');
+    category = await prismaService.category.create({
+      data: { name: 'category' },
+    });
 
     posts = await Promise.all(
-      [3, 4, 5].map((id) => {
+      [0, 1, 2].map((idx) => {
         return prismaService.post.create({
           data: {
-            title: `title${id}`,
-            content: `content${id}`,
-            summary: `summary${id}`,
+            title: `title${idx}`,
+            content: `content${idx}`,
+            summary: `summary${idx}`,
             author: {
-              connect: { id: users[0].id },
+              connect: idx === 1 ? { id: users[1].id } : { id: users[0].id },
             },
             category: {
               connect: { id: category.id },
             },
             draft: false,
             images:
-              id === 5
+              idx === 2
                 ? {
                     createMany: {
                       data: [
@@ -203,11 +200,21 @@ describe('PostService - Integration Test', () => {
 
   describe('remove', () => {
     it('should remove a post successfully', async () => {
-      const id = posts[0].id;
+      const postId = posts[0].id;
+      const userId = users[0].id;
 
-      await expect(postService.remove(id)).resolves.toBeUndefined();
-      await expect(postService.findPostById(id)).rejects.toThrow(
+      await expect(postService.remove(postId, userId)).resolves.toBeUndefined();
+      await expect(postService.findPostById(postId)).rejects.toThrow(
         NotFoundException,
+      );
+    });
+
+    it('should throw a ForbiddenException if the user does not have permission to delete the post', async () => {
+      const postId = posts[1].id;
+      const userId = users[0].id;
+
+      await expect(postService.remove(postId, userId)).rejects.toThrow(
+        ForbiddenException,
       );
     });
 

@@ -32,6 +32,7 @@ export class PostController {
   @Get()
   @Public()
   findAll(@Query() getPostsDto: GetPostsDto) {
+    console.log(getPostsDto);
     return this.postService.findAll(getPostsDto);
   }
 
@@ -56,8 +57,8 @@ export class PostController {
 
   @Delete(':id')
   @RBAC(Role.ADMIN)
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.postService.remove(id);
+  remove(@Param('id', ParseIntPipe) id: number, @UserId() userId: number) {
+    return this.postService.remove(id, userId);
   }
 
   @Get('like/:id')

@@ -270,7 +270,9 @@ describe('PostService', () => {
 
     it('should remove a post with all its relations (comments, images, postLikes)', async () => {
       const id = 1;
+      const userId = 10;
       const serverOrigin = 'https://test.org';
+      const foundUser = { id: userId } as User;
       const foundPost = {
         id,
         title: '제목',
@@ -279,15 +281,18 @@ describe('PostService', () => {
             url: `${serverOrigin}/public/images/aslfdkjsflksjfd-lkdfjsdlvmlsdf-21sdlkfjas.png`,
           },
         ],
+        authorId: userId,
       } as PostType;
 
+      jest.spyOn(userService, 'findUserById').mockResolvedValue(foundUser);
       jest
         .spyOn(postService, 'findPostWithImages')
         .mockResolvedValue(foundPost);
       jest.spyOn(configService, 'get').mockReturnValue(serverOrigin);
 
-      await postService.remove(id);
+      await postService.remove(id, userId);
 
+      expect(userService.findUserById).toHaveBeenCalledWith(userId);
       expect(postService.findPostWithImages).toHaveBeenCalledWith(id);
       expect(prismaMock.post.delete).toHaveBeenCalledWith({ where: { id } });
       expect(taskService.deleteFiles).toHaveBeenCalledWith(
@@ -296,9 +301,11 @@ describe('PostService', () => {
       );
     });
 
-    it('should throw a NotFoundException if requested files do not exist', async () => {
+    it('should throw a ForbiddenException if the user is not the author of the post', async () => {
       const id = 1;
+      const userId = 10;
       const serverOrigin = 'https://test.org';
+      const foundUser = { id: userId } as User;
       const foundPost = {
         id,
         title: '제목',
@@ -307,8 +314,39 @@ describe('PostService', () => {
             url: `${serverOrigin}/public/images/aslfdkjsflksjfd-lkdfjsdlvmlsdf-21sdlkfjas.png`,
           },
         ],
+        authorId: 123123123123,
       } as PostType;
 
+      jest.spyOn(userService, 'findUserById').mockResolvedValue(foundUser);
+      jest
+        .spyOn(postService, 'findPostWithImages')
+        .mockResolvedValue(foundPost);
+
+      await expect(postService.remove(id, userId)).rejects.toThrow(
+        ForbiddenException,
+      );
+      expect(userService.findUserById).toHaveBeenCalled();
+      expect(postService.findPostWithImages).toHaveBeenCalled();
+      expect(prismaMock.post.delete).not.toHaveBeenCalled();
+    });
+
+    it('should throw a NotFoundException if requested files do not exist', async () => {
+      const id = 1;
+      const userId = 10;
+      const serverOrigin = 'https://test.org';
+      const foundUser = { id: userId } as User;
+      const foundPost = {
+        id,
+        title: '제목',
+        images: [
+          {
+            url: `${serverOrigin}/public/images/aslfdkjsflksjfd-lkdfjsdlvmlsdf-21sdlkfjas.png`,
+          },
+        ],
+        authorId: userId,
+      } as PostType;
+
+      jest.spyOn(userService, 'findUserById').mockResolvedValue(foundUser);
       jest
         .spyOn(postService, 'findPostWithImages')
         .mockResolvedValue(foundPost);
@@ -317,7 +355,10 @@ describe('PostService', () => {
         .spyOn(taskService, 'deleteFiles')
         .mockRejectedValue({ code: 'ENOENT' });
 
-      await expect(postService.remove(id)).rejects.toThrow(NotFoundException);
+      await expect(postService.remove(id, userId)).rejects.toThrow(
+        NotFoundException,
+      );
+      expect(userService.findUserById).toHaveBeenCalled();
       expect(postService.findPostWithImages).toHaveBeenCalled();
       expect(prismaMock.post.delete).toHaveBeenCalled();
       expect(taskService.deleteFiles).toHaveBeenCalled();

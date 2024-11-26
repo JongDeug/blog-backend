@@ -101,8 +101,15 @@ export class PostService {
     }
   }
 
-  async remove(id: number) {
+  async remove(id: number, userId: number) {
+    const foundUser = await this.userService.findUserById(userId);
+
     const foundPost = await this.findPostWithImages(id);
+
+    // 작성자 비교
+    if (foundUser.id !== foundPost.authorId) {
+      throw new ForbiddenException('게시글에 대한 권한이 없습니다');
+    }
 
     await this.prismaService.post.delete({ where: { id } });
 

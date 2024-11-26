@@ -81,7 +81,7 @@ export class AuthGuard implements CanActivate {
       if (e.name === 'TokenExpiredError') {
         throw new UnauthorizedException('만료된 토큰입니다');
       }
-      return false;
+      return false; // ForbiddenException
     }
   }
 }
