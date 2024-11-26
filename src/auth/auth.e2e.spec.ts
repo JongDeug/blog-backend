@@ -14,8 +14,9 @@ describe('AuthController (e2e)', () => {
   let app: INestApplication;
   let prismaService: PrismaService;
 
-  let user: User;
+  let users: User[];
   let refreshToken: string;
+  let accessToken: string;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -37,23 +38,31 @@ describe('AuthController (e2e)', () => {
 
     prismaService = moduleFixture.get<PrismaService>(PrismaService);
 
-    user = await prismaService.user.create({
-      data: {
-        name: 'test1',
-        email: 'test1@gmail.com',
-        password: '1234',
-        role: Role.ADMIN,
-      },
-    });
+    users = await Promise.all(
+      [0, 1].map((idx) =>
+        prismaService.user.create({
+          data: {
+            name: `test${idx}`,
+            email: `test${idx}@gmail.com`,
+            password: '1234',
+            role: Role.ADMIN,
+          },
+        }),
+      ),
+    );
 
     let authService = moduleFixture.get<AuthService>(AuthService);
     let cacheManager = moduleFixture.get<Cache>(CACHE_MANAGER);
     refreshToken = await authService.issueToken(
-      { id: user.id, role: user.role },
+      { id: users[0].id, role: users[0].role },
       true,
     );
+    accessToken = await authService.issueToken(
+      { id: users[0].id, role: users[0].role },
+      false,
+    );
     await cacheManager.set(
-      `REFRESH_TOKEN_${user.id}`,
+      `REFRESH_TOKEN_${users[0].id}`,
       refreshToken,
       tokenAge.REFRESH_TOKEN_INT,
     );
@@ -216,5 +225,22 @@ describe('AuthController (e2e)', () => {
     });
   });
 
-  describe('[GET] /auth/token/revoke/:id', () => {});
+  describe('[GET] /auth/token/revoke/:id', () => {
+    it('should delete the cache for the refresh token by userId', async () => {
+      const { body, statusCode } = await request(app.getHttpServer())
+        .get(`/auth/token/revoke/${users[1].id}`)
+        .set('Cookie', [`accessToken=${accessToken}`]);
+
+      expect(statusCode).toBe(200);
+      expect(body).toStrictEqual({});
+    });
+
+    it('should return 404', async () => {
+      const { statusCode } = await request(app.getHttpServer())
+        .get(`/auth/token/revoke/${9999}`)
+        .set('Cookie', [`accessToken=${accessToken}`]);
+
+      expect(statusCode).toBe(404);
+    });
+  });
 });
