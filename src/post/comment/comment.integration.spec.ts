@@ -9,6 +9,7 @@ import {
   Guest,
   GuestComment,
   Category,
+  Role,
 } from '@prisma/client';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import {
@@ -49,14 +50,13 @@ describe('CommentService - Integration Test', () => {
 
     // SEEDING
     users = await Promise.all(
-      [1, 2, 3].map((id) =>
+      [0, 1, 2].map((idx) =>
         prismaService.user.create({
           data: {
-            id,
-            name: `test${id}`,
-            email: `test${id}@gmail.com`,
+            name: `test${idx}`,
+            email: `test${idx}@gmail.com`,
             password: '1234',
-            role: id === 3 ? 'ADMIN' : 'USER',
+            role: idx === 2 ? Role.ADMIN : Role.USER,
           },
         }),
       ),
@@ -83,28 +83,24 @@ describe('CommentService - Integration Test', () => {
       ),
     );
 
-    category = await ((name) => {
-      return prismaService.category.create({
-        data: { name },
-      });
-    })('category');
+    category = await prismaService.category.create({
+      data: { name: 'category' },
+    });
 
-    post = await ((idx) => {
-      return prismaService.post.create({
-        data: {
-          title: `title${idx}`,
-          content: `content${idx}`,
-          summary: `summary${idx}`,
-          author: {
-            connect: { id: users[0].id },
-          },
-          category: {
-            connect: { name: category.name },
-          },
-          draft: false,
+    post = await prismaService.post.create({
+      data: {
+        title: 'title1',
+        content: 'content1',
+        summary: 'summary1',
+        author: {
+          connect: { id: users[0].id },
         },
-      });
-    })(1);
+        category: {
+          connect: { name: category.name },
+        },
+        draft: false,
+      },
+    });
 
     commentsByUser = await Promise.all(
       [0, 1, 2].map((idx) =>

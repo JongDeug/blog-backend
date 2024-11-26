@@ -32,7 +32,6 @@ export class PostController {
   @Get()
   @Public()
   findAll(@Query() getPostsDto: GetPostsDto) {
-    console.log(getPostsDto);
     return this.postService.findAll(getPostsDto);
   }
 
