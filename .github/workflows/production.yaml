@@ -93,7 +93,7 @@ jobs:
             # Download docker-compose.yaml 
             # Create uploads folder
 
-            cd blog-backend-v2
+            mkdir -p blog-backend-v2 && cd blog-backend-v2
             mkdir -p /home/uploads/blog-backend-v2
             wget -O docker-compose.yaml https://raw.github.com/JongDeug/blog-backend/main/docker-compose.prod.yaml
 
