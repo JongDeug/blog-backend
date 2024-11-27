@@ -31,7 +31,7 @@ jobs:
       - name: Run tests
         run: pnpm test:unit
 
-  # ----------------- 빌드 ----------------- #
+  # ----------------- 도커 이미지 빌드, 푸시 ----------------- #
   build_and_push:
     environment: prod # github environments: vars.
     runs-on: ubuntu-latest
@@ -76,46 +76,37 @@ jobs:
           push: true
           tags: ${{ vars.IMAGE_NAME }}:latest
 
-  # deploy:
-  #   runs-on: ubuntu-latest
-  #   needs: build_and_push
-  #   environment: prod
-  #   steps:
-  #     - name: Deploy to Raspberry Pi
-  #       uses: appleboy/ssh-action@v1.0.3
-  #       with:
-  #         host: ${{ secrets.SSH_HOST }}
-  #         username: ${{ secrets.SSH_USERNAME }}
-  #         port: ${{ secrets.SSH_PORT }}
-  #         key: ${{ secrets.SSH_PRIVATE_KEY }}
-  #         script: |
-  #           # docker-compose 파일 download, 호스트 경로에 uploads 폴더 생성
-  #           cd blog-backend
-  #           mkdir -p /home/uploads/blog-backend
-  #           wget -O docker-compose.yaml https://raw.github.com/JongDeug/blog-backend/main/docker-compose.prod.yaml
+  # ----------------- 라즈베리파이 배포 ----------------- #
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build_and_push
+    environment: prod
+    steps:
+      - name: Deploy to Raspberry Pi
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          port: ${{ secrets.SSH_PORT }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            # Download docker-compose.yaml 
+            # Create uploads folder
 
-  #           # Redis: 설정 파일 생성
-  #           > redis.conf
+            cd blog-backend-v2
+            mkdir -p /home/uploads/blog-backend-v2
+            wget -O docker-compose.yaml https://raw.github.com/JongDeug/blog-backend/main/docker-compose.prod.yaml
 
-  #           echo "appendonly yes" >> redis.conf
-  #           echo "appendfilename \"appendonly.aof\"" >> redis.conf
-  #           echo "appendfsync everysec" >> redis.conf
+            # docker-compose.yaml 실행에 필요한 .env 파일 생성
+            > .env
+            echo "IMAGE_NAME=${{ vars.IMAGE_NAME }}" >> .env
+            echo "SERVER_PORT=${{ secrets.SERVER_PORT }}" >> .env
+            echo "DB_URL=${{ secrets.DB_URL }}" >> .env
+            echo "DB_PORT=${{ secrets.DB_PORT }}" >> .env
+            echo "DB_PWD=${{ secrets.DB_PWD }}" >> .env
 
-  #           # Docker: docker-compose.yaml에 필요한 .env 파일 생성
-  #           > .env
-
-  #           echo "PORT=${{ secrets.PORT }}" >> .env
-  #           echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> .env
-  #           echo "DATABASE_PORT=${{ secrets.DATABASE_PORT }}" >> .env
-  #           echo "DATABASE_PWD=${{ secrets.DATABASE_PWD }}" >> .env
-  #           echo "REDIS_PORT=${{ secrets.REDIS_PORT }}" >> .env
-  #           echo "REDIS_PWD=${{ secrets.REDIS_PWD }}" >> .env
-  #           echo "REGISTRY_G=${{ vars.REGISTRY_G }}" >> .env
-  #           echo "REGISTRY_D=${{ vars.REGISTRY_D }}" >> .env
-  #           echo "IMAGE_NAME=${{ vars.IMAGE_NAME }}" >> .env
-
-  #           # docker stop => pull, build, run, 필요없는(태그없는) 이미지 삭제
-  #           docker compose down
-  #           docker compose pull
-  #           docker compose up -d
-  #           docker image prune -f
+            # docker stop > pull > build > run > 필요없는(태그없는) 이미지 삭제
+            docker compose down
+            docker compose pull
+            docker compose up -d
+            docker image prune -f
