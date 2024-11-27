@@ -5,7 +5,7 @@ services:
     networks:
       - app
     image: mysql:latest
-    container_name: blog-backend-mysql
+    container_name: blog-backend-mysql-v2
     restart: always
     ports:
       - ${DATABASE_PORT}:${DATABASE_PORT}
@@ -23,7 +23,7 @@ services:
     # image: ${REGISTRY_G}/${IMAGE_NAME}:main
     image: ${IMAGE_NAME}:latest
     restart: always
-    container_name: blog-backend-server
+    container_name: blog-backend-server-v2
     environment:
       DATABASE_URL: ${DATABASE_URL}
     depends_on: # MYSQL 컨테이너 의존
@@ -31,7 +31,7 @@ services:
     ports:
       - ${PORT}:${PORT}
     volumes:
-      - /home/uploads/blog-backend:/app/blog-backend-server/uploads # [Raspberry Pi Path : Docker Container]
+      - /home/uploads/blog-backend-v2:/app/uploads # [Raspberry Pi Path : Docker Container]
 
 networks:
   app:

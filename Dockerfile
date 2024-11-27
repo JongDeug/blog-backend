@@ -40,7 +40,10 @@ RUN npm install -g pnpm
 # 필요한 파일 복사
 COPY --from=builder /app/node_modules /app/node_modules
 COPY --from=builder /app/dist /app/dist
-# COPY --from=builder /app/.env /app/.env
+COPY --from=builder /app/.env /app/.env
+
+# 폴더 생성, 있어도 오류 X
+RUN mkdir -p /app/uploads
 
 # 애플리케이션 실행
 CMD ["pnpm", "start:prod"]
