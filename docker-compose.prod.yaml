@@ -8,9 +8,9 @@ services:
     container_name: blog-backend-mysql-v2
     restart: always
     ports:
-      - ${DATABASE_PORT}:${DATABASE_PORT}
+      - ${DB_PORT}:${DB_PORT}
     environment:
-      MYSQL_ROOT_PASSWORD: ${DATABASE_PWD}
+      MYSQL_ROOT_PASSWORD: ${DB_PWD}
     volumes:
       - mysql-data:/var/lib/mysql # [Raspberry Pi Path : Docker Container]
       # 경로 파악 명령어 => docker volume ls, docker volume inspect blog-backend_mysql-data
@@ -25,11 +25,11 @@ services:
     restart: always
     container_name: blog-backend-server-v2
     environment:
-      DATABASE_URL: ${DATABASE_URL}
+      DATABASE_URL: ${DB_URL}
     depends_on: # MYSQL 컨테이너 의존
       - db
     ports:
-      - ${PORT}:${PORT}
+      - ${SERVER_PORT}:${SERVER_PORT}
     volumes:
       - /home/uploads/blog-backend-v2:/app/uploads # [Raspberry Pi Path : Docker Container]
 
