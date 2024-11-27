@@ -341,4 +341,214 @@ describe('CommentController (e2e)', () => {
       expect(statusCode).toBe(401);
     });
   });
+
+  describe('[POST] /post/comment/guest', () => {
+    describe('create a comment', () => {
+      it('should allow a guest to create a comment', async () => {
+        const dto = {
+          postId: post.id,
+          nickName: 'nick',
+          email: 'nick@gmail.com',
+          password: '1234',
+          content: 'guest comment content',
+        };
+
+        const { body, statusCode } = await request(app.getHttpServer())
+          .post('/post/comment/guest')
+          .set('Cookie', ['guestId=uuid'])
+          .send(dto);
+
+        expect(statusCode).toBe(201);
+        expect(body).toBeDefined();
+      });
+    });
+
+    it('should return 404 when the post does not exist', async () => {
+      const dto = {
+        postId: 9999,
+        nickName: 'nick',
+        email: 'nick@gmail.com',
+        password: '1234',
+        content: 'guest comment content',
+      };
+
+      const { statusCode } = await request(app.getHttpServer())
+        .post('/post/comment/guest')
+        .set('Cookie', ['guestId=uuid'])
+        .send(dto);
+
+      expect(statusCode).toBe(404);
+    });
+
+    describe('create a child comment', () => {
+      it('should allow a guest to create a child comment', async () => {
+        const dto = {
+          postId: post.id,
+          parentCommentId: commentsByGuest[0].id,
+          nickName: 'nick',
+          email: 'nick@gmail.com',
+          password: '1234',
+          content: 'guest child comment content',
+        };
+
+        const { body, statusCode } = await request(app.getHttpServer())
+          .post('/post/comment/guest')
+          .set('Cookie', ['guestId=uuid'])
+          .send(dto);
+
+        expect(statusCode).toBe(201);
+        expect(body).toBeDefined();
+      });
+
+      it('should return 404 when the parent comment does not exist', async () => {
+        const dto = {
+          postId: post.id,
+          parentCommentId: 9999,
+          nickName: 'nick',
+          email: 'nick@gmail.com',
+          password: '1234',
+          content: 'guest child comment content',
+        };
+
+        const { statusCode } = await request(app.getHttpServer())
+          .post('/post/comment/guest')
+          .set('Cookie', ['guestId=uuid'])
+          .send(dto);
+
+        expect(statusCode).toBe(404);
+      });
+
+      it("should return 400 if the postId does not match the parent comment's postId", async () => {
+        const dto = {
+          postId: 9999,
+          parentCommentId: commentsByGuest[0].id,
+          nickName: 'nick',
+          email: 'nick@gmail.com',
+          password: '1234',
+          content: 'guest child comment content',
+        };
+
+        const { statusCode } = await request(app.getHttpServer())
+          .post('/post/comment/guest')
+          .set('Cookie', ['guestId=uuid'])
+          .send(dto);
+
+        expect(statusCode).toBe(400);
+      });
+    });
+  });
+
+  describe('[PATCH] /post/comment/guest/:id', () => {
+    it('should allow a guest to update a comment', async () => {
+      const dto = {
+        password: '1234',
+        content: 'updated content',
+      };
+
+      const { body, statusCode } = await request(app.getHttpServer())
+        .patch(`/post/comment/guest/${commentsByGuest[0].id}`)
+        .set('Cookie', [`guestId=${guests[0].guestId}`])
+        .send(dto);
+
+      expect(statusCode).toBe(200);
+      expect(body).toStrictEqual({});
+    });
+
+    it('should return 404 when the comment does not exist', async () => {
+      const dto = {
+        password: '1234',
+        content: 'updated content',
+      };
+
+      const { statusCode } = await request(app.getHttpServer())
+        .patch(`/post/comment/guest/${9999}`)
+        .set('Cookie', [`guestId=${guests[0].guestId}`])
+        .send(dto);
+
+      expect(statusCode).toBe(404);
+    });
+
+    it('should return 401 if the password does not match', async () => {
+      const dto = {
+        password: '54321',
+        content: 'updated content',
+      };
+
+      const { statusCode } = await request(app.getHttpServer())
+        .patch(`/post/comment/guest/${commentsByGuest[0].id}`)
+        .set('Cookie', [`guestId=${guests[0].guestId}`])
+        .send(dto);
+
+      expect(statusCode).toBe(401);
+    });
+
+    it('should return 401 if the guestId does not match', async () => {
+      const dto = {
+        password: '1234',
+        content: 'updated content',
+      };
+
+      const { statusCode } = await request(app.getHttpServer())
+        .patch(`/post/comment/guest/${commentsByGuest[0].id}`)
+        .set('Cookie', [`guestId=lsakdjfsldkfjdsflkdsfjsdlkfjslkfjdflfkj`])
+        .send(dto);
+
+      expect(statusCode).toBe(401);
+    });
+  });
+
+  describe('[DELETE] /post/comment/guest/:id', () => {
+    it('should allow a guest to delete a comment', async () => {
+      const dto = {
+        password: '1234',
+      };
+
+      const { body, statusCode } = await request(app.getHttpServer())
+        .del(`/post/comment/guest/${commentsByGuest[0].id}`)
+        .set('Cookie', [`guestId=${guests[0].guestId}`])
+        .send(dto);
+
+      expect(statusCode).toBe(200);
+      expect(body).toStrictEqual({});
+    });
+
+    it('should return 404 when the comment does not exist', async () => {
+      const dto = {
+        password: '1234',
+      };
+
+      const { statusCode } = await request(app.getHttpServer())
+        .del(`/post/comment/guest/${9999}`)
+        .set('Cookie', [`guestId=${guests[0].guestId}`])
+        .send(dto);
+
+      expect(statusCode).toBe(404);
+    });
+
+    it('should return 401 if the password does not match', async () => {
+      const dto = {
+        password: '54321',
+      };
+
+      const { statusCode } = await request(app.getHttpServer())
+        .del(`/post/comment/guest/${commentsByGuest[1].id}`)
+        .set('Cookie', [`guestId=${guests[0].guestId}`])
+        .send(dto);
+
+      expect(statusCode).toBe(401);
+    });
+
+    it('should return 401 if the guestId does not match', async () => {
+      const dto = {
+        password: '1234',
+      };
+
+      const { statusCode } = await request(app.getHttpServer())
+        .del(`/post/comment/guest/${commentsByGuest[1].id}`)
+        .set('Cookie', [`guestId=lsakdjfsldkfjdsflkdsfjsdlkfjslkfjdflfkj`])
+        .send(dto);
+
+      expect(statusCode).toBe(401);
+    });
+  });
 });
