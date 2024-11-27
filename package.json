@@ -121,6 +121,8 @@
       "middleware.ts",
       "util.ts",
       "filter.ts",
+      "interceptor.ts",
+      "multer-config.service.ts",
       "prisma"
     ],
     "coverageDirectory": "../coverage",

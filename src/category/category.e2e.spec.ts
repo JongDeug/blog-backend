@@ -4,7 +4,7 @@ import * as request from 'supertest';
 import { AppModule } from '../app.module';
 import * as cookieParser from 'cookie-parser';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { Category, Post, User } from '@prisma/client';
+import { Category, Post, Role, User } from '@prisma/client';
 import { AuthService } from 'src/auth/auth.service';
 
 describe('CategoryController (e2e)', () => {
@@ -49,7 +49,7 @@ describe('CategoryController (e2e)', () => {
         name: 'test1',
         email: 'test1@gmail.com',
         password: '1234',
-        role: 'ADMIN',
+        role: Role.ADMIN,
       },
     });
 
