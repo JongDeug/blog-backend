@@ -6,7 +6,7 @@ on:
     branches:
       - main
     paths-ignore:
-      - README.md
+      - 'README.md'
 
 jobs:
   # ----------------- 유닛 테스트 ----------------- #
