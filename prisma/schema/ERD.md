@@ -49,8 +49,8 @@ erDiagram
   String content
   DateTime createdAt
   DateTime updatedAt
-  String prevId "nullable"
-  String nextId "nullable"
+  Int prevId "nullable"
+  Int nextId "nullable"
   Boolean draft
   String summary
   Int authorId FK

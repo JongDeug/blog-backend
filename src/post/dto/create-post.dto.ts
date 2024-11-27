@@ -2,6 +2,7 @@ import {
   IsArray,
   IsBoolean,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   IsString,
 } from 'class-validator';
@@ -15,15 +16,15 @@ export class CreatePostDto {
   @IsNotEmpty()
   content: string;
 
-  @IsString()
+  @IsNumber()
   @IsNotEmpty()
   @IsOptional()
-  prevId?: string;
+  prevId?: number;
 
-  @IsString()
+  @IsNumber()
   @IsNotEmpty()
   @IsOptional()
-  nextId?: string;
+  nextId?: number;
 
   @IsBoolean()
   @IsNotEmpty()

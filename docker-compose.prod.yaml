@@ -1,0 +1,41 @@
+version: '3'
+services:
+  # MYSQL
+  db:
+    networks:
+      - app
+    image: mysql:latest
+    container_name: blog-backend-mysql
+    restart: always
+    ports:
+      - ${DATABASE_PORT}:${DATABASE_PORT}
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DATABASE_PWD}
+    volumes:
+      - mysql-data:/var/lib/mysql # [Raspberry Pi Path : Docker Container]
+      # 경로 파악 명령어 => docker volume ls, docker volume inspect blog-backend_mysql-data
+      # 실제 경로 => [/var/lib/docker/volumes/blog-backend_mysql-data/_data]
+
+  # Server
+  server:
+    networks:
+      - app
+    # image: ${REGISTRY_G}/${IMAGE_NAME}:main
+    image: ${IMAGE_NAME}:latest
+    restart: always
+    container_name: blog-backend-server
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+    depends_on: # MYSQL 컨테이너 의존
+      - db
+    ports:
+      - ${PORT}:${PORT}
+    volumes:
+      - /home/uploads/blog-backend:/app/blog-backend-server/uploads # [Raspberry Pi Path : Docker Container]
+
+networks:
+  app:
+    driver: bridge # 두 컨테이너가 동일한 네트워크에 있어야 함
+
+volumes:
+  mysql-data:

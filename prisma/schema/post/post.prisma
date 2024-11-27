@@ -18,10 +18,10 @@ model Post {
   updatedAt DateTime @updatedAt
 
   /// 이전 게시글 Id
-  prevId      String?
+  prevId      Int?
 
   /// 다음 게시글 Id
-  nextId      String?
+  nextId      Int?
 
   /// 초안
   draft     Boolean  @default(true)

@@ -1,0 +1,21 @@
+# directory
+.git
+.github
+.vscode
+coverage
+dist
+logs
+node_modules
+public
+
+# file
+.dockerignore
+.eslintrc
+.gitignore
+.prettierrc
+docker-compose.dev.yaml
+docker-compose.prod.yaml
+jest-e2e.json
+nest-cli.json
+README.md
+Dockerfile
