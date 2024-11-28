@@ -50,7 +50,7 @@ import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handleba
           ? '.env.test.local'
           : process.env.NODE_ENV === 'dev'
             ? '.env.development.local'
-            : '.env.production.local',
+            : '.env',
     }),
     WinstonModule.forRoot({
       transports: [
