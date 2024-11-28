@@ -45,6 +45,7 @@ jobs:
 
       - name: Create .env file
         run: |
+          echo "ENV=${{ vars.ENV }}" >> .env
           echo "SERVER_ORIGIN=${{ vars.SERVER_ORIGIN }}" >> .env
           echo "SERVER_PORT=${{ secrets.SERVER_PORT }}" >> .env
           echo "DB_URL=${{ secrets.DB_URL }}" >> .env
