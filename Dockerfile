@@ -42,6 +42,8 @@ COPY --from=builder /app/node_modules /app/node_modules
 COPY --from=builder /app/dist /app/dist
 COPY --from=builder /app/.env /app/.env
 COPY --from=builder /app/package.json /app/package.json
+COPY --from=builder /app/prisma /app/prisma
+
 
 # 폴더 생성, 있어도 오류 X
 RUN mkdir -p /app/uploads
