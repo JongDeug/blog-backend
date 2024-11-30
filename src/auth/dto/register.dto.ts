@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import {
   IsEmail,
   IsNotEmpty,
@@ -25,14 +26,17 @@ export function IsPassword(validationOptions?: ValidationOptions) {
 }
 
 export class RegisterDto {
+  @ApiProperty({ example: '아무개' })
   @IsString()
   @IsNotEmpty()
   name: string;
 
+  @ApiProperty({ example: 'amuge01@gmail.com' })
   @IsEmail({}, { message: '이메일 형식이 아닙니다' })
   @IsNotEmpty()
   email: string;
 
+  @ApiProperty({ example: '1234' })
   @IsPassword()
   @IsNotEmpty()
   password: string;

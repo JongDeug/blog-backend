@@ -206,6 +206,7 @@ export class PostService {
     const results = await this.prismaService.post.findMany({
       where: whereConditions,
       orderBy: orderByCondition,
+      include: { tags: true },
       skip: cursorCondition ? 1 : 0,
       take,
       cursor: cursorCondition ?? Prisma.skip,
