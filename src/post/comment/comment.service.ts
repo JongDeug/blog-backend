@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -99,7 +100,7 @@ export class CommentService {
 
     // 댓글 작성자가 아니면서, 관리자가 아니면
     if (foundUser.id !== foundComment.authorId && foundUser.role !== 'ADMIN') {
-      throw new UnauthorizedException('댓글에 대한 권한이 없습니다');
+      throw new ForbiddenException('댓글에 대한 권한이 없습니다');
     }
 
     await this.prismaService.comment.update({
@@ -116,7 +117,7 @@ export class CommentService {
     const foundComment = await this.findCommentById(id);
 
     if (foundUser.id !== foundComment.authorId && foundUser.role !== 'ADMIN') {
-      throw new UnauthorizedException('댓글에 대한 권한이 없습니다');
+      throw new ForbiddenException('댓글에 대한 권한이 없습니다');
     }
 
     await this.prismaService.comment.delete({

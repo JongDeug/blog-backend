@@ -116,16 +116,19 @@ describe('PostService', () => {
 
   describe('findAll', () => {
     it('should return an array of posts with cursor-based pagination', async () => {
+      type ReturnType = Prisma.PromiseReturnType<
+        typeof postService.applyCursorPaginationToPost
+      >;
       const getPostsDto = new GetPostsDto();
       getPostsDto.cursor =
         'eyJ2YWx1ZXMiOnsiaWQiOjI5N30sIm9yZGVyIjpbImlkX2Rlc2MiXX0=';
-      const results = [{ id: 1 }] as Post[];
+      const results = [{ id: 1 }];
       const nextCursor =
         'eyJYWx1Z12l3j1231lk23j12l3k1j23sdfjadsflksjflskfjdlfkjsf=';
 
       jest
         .spyOn(postService, 'applyCursorPaginationToPost')
-        .mockResolvedValue({ results, nextCursor });
+        .mockResolvedValue({ results, nextCursor } as ReturnType);
 
       const result = await postService.findAll(getPostsDto);
 
@@ -507,6 +510,7 @@ describe('PostService', () => {
           draft: false,
         },
         orderBy: orderByConditions,
+        include: { tags: true },
         skip: 1,
         take: getPostsDto.take,
         cursor: cursorConditions,
@@ -543,6 +547,7 @@ describe('PostService', () => {
           draft: false,
         },
         orderBy: orderByCondition,
+        include: { tags: true },
         skip: 0,
         take: getPostsDto.take,
         cursor: Prisma.skip,

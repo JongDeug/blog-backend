@@ -17,6 +17,7 @@ import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
 import {
   BadRequestException,
+  ForbiddenException,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -249,7 +250,7 @@ describe('CommentService', () => {
       expect(prismaMock.comment.update).toHaveBeenCalled();
     });
 
-    it('should throw an UnauthorizedException if the user does not have the permission to edit the comment', async () => {
+    it('should throw an ForbiddenException if the user does not have the permission to edit the comment', async () => {
       const userId = 1;
       const id = 10;
       const updateCommentDto: UpdateCommentDto = {
@@ -265,7 +266,7 @@ describe('CommentService', () => {
 
       await expect(
         commentService.update(userId, id, updateCommentDto),
-      ).rejects.toThrow(UnauthorizedException);
+      ).rejects.toThrow(ForbiddenException);
       expect(userService.findUserById).toHaveBeenCalled();
       expect(commentService.findCommentById).toHaveBeenCalled();
       expect(prismaMock.comment.update).not.toHaveBeenCalled();
@@ -331,7 +332,7 @@ describe('CommentService', () => {
       });
     });
 
-    it('should throw an UnauthorizedException if the user does not have the permission to delete the comment', async () => {
+    it('should throw an ForbiddenException if the user does not have the permission to delete the comment', async () => {
       const id = 10;
       const userId = 1;
       const foundUser = { id: userId, role: 'USER' } as User;
@@ -343,7 +344,7 @@ describe('CommentService', () => {
         .mockResolvedValue(foundComment);
 
       await expect(commentService.remove(id, userId)).rejects.toThrow(
-        UnauthorizedException,
+        ForbiddenException,
       );
       expect(userService.findUserById).toHaveBeenCalled();
       expect(commentService.findCommentById).toHaveBeenCalled();
