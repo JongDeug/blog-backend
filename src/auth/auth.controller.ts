@@ -16,7 +16,17 @@ import { RBAC } from './decorator/rbac.decorator';
 import { Role } from '@prisma/client';
 import { Cookies } from 'src/common/decorator/cookies.decorator';
 import { Authorization } from './decorator/authorization.decorator';
-import { ApiBasicAuth } from '@nestjs/swagger';
+import {
+  ApiBadRequestResponse,
+  ApiBasicAuth,
+  ApiConflictResponse,
+  ApiCreatedResponse,
+  ApiDefaultResponse,
+  ApiForbiddenResponse,
+  ApiInternalServerErrorResponse,
+  ApiNotFoundResponse,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
 
 const cookieOptions = {
   path: '/',
@@ -29,12 +39,17 @@ const cookieOptions = {
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @ApiCreatedResponse({ description: '유저 정보' })
+  @ApiConflictResponse()
   @Public()
   @Post('register')
   registerUser(@Body() registerDto: RegisterDto) {
     return this.authService.register(registerDto);
   }
 
+  @ApiBadRequestResponse()
+  @ApiNotFoundResponse()
+  @ApiForbiddenResponse()
   @ApiBasicAuth()
   @Public()
   @Post('login')
@@ -48,6 +63,8 @@ export class AuthController {
     res.cookie('refreshToken', refreshToken, cookieOptions);
   }
 
+  @ApiInternalServerErrorResponse()
+  @ApiUnauthorizedResponse()
   @Public()
   @Get('token/refresh')
   async refresh(
@@ -71,6 +88,7 @@ export class AuthController {
     return this.authService.logout(userId);
   }
 
+  @ApiNotFoundResponse()
   @RBAC(Role.ADMIN)
   @Get('token/revoke/:id')
   revokeRefreshToken(@Param('id', ParseIntPipe) userId: number) {
