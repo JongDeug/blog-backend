@@ -14,11 +14,19 @@ import { UpdateCategoryDto } from './dto/update-category.dto';
 import { RBAC } from 'src/auth/decorator/rbac.decorator';
 import { Role } from '@prisma/client';
 import { Public } from 'src/auth/decorator/public.decorator';
+import {
+  ApiBadRequestResponse,
+  ApiConflictResponse,
+  ApiCreatedResponse,
+  ApiNotFoundResponse,
+} from '@nestjs/swagger';
 
 @Controller('category')
 export class CategoryController {
   constructor(private readonly categoryService: CategoryService) {}
 
+  @ApiCreatedResponse({ description: '카테고리 정보' })
+  @ApiConflictResponse()
   @Post()
   @RBAC(Role.ADMIN)
   create(@Body() createCategoryDto: CreateCategoryDto) {
@@ -31,12 +39,14 @@ export class CategoryController {
     return this.categoryService.findAll();
   }
 
+  @ApiNotFoundResponse()
   @Get(':id')
   @Public()
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.categoryService.findCategoryById(id);
   }
 
+  @ApiNotFoundResponse()
   @Patch(':id')
   @RBAC(Role.ADMIN)
   update(
@@ -46,6 +56,8 @@ export class CategoryController {
     return this.categoryService.update(id, updateCategoryDto);
   }
 
+  @ApiNotFoundResponse()
+  @ApiBadRequestResponse()
   @Delete(':id')
   @RBAC(Role.ADMIN)
   remove(@Param('id', ParseIntPipe) id: number) {

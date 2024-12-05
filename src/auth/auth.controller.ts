@@ -21,7 +21,6 @@ import {
   ApiBasicAuth,
   ApiConflictResponse,
   ApiCreatedResponse,
-  ApiDefaultResponse,
   ApiForbiddenResponse,
   ApiInternalServerErrorResponse,
   ApiNotFoundResponse,
@@ -49,6 +48,7 @@ export class AuthController {
 
   @ApiBadRequestResponse()
   @ApiNotFoundResponse()
+  @ApiUnauthorizedResponse()
   @ApiForbiddenResponse()
   @ApiBasicAuth()
   @Public()
@@ -57,10 +57,16 @@ export class AuthController {
     @Authorization() token: string,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const { accessToken, refreshToken } = await this.authService.login(token);
+    const { accessToken, refreshToken, authenticatedUser } =
+      await this.authService.login(token);
 
     res.cookie('accessToken', accessToken, cookieOptions);
     res.cookie('refreshToken', refreshToken, cookieOptions);
+
+    return {
+      name: authenticatedUser.name,
+      role: authenticatedUser.role,
+    };
   }
 
   @ApiInternalServerErrorResponse()

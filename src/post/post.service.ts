@@ -305,7 +305,7 @@ export class PostService {
   /* istanbul ignore next */
   getBaseURL() {
     return new URL(
-      `${this.configService.get(envVariableKeys.serverOrigin)}/public/images/`,
+      `${this.configService.get(envVariableKeys.serverOrigin)}/uploads/`,
     );
   }
 
@@ -392,7 +392,7 @@ export class PostService {
     const oldImageArray: string[] = currentImages.map(
       (image: Image) =>
         image.url.split(
-          `${this.configService.get(envVariableKeys.serverOrigin)}/public/images/`,
+          `${this.configService.get(envVariableKeys.serverOrigin)}/uploads/`,
         )[1],
     );
     const oldImageSet: Set<string> = new Set(oldImageArray);
