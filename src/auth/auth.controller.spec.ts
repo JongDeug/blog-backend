@@ -57,10 +57,11 @@ describe('AuthController', () => {
       const token = 'Basic dGVzdEBnbWFpbC5jb206MTIzNA==';
       const accessToken = 'access token';
       const refreshToken = 'refresh token';
+      const authenticatedUser = { id: 10, name: 'test' } as User;
 
       jest
         .spyOn(authService, 'login')
-        .mockResolvedValue({ accessToken, refreshToken });
+        .mockResolvedValue({ accessToken, refreshToken, authenticatedUser });
 
       await authController.loginUser(token, res);
 

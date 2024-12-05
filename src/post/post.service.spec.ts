@@ -641,13 +641,13 @@ describe('PostService', () => {
     it('should move new incoming images and delete unused images', async () => {
       const currentImages = [
         {
-          url: 'http://test.org/public/images/test-A.png',
+          url: 'http://test.org/uploads/test-A.png',
         },
         {
-          url: 'http://test.org/public/images/test-B.png',
+          url: 'http://test.org/uploads/test-B.png',
         },
         {
-          url: 'http://test.org/public/images/test-C.png',
+          url: 'http://test.org/uploads/test-C.png',
         },
       ] as Image[];
       const incomingImages = [

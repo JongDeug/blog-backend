@@ -255,7 +255,7 @@ describe('AuthService', () => {
 
       const result = await authService.login(rawToken);
 
-      expect(result).toEqual({ accessToken, refreshToken });
+      expect(result).toEqual({ accessToken, refreshToken, authenticatedUser });
       expect(authService.parseBasicToken).toHaveBeenCalledWith(rawToken);
       expect(authService.authenticate).toHaveBeenCalledWith(email, password);
       expect(authService.issueToken).toHaveBeenNthCalledWith(
