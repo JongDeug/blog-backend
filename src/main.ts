@@ -9,11 +9,13 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.enableCors({
-    origin: ['https://jongdeug.port0.org'],
-    credentials: true,
-    // exposedHeaders: ['Authorization'],
-  });
+  app.enableCors();
+  // app.enableCors({
+  //   origin: ['https://jongdeug.port0.org', 'http://localhost:5173'],
+  //   credentials: true,
+  //   // exposedHeaders: ['Authorization'],
+  // });
+
   const configService = new ConfigService();
 
   // Swagger
