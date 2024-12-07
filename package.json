@@ -30,6 +30,7 @@
     "prisma:migrate:prod": "npx prisma migrate deploy",
     "prisma:generate": "npx prisma generate",
     "docker:up": "dotenv -e .env.development.local -- docker compose -f docker-compose.dev.yaml up -d",
+    "docker:config": "dotenv -e .env.development.local -- docker compose -f docker-compose.dev.yaml config",
     "docker:stop": "dotenv -e .env.development.local -- docker compose -f docker-compose.dev.yaml stop"
   },
   "dependencies": {
