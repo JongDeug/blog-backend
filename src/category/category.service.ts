@@ -37,7 +37,7 @@ export class CategoryService {
   async findCategoryById(id: number) {
     const foundCategory = await this.prismaService.category.findUnique({
       where: { id },
-      include: { posts: true },
+      include: { posts: { where: { draft: false } } },
     });
     if (!foundCategory)
       throw new NotFoundException('존재하지 않는 카테고리입니다');

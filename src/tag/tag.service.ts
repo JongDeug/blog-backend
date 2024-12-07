@@ -29,7 +29,7 @@ export class TagService {
   async findTagById(id: number) {
     const foundTag = await this.prismaService.tag.findUnique({
       where: { id },
-      include: { posts: true },
+      include: { posts: { where: { draft: false } } },
     });
     if (!foundTag) throw new NotFoundException('존재하지 않는 태그입니다');
 
