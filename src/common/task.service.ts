@@ -59,6 +59,7 @@ export class TaskService {
   async moveFiles(oldPath: string, newPath: string, files: string[]) {
     // 폴더 없으면 생성
     await mkdir(oldPath, { recursive: true });
+    await mkdir(newPath, { recursive: true });
 
     const renamePromises = files.map((fileName: string) => {
       return rename(join(oldPath, fileName), join(newPath, fileName));
