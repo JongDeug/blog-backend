@@ -31,7 +31,7 @@ services:
     ports:
       - ${SERVER_PORT}:${SERVER_PORT}
     volumes:
-      - /home/uploads/blog-backend-v2:/app/uploads # [Raspberry Pi Path : Docker Container]
+      - /home/uploads/blog-backend-v2:/app/public # [Raspberry Pi Path : Docker Container]
 
 networks:
   app:
