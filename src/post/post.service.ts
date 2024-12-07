@@ -117,10 +117,7 @@ export class PostService {
       // 이미지 파일 삭제
       if (foundPost.images.length > 0) {
         const filesToDelete = foundPost.images.map(
-          (image: Image) =>
-            image.url.split(
-              `${this.configService.get(envVariableKeys.serverOrigin)}/public/images/`,
-            )[1],
+          (image: Image) => image.url.split(this.getImageURL())[1],
         );
         await this.taskService.deleteFiles(
           IMAGES_DIRECTORY_PATH,
@@ -303,10 +300,13 @@ export class PostService {
   }
 
   /* istanbul ignore next */
+  getImageURL() {
+    return `${this.configService.get(envVariableKeys.serverOrigin)}/api/uploads/`;
+  }
+
+  /* istanbul ignore next */
   getBaseURL() {
-    return new URL(
-      `${this.configService.get(envVariableKeys.serverOrigin)}/api/uploads/`,
-    );
+    return new URL(this.getImageURL());
   }
 
   /* istanbul ignore next */

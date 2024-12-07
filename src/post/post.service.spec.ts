@@ -281,7 +281,7 @@ describe('PostService', () => {
         title: '제목',
         images: [
           {
-            url: `${serverOrigin}/public/images/aslfdkjsflksjfd-lkdfjsdlvmlsdf-21sdlkfjas.png`,
+            url: `${serverOrigin}/api/uploads/aslfdkjsflksjfd-lkdfjsdlvmlsdf-21sdlkfjas.png`,
           },
         ],
         authorId: userId,
