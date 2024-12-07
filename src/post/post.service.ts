@@ -305,7 +305,7 @@ export class PostService {
   /* istanbul ignore next */
   getBaseURL() {
     return new URL(
-      `${this.configService.get(envVariableKeys.serverOrigin)}/uploads/`,
+      `${this.configService.get(envVariableKeys.serverOrigin)}/api/uploads/`,
     );
   }
 
