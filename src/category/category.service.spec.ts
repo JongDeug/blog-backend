@@ -168,7 +168,7 @@ describe('CategoryService', () => {
       expect(result).toEqual(foundCategory);
       expect(prismaMock.category.findUnique).toHaveBeenCalledWith({
         where: { id: 1 },
-        include: { posts: true },
+        include: { posts: { where: { draft: false } } },
       });
     });
 

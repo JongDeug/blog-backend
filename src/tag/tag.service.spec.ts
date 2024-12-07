@@ -86,7 +86,7 @@ describe('TagService', () => {
       expect(result).toEqual(foundTag);
       expect(prismaMock.tag.findUnique).toHaveBeenCalledWith({
         where: { id: 1 },
-        include: { posts: true },
+        include: { posts: { where: { draft: false } } },
       });
     });
 
