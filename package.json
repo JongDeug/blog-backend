@@ -28,7 +28,9 @@
     "prisma:migrate:dev": "dotenv -e .env.development.local -- npx prisma migrate dev",
     "prisma:migrate:test": "dotenv -e .env.test.local -- npx prisma migrate dev",
     "prisma:migrate:prod": "npx prisma migrate deploy",
-    "prisma:generate": "npx prisma generate"
+    "prisma:generate": "npx prisma generate",
+    "docker:up": "dotenv -e .env.development.local -- docker compose -f docker-compose.dev.yaml up -d",
+    "docker:stop": "dotenv -e .env.development.local -- docker compose -f docker-compose.dev.yaml stop"
   },
   "dependencies": {
     "@keyv/redis": "^3.0.1",
