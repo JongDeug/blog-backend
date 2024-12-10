@@ -11,7 +11,7 @@ WORKDIR /app
 # pnpm 설치
 RUN npm install -g pnpm
 
-# openssl 설치
+# openssl 설치 (prisma 관련)
 # (prisma 에러 발생) prisma failed to detect the libssl/openssl version to use ...
 RUN apt-get update -y
 RUN apt-get install -y openssl
@@ -42,6 +42,10 @@ WORKDIR /app
 
 # pnpm 설치
 RUN npm install -g pnpm
+
+# openssl 설치 (prisma 관련)
+RUN apt-get update -y
+RUN apt-get install -y openssl
 
 # 필요한 파일 복사 (package.json > 명령어 실행해야 함)
 COPY --from=builder /app/node_modules /app/node_modules
