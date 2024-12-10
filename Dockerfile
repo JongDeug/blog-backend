@@ -11,6 +11,11 @@ WORKDIR /app
 # pnpm 설치
 RUN npm install -g pnpm
 
+# openssl 설치, prisma error 때문에
+# prisma failed to detect the libssl/openssl version to use ...
+RUN apt-get update -y
+RUN apt-get install -y openssl
+
 # 프로젝트 복사 (dockerignore 참고)
 COPY . .
 
