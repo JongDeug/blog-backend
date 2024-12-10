@@ -68,7 +68,7 @@ describe('TagController', () => {
   describe('update', () => {
     it('should update a tag', async () => {
       const updateTagDto: UpdateTagDto = { name: '윈도우' };
-      const updatedTag = { id: 1, name: updateTagDto.name };
+      // const updatedTag = { id: 1, name: updateTagDto.name };
 
       jest.spyOn(tagService, 'update').mockResolvedValue(undefined);
 

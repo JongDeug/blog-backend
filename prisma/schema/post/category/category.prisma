@@ -2,7 +2,7 @@
 ///
 /// @namespace Blog
 model Category {
-  /// Pirmary Key
+  /// Primary Key
   id           Int     @id @default(autoincrement())
 
   /// 카테고리 이름

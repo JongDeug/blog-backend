@@ -4,7 +4,7 @@ import { PostService } from './post.service';
 import { mock, MockProxy } from 'jest-mock-extended';
 import { CreatePostDto } from './dto/create-post.dto';
 import { GetPostsDto } from './dto/get-posts.dto';
-import { Post, Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { UpdatePostDto } from './dto/update-post.dto';
 
 describe('PostController', () => {

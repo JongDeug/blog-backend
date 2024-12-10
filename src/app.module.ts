@@ -86,6 +86,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
       useClass: MulterConfigService,
     }),
     MailerModule.forRootAsync({
+      imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
         transport: {
           host: configService.get(envVariableKeys.emailHost),

@@ -2,7 +2,7 @@ import { MailerService } from '@nestjs-modules/mailer';
 import { Inject, Injectable, LoggerService } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { envVariableKeys } from './const/env.const';
-import { GuestComment, Post, Prisma, User } from '@prisma/client';
+import { GuestComment, Post, User } from '@prisma/client';
 import { FoundParentComment } from 'src/prisma/type/comment.type';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 

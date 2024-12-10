@@ -1,14 +1,6 @@
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import {
-  Category,
-  Guest,
-  GuestComment,
-  Post,
-  Comment,
-  Role,
-  User,
-} from '@prisma/client';
+import { Role } from '@prisma/client';
 import * as cookieParser from 'cookie-parser';
 import * as request from 'supertest';
 import { AuthService } from 'src/auth/auth.service';
@@ -50,7 +42,7 @@ describe('CommentController (e2e)', () => {
       },
     });
 
-    let authService = moduleFixture.get<AuthService>(AuthService);
+    const authService = moduleFixture.get<AuthService>(AuthService);
     token = await authService.issueToken(
       { id: user.id, role: user.role },
       false,
@@ -70,7 +62,7 @@ describe('CommentController (e2e)', () => {
 
   describe('[POST] /common/image', () => {
     it('should upload a image', async () => {
-      const { body, statusCode, error } = await request(app.getHttpServer())
+      const { body, statusCode } = await request(app.getHttpServer())
         .post('/common/image')
         .set('Cookie', [`accessToken=${token}`])
         .attach('image', Buffer.from('test'), 'jpg');

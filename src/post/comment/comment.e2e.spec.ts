@@ -1,8 +1,4 @@
-import {
-  INestApplication,
-  ValidationPipe,
-  ArgumentsHost,
-} from '@nestjs/common';
+import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import {
   Category,
@@ -51,7 +47,7 @@ describe('CommentController (e2e)', () => {
     await app.init();
 
     prismaService = moduleFixture.get<PrismaService>(PrismaService);
-    let authService = moduleFixture.get<AuthService>(AuthService);
+    const authService = moduleFixture.get<AuthService>(AuthService);
 
     users = await Promise.all(
       [0, 1, 2].map((idx) =>
@@ -140,7 +136,7 @@ describe('CommentController (e2e)', () => {
     );
 
     tokens = await Promise.all(
-      [0, 1].map((idx) =>
+      [0, 1].map(() =>
         authService.issueToken({ id: users[0].id, role: users[0].role }, false),
       ),
     );

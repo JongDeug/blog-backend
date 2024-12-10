@@ -4,7 +4,6 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Role } from '@prisma/client';
-import { RBAC } from 'src/auth/decorator/rbac.decorator';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()

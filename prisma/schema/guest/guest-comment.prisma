@@ -2,7 +2,7 @@
 ///
 /// @namespace Blog
 model GuestComment {
-  /// Pirmary Key
+  /// Primary Key
   id       Int      @id @default(autoincrement())
 
   /// 닉네임

@@ -75,7 +75,7 @@ describe('TagController (e2e)', () => {
       },
     });
 
-    let authService = moduleFixture.get<AuthService>(AuthService);
+    const authService = moduleFixture.get<AuthService>(AuthService);
     token = await authService.issueToken(
       { id: user.id, role: user.role },
       false,

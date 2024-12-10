@@ -90,7 +90,7 @@ erDiagram
 비회원 댓글 테이블
 
 **Properties**
-  - `id`: Pirmary Key
+  - `id`: Primary Key
   - `nickName`: 닉네임
   - `email`: 이메일
   - `password`: 비밀번호(해시값)
@@ -103,14 +103,14 @@ erDiagram
 비회원 테이블
 
 **Properties**
-  - `id`: Pirmary Key
+  - `id`: Primary Key
   - `guestId`: 비회원 id, 프론트에서 생성
 
 ### `Category`
 카테고리 테이블
 
 **Properties**
-  - `id`: Pirmary Key
+  - `id`: Primary Key
   - `name`: 카테고리 이름
   - `createdAt`: 생성일
   - `updatedAt`: 수정일
@@ -119,7 +119,7 @@ erDiagram
 댓글 테이블
 
 **Properties**
-  - `id`: Pirmary Key
+  - `id`: Primary Key
   - `content`: 내용
   - `createdAt`: 생성일
   - `updatedAt`: 수정일
@@ -144,7 +144,7 @@ erDiagram
 이미지 테이블
 
 **Properties**
-  - `id`: Pirmary Key
+  - `id`: Primary Key
   - `url`: 이미지 url
   - `postId`
     > Foreign Key
@@ -169,7 +169,7 @@ erDiagram
 게시글 테이블
 
 **Properties**
-  - `id`: Pirmary Key
+  - `id`: Primary Key
   - `title`: 제목
   - `content`: 내용
   - `createdAt`: 생성일
@@ -191,14 +191,14 @@ erDiagram
 태그 테이블
 
 **Properties**
-  - `id`: Pirmary Key
+  - `id`: Primary Key
   - `name`: 태그 이름
 
 ### `User`
 회원 테이블
 
 **Properties**
-  - `id`: Pirmary Key
+  - `id`: Primary Key
   - `name`: 이름
   - `email`: 이메일
   - `password`: 비밀번호(해시값)

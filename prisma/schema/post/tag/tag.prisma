@@ -2,7 +2,7 @@
 ///
 /// @namespace Blog
 model Tag {
-  /// Pirmary Key
+  /// Primary Key
   id           Int     @id @default(autoincrement())
 
   /// 태그 이름

@@ -36,7 +36,7 @@ describe('PostController (e2e)', () => {
     await app.init();
 
     prismaService = moduleFixture.get<PrismaService>(PrismaService);
-    let postService = moduleFixture.get<PostService>(PostService);
+    const postService = moduleFixture.get<PostService>(PostService);
 
     users = await Promise.all(
       [0, 1].map((idx) =>
@@ -89,7 +89,7 @@ describe('PostController (e2e)', () => {
       ),
     );
 
-    let authService = moduleFixture.get<AuthService>(AuthService);
+    const authService = moduleFixture.get<AuthService>(AuthService);
     token = await authService.issueToken(
       { id: users[0].id, role: users[0].role },
       false,

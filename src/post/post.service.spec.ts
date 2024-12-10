@@ -447,8 +447,8 @@ describe('PostService', () => {
         'eyJ2YWx1ZXMiOnsiaWQiOjI3fSwib3JkZXIiOlsiaWRfZGVzYyJdfQ==';
       getPostsDto.search = 'search';
       // 디코딩 결과: {"values":{"id":27},"order":["id_desc"]}
-      const cursorConditions = { id: 27 };
-      const orderByConditions = { id: 'desc' };
+      // const cursorConditions = { id: 27 };
+      // const orderByConditions = { id: 'desc' };
       const results = [];
       const nextCursor =
         'eyJ2YsdflsdkfjWQiOjI5N30sIm9yZGVyIjpbImlkX2Rlc2MiXX0=';

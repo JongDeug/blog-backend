@@ -2,7 +2,7 @@
 ///
 /// @namespace Blog
 model Guest {
-  /// Pirmary Key
+  /// Primary Key
   id       Int      @id @default(autoincrement())
 
   /// 비회원 id, 프론트에서 생성

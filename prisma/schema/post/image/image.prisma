@@ -2,7 +2,7 @@
 ///
 /// @namespace Blog
 model Image {
-  /// Pirmary Key
+  /// Primary Key
   id           Int     @id @default(autoincrement())
 
   /// 이미지 url

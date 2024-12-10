@@ -2,7 +2,7 @@
 ///
 /// @namespace Blog
 model Comment {
-  /// Pirmary Key
+  /// Primary Key
   id           Int     @id @default(autoincrement())
 
   /// 내용

@@ -51,8 +51,8 @@ describe('AuthController (e2e)', () => {
       ),
     );
 
-    let authService = moduleFixture.get<AuthService>(AuthService);
-    let cacheManager = moduleFixture.get<Cache>(CACHE_MANAGER);
+    const authService = moduleFixture.get<AuthService>(AuthService);
+    const cacheManager = moduleFixture.get<Cache>(CACHE_MANAGER);
     refreshToken = await authService.issueToken(
       { id: users[0].id, role: users[0].role },
       true,

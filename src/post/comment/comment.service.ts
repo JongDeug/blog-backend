@@ -124,7 +124,7 @@ export class CommentService {
       where: { id: foundComment.id },
     });
 
-    // 관리자가 guest comment를 지웠을 경우
+    // 관리자가 guest comment를 지웠을 경우 => 비회원 정보도 지운다
     if (!foundComment.authorId) {
       await this.prismaService.guestComment.delete({
         where: { id: foundComment.guestId },

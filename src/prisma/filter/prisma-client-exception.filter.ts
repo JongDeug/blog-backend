@@ -1,7 +1,6 @@
 import {
   ArgumentsHost,
   Catch,
-  ExceptionFilter,
   HttpStatus,
   Inject,
   LoggerService,
