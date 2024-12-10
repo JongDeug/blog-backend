@@ -83,9 +83,6 @@ importers:
       nodemailer:
         specifier: ^6.9.16
         version: 6.9.16
-      prisma:
-        specifier: ^5.22.0
-        version: 5.22.0
       reflect-metadata:
         specifier: ^0.2.0
         version: 0.2.2
@@ -165,6 +162,9 @@ importers:
       prettier:
         specifier: ^3.0.0
         version: 3.3.3
+      prisma:
+        specifier: ^5.22.0
+        version: 5.22.0
       prisma-markdown:
         specifier: ^1.0.9
         version: 1.0.9(@prisma/client@5.20.0(prisma@5.22.0))(prisma@5.22.0)
