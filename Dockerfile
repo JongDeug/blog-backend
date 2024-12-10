@@ -3,9 +3,7 @@
 # 라즈베리파이는 linux/arm64를 사용하기 때문에 호환되지 않음
 # 배포 또는 라즈베리파이에서 QEMU 다운 후 에뮬레이터로 실행시켜야 함
 # ----------------------------------- Builder ----------------------------------- #
-# FROM node:22-alpine AS builder
 FROM node:lts-slim AS builder
-
 
 # 존재하지 않을 경우 생성
 WORKDIR /app
@@ -13,12 +11,10 @@ WORKDIR /app
 # pnpm 설치
 RUN npm install -g pnpm
 
-# # openssl 설치, prisma error 때문에
-# # prisma failed to detect the libssl/openssl version to use ...
+# openssl 설치
+# (prisma 에러 발생) prisma failed to detect the libssl/openssl version to use ...
 RUN apt-get update -y
 RUN apt-get install -y openssl
-# RUN apt-get update -y
-# RUN apt-get install -y openssl
 
 # 프로젝트 복사 (dockerignore 참고)
 COPY . .
@@ -36,7 +32,8 @@ RUN pnpm build
 RUN pnpm prune --prod
 
 # ----------------------------------- Runner ----------------------------------- #
-FROM node:22-alpine AS runner
+# 22-alpine => lts-slim으로 변경
+FROM node:lts-slim AS runner 
 
 # 프로덕션 환경
 ENV NODE_ENV=production
