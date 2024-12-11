@@ -12,43 +12,40 @@
 
 단순히 설계와 구현에만 집중하고 있다는 사실을 깨닫고, 전반적인 개발 과정을 모두 경험하면서, 지속적으로 운영 및 유지 보수할 수 있는 프로젝트가 필요했습니다.
 
-### 프로젝트를 통한 목표
+## 📌 Trouble Shooting 기록
 
-1. 실제 서비스 운영에서 겪을 수 있는 다양한 문제를 직접 해결하고 개선할 수 있도록 한다.
-2. 지속적으로 코드 품질을 개선할 수 있도록 한다.
-3. 위와 같은 활동을 통해 자연스럽게 포트폴리오 강화를 할 수 있도록 한다.
-4. 개인 브랜딩을 통해 개인적 성장을 도모할 수 있도록 한다.
+https://github.com/users/JongDeug/projects/9/views/3
 
-## 📌 기술 스택
+## 📌 기능 구현 기록
 
-### V1
-
-![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)
-![Express](https://img.shields.io/badge/Express-000000?style=for-the-badge&logo=express&logoColor=white)
-![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white)
-![Prisma](https://img.shields.io/badge/Prisma-2D3748?style=for-the-badge&logo=prisma&logoColor=white)
-![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
-![Redis](https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white)
-![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
-![Docker Compose](https://img.shields.io/badge/Docker_Compose-2496ED?style=for-the-badge&logo=docker&logoColor=white)
-
-### V2
-
-![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)
-![Nest.js](https://img.shields.io/badge/Nest.js-000000?style=for-the-badge&logo=express&logoColor=white)
-![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white)
-![Prisma](https://img.shields.io/badge/Prisma-2D3748?style=for-the-badge&logo=prisma&logoColor=white)
-![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
-![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
-![Docker Compose](https://img.shields.io/badge/Docker_Compose-2496ED?style=for-the-badge&logo=docker&logoColor=white)
-
-음음ㅇ
+https://github.com/users/JongDeug/projects/9/views/1
 
 ## 📌 Swagger 배포 주소
 
-- https://jongdeug.port0.org/api/docs
-- username: admin
-- password: 1234
+https://jongdeug.port0.org/api/docs
+
+## 📌 기술 스택
+
+### v2
+
+[![Nest.js](https://img.shields.io/badge/Nest.js-E0234E?style=for-the-badge&logo=nestjs&logoColor=white)](https://nestjs.com/)
+[![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://nodejs.org/)
+[![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white)](https://www.mysql.com/)
+[![Prisma](https://img.shields.io/badge/Prisma-2D3748?style=for-the-badge&logo=prisma&logoColor=white)](https://www.prisma.io/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
+[![Docker Compose](https://img.shields.io/badge/Docker_Compose-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://docs.docker.com/compose/)
+
+### v1
+
+[![Express](https://img.shields.io/badge/Express-000000?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com/)
+[![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://nodejs.org/)
+[![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white)](https://www.mysql.com/)
+[![Prisma](https://img.shields.io/badge/Prisma-2D3748?style=for-the-badge&logo=prisma&logoColor=white)](https://www.prisma.io/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Redis](https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white)](https://redis.io/)
+[![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
+[![Docker Compose](https://img.shields.io/badge/Docker_Compose-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://docs.docker.com/compose/)
 
 ## 📌 아키텍처
 
@@ -56,12 +53,10 @@
 
 ![image](https://github.com/user-attachments/assets/7242ee85-c15a-41a7-a556-57b10cbd902c)
 
-#### 백엔드 구조
-
-![image](https://github.com/user-attachments/assets/5458ff73-aebc-4b68-8e5a-cc6a287a37c2)
-
 [//]: # '## 📌 기타 추가 사항들'
 [//]: # '## 📌 화면 구성/API 주소'
+
+## 📌 기능 개선
 
 ## 📌 설계 명세서
 
@@ -69,47 +64,39 @@
 
 | 구분           | 기능명                  | HTTP Method | REST API                                   | JWT | ROLE(하위 범주) |
 | -------------- | ----------------------- | ----------- | ------------------------------------------ | --- | --------------- |
-| 1. 회원 관리   | 1.1 이메일 가입         | POST        | /auth/register                             | X   | .               |
-|                | 1.2 로그인              | POST        | /auth/login                                | X   | .               |
+| 1. 회원 관리   | 1.1 이메일 가입         | POST        | /auth/register                             | X   | ALL             |
+|                | 1.2 로그인              | POST        | /auth/login                                | X   | ALL             |
 |                | 1.3 로그아웃            | GET         | /auth/logout                               | O   | USER            |
 |                | 1.4 로그인 갱신         | GET         | /auth/token/refresh                        | O   | USER            |
 |                | 1.5 토큰 무효화         | GET         | /auth/token/revoke/:id                     | O   | ADMIN           |
 |                | 1.6 유저 목록 조회      | GET         | /user                                      | O   | ADMIN           |
 |                | 1.7 유저 상세 조회      | GET         | /user/:id                                  | O   | ADMIN           |
 |                | 1.8 유저 삭제           | DELETE      | /user/:id                                  | O   | ADMIN           |
-| 2. 게시글 관리 | 2.1 게시글 목록 조회    | GET         | /post?search=&take=&draft=&cursor=&order[] | X   | .               |
-|                | 2.2 게시글 상세 조회    | GET         | /post/:id                                  | X   | .               |
+| 2. 게시글 관리 | 2.1 게시글 목록 조회    | GET         | /post?search=&take=&draft=&cursor=&order[] | X   | ALL             |
+|                | 2.2 게시글 상세 조회    | GET         | /post/:id                                  | X   | ALL             |
 |                | 2.3 게시글 등록         | POST        | /post                                      | O   | ADMIN           |
 |                | 2.4 게시글 수정         | PATCH       | /post/:id                                  | O   | ADMIN           |
 |                | 2.5 게시글 삭제         | DELETE      | /post/:id                                  | O   | ADMIN           |
-|                | 2.6 게시글 좋아요       | POST        | /post/like/:id                             | X   | .               |
+|                | 2.6 게시글 좋아요       | POST        | /post/like/:id                             | X   | ALL             |
 |                | 2.7 이미지 업로드       | POST        | /common/image                              | O   | ADMIN           |
-|                | 2.8 태그 목록 조회      | GET         | /tag                                       | X   | .               |
-|                | 2.9 태그 상세 조회      | GET         | /tag/:id                                   | X   | .               |
+|                | 2.8 태그 목록 조회      | GET         | /tag                                       | X   | ALL             |
+|                | 2.9 태그 상세 조회      | GET         | /tag/:id                                   | X   | ALL             |
 |                | 2.10 태그 생성          | POST        | /tag                                       | O   | ADMIN           |
 |                | 2.11 태그 수정          | PATCH       | /tag/:id                                   | O   | ADMIN           |
 |                | 2.12 태그 삭제          | DELETE      | /tag/:id                                   | O   | ADMIN           |
-|                | 2.13 카테고리 목록 조회 | GET         | /category                                  | X   | .               |
-|                | 2.14 카테고리 상세 조회 | GET         | /category/:id                              | X   | .               |
+|                | 2.13 카테고리 목록 조회 | GET         | /category                                  | X   | ALL             |
+|                | 2.14 카테고리 상세 조회 | GET         | /category/:id                              | X   | ALL             |
 |                | 2.15 카테고리 생성      | POST        | /category                                  | O   | ADMIN           |
 |                | 2.16 카테고리 수정      | PATCH       | /category/:id                              | O   | ADMIN           |
 |                | 2.17 카테고리 삭제      | DELETE      | /category/:id                              | O   | ADMIN           |
 |                | 2.18 댓글 작성(회원)    | POST        | /post/comment/user                         | O   | USER            |
 |                | 2.19 댓글 수정(회원)    | PATCH       | /post/comment/user/:id                     | O   | USER            |
 |                | 2.20 댓글 삭제(회원)    | DELETE      | /post/comment/user/:id                     | O   | USER            |
-|                | 2.21 댓글 작성(비회원)  | POST        | /post/comment/guest                        | X   | .               |
-|                | 2.22 댓글 수정(비회원)  | PATCH       | /post/comment/guest/:id                    | X   | .               |
-|                | 2.23 댓글 삭제(비회원)  | DELETE      | /post/comment/guest/:id                    | X   | .               |
+|                | 2.21 댓글 작성(비회원)  | POST        | /post/comment/guest                        | X   | ALL             |
+|                | 2.22 댓글 수정(비회원)  | PATCH       | /post/comment/guest/:id                    | X   | ALL             |
+|                | 2.23 댓글 삭제(비회원)  | DELETE      | /post/comment/guest/:id                    | X   | ALL             |
 
 ### ⚡ ERD 설계
-
-# Blog Project ERD
-
-> Generated by [`prisma-markdown`](https://github.com/samchon/prisma-markdown)
-
-- [Blog](#blog)
-
-## Blog
 
 ```mermaid
 erDiagram
@@ -156,12 +143,12 @@ erDiagram
   String content
   DateTime createdAt
   DateTime updatedAt
-  String prevId "nullable"
-  String nextId "nullable"
+  Int prevId "nullable"
+  Int nextId "nullable"
   Boolean draft
   String summary
   Int authorId FK
-  Int categoryName FK
+  Int categoryId FK
 }
 "Tag" {
   Int id PK
@@ -199,7 +186,7 @@ erDiagram
 
 **Properties**
 
-- `id`: Pirmary Key
+- `id`: Primary Key
 - `nickName`: 닉네임
 - `email`: 이메일
 - `password`: 비밀번호(해시값)
@@ -214,7 +201,7 @@ erDiagram
 
 **Properties**
 
-- `id`: Pirmary Key
+- `id`: Primary Key
 - `guestId`: 비회원 id, 프론트에서 생성
 
 ### `Category`
@@ -223,7 +210,7 @@ erDiagram
 
 **Properties**
 
-- `id`: Pirmary Key
+- `id`: Primary Key
 - `name`: 카테고리 이름
 - `createdAt`: 생성일
 - `updatedAt`: 수정일
@@ -234,7 +221,7 @@ erDiagram
 
 **Properties**
 
-- `id`: Pirmary Key
+- `id`: Primary Key
 - `content`: 내용
 - `createdAt`: 생성일
 - `updatedAt`: 수정일
@@ -261,7 +248,7 @@ erDiagram
 
 **Properties**
 
-- `id`: Pirmary Key
+- `id`: Primary Key
 - `url`: 이미지 url
 - `postId`
   > Foreign Key
@@ -290,7 +277,7 @@ erDiagram
 
 **Properties**
 
-- `id`: Pirmary Key
+- `id`: Primary Key
 - `title`: 제목
 - `content`: 내용
 - `createdAt`: 생성일
@@ -303,7 +290,7 @@ erDiagram
   > Foreign Key
   >
   > 작성자 ID [User.id](#User)
-- `categoryName`
+- `categoryId`
   > Foreign Key
   >
   > 작성자 ID [Category.id](#Category)
@@ -314,7 +301,7 @@ erDiagram
 
 **Properties**
 
-- `id`: Pirmary Key
+- `id`: Primary Key
 - `name`: 태그 이름
 
 ### `User`
@@ -323,7 +310,7 @@ erDiagram
 
 **Properties**
 
-- `id`: Pirmary Key
+- `id`: Primary Key
 - `name`: 이름
 - `email`: 이메일
 - `password`: 비밀번호(해시값)
