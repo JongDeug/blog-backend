@@ -11,6 +11,10 @@ WORKDIR /app
 # pnpm 설치
 RUN npm install -g pnpm
 
+# openssl 설치 (prisma 관련)
+RUN apt-get update -y
+RUN apt-get install -y openssl
+
 # 프로젝트 복사 (dockerignore 참고)
 COPY . .
 
@@ -18,7 +22,7 @@ COPY . .
 RUN pnpm install --frozen-lockfile  
 
 # Prisma 클라이언트 생성
-RUN pnpm prisma generate 
+RUN pnpm prisma:generate 
 
 # 애플리케이션 빌드
 RUN pnpm build  
@@ -48,7 +52,6 @@ COPY --from=builder /app/dist /app/dist
 COPY --from=builder /app/.env /app/.env
 COPY --from=builder /app/package.json /app/package.json
 COPY --from=builder /app/prisma /app/prisma
-
 
 # 폴더 생성, 있어도 오류 X
 RUN mkdir -p /app/uploads
