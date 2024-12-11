@@ -10,15 +10,21 @@
 
 기간: (2024.06 ~ .)
 
-## 📌 Trouble Shooting 기록
+## 📌 링크
+
+#### 프로젝트
+
+https://jongdeug.port0.org/
+
+#### Trouble Shooting 기록
 
 https://github.com/users/JongDeug/projects/9/views/3
 
-## 📌 기능 구현 기록
+#### 기능 개발 기록
 
 https://github.com/users/JongDeug/projects/9/views/1
 
-## 📌 Swagger 배포 주소
+#### Swagger 배포 주소
 
 https://jongdeug.port0.org/api/docs
 
