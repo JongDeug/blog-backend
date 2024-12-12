@@ -70,7 +70,7 @@ https://jongdeug.port0.org/api/docs
 
 #### 전체적인 서비스 구조
 
-![image](https://github.com/user-attachments/assets/7242ee85-c15a-41a7-a556-57b10cbd902c)
+![image](https://github.com/user-attachments/assets/310ff036-2fc6-4af0-9ae2-34d85788a736)
 
 [//]: # '## 📌 기타 추가 사항들'
 [//]: # '## 📌 화면 구성/API 주소'
