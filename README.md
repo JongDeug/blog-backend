@@ -56,8 +56,6 @@ https://jongdeug.port0.org/api/docs
 [![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
 [![Docker Compose](https://img.shields.io/badge/Docker_Compose-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://docs.docker.com/compose/)
 
-### 기술 선택 이유
-
 - **Express**: 학부 때 사용 경험 있음. 빠른 API 개발 가능.
 - **NestJS**: 자유도가 높은 Express 대신 모듈화 방식 구조를 유도하는 NestJS로 마이그레이션. 코드 가독성과 유지보수성 향상 기대
 - **Javascript**: 프론트엔드와 백엔드 모두 하나의 언어로 개발 가능
