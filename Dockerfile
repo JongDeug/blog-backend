@@ -3,7 +3,7 @@
 # 라즈베리파이는 linux/arm64를 사용하기 때문에 호환되지 않음
 # 배포 또는 라즈베리파이에서 QEMU 다운 후 에뮬레이터로 실행시켜야 함
 # ----------------------------------- Builder ----------------------------------- #
-# 22-alpine => lts-slim으로 변경
+# 22-alpine => lts-slim으로 변경, github actions 왜 안됨
 FROM node:lts-slim AS builder
 
 # 존재하지 않을 경우 생성
