@@ -56,7 +56,7 @@ export class CategoryController {
     return this.categoryService.update(id, updateCategoryDto);
   }
 
-  // @ApiNotFoundResponse()
+  @ApiNotFoundResponse()
   @ApiBadRequestResponse()
   @Delete(':id')
   @RBAC(Role.ADMIN)
