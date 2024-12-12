@@ -5,8 +5,8 @@ on:
   push:
     branches:
       - main
-    paths-ignore:
-      - 'README.md'
+    # paths-ignore:
+    # - 'README.md'
 
 jobs:
   # ----------------- 유닛 테스트 ----------------- #
