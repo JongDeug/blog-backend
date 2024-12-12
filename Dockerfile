@@ -3,6 +3,7 @@
 # 라즈베리파이는 linux/arm64를 사용하기 때문에 호환되지 않음
 # 배포 또는 라즈베리파이에서 QEMU 다운 후 에뮬레이터로 실행시켜야 함
 # ----------------------------------- Builder ----------------------------------- #
+# 22-alpine => lts-slim으로 변경
 FROM node:lts-slim AS builder
 
 # 존재하지 않을 경우 생성
@@ -31,7 +32,6 @@ RUN pnpm build
 RUN pnpm prune --prod
 
 # ----------------------------------- Runner ----------------------------------- #
-# 22-alpine => lts-slim으로 변경
 FROM node:lts-slim AS runner 
 
 # 프로덕션 환경
@@ -49,7 +49,7 @@ RUN apt-get install -y openssl
 # 필요한 파일 복사 (package.json > 명령어 실행해야 함)
 COPY --from=builder /app/node_modules /app/node_modules
 COPY --from=builder /app/dist /app/dist
-COPY --from=builder /app/.env /app/.env
+# COPY --from=builder /app/.env /app/.env
 COPY --from=builder /app/package.json /app/package.json
 COPY --from=builder /app/prisma /app/prisma
 
