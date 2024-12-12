@@ -8,7 +8,7 @@
 
 단순히 설계와 구현에만 집중하고 있었다는 사실을 깨닫고,
 
-지속적으로 운영 및 유지 보수할 수 있는 프로젝트의 필요성을 느꼈습니다.
+지속적으로 **운영 및 유지 보수할 수 있는 프로젝트의 필요성**을 느꼈습니다.
 
 #### 목표
 
@@ -21,7 +21,7 @@
 
 https://jongdeug.port0.org/
 
-#### Trouble Shooting 기록
+#### ⭐ Trouble Shooting 기록 ⭐
 
 https://github.com/users/JongDeug/projects/9/views/3
 
