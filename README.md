@@ -56,6 +56,16 @@ https://jongdeug.port0.org/api/docs
 [![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
 [![Docker Compose](https://img.shields.io/badge/Docker_Compose-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://docs.docker.com/compose/)
 
+### 기술 선택 이유
+
+- [Express]: 학부 때 Express를 사용한 경험이 있어 비교적 빠른 API 개발 가능
+- [NestJS]: Express는 자유도가 높아서 구조를 직접 설계해야 함. 반면 NestJS는 모듈화된 방식으로 설계를 유도하므로 코드를 좀 더 깔끔하게 작성할 수 있을거라 판단함
+- [Javascript]: 하나의 언어로 프론트엔드, 백엔드 모두 개발 가능
+- [Typescript]: 코드의 안전성과 유지 보수 향상
+- [Prisma]: 스키마 작성이 TypeORM보다 직관적이며, 데이터베이스 관리 및 쿼리를 간편하게 수행
+- [MySQL]: 관계형 데이터베이스 테이블 설계 경험을 쌓기 위해 선택
+- [Swagger]: 학부 팀 프로젝트에서 명확한 소통의 필요성을 느껴 API 문서화 적용
+
 ## 📌 아키텍처
 
 #### 전체적인 서비스 구조
