@@ -16,11 +16,18 @@ import { CreateCommentByGuestDto } from './dto/create-comment-by-guest.dto';
 import { Cookies } from 'src/common/decorator/cookies.decorator';
 import { UpdateCommentByGuestDto } from './dto/update-comment-by-guest.dto';
 import { DeleteCommentByGuestDto } from './dto/delete-comment-by-guest.dto';
+import {
+  ApiBadRequestResponse,
+  ApiNotFoundResponse,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
 
 @Controller('post/comment')
 export class CommentController {
   constructor(private readonly commentService: CommentService) {}
 
+  @ApiNotFoundResponse({ description: 'Not Found' })
+  @ApiBadRequestResponse({ description: 'Bad Request' })
   @Post('user')
   create(@UserId() userId: number, @Body() createCommentDto: CreateCommentDto) {
     const { parentCommentId } = createCommentDto;
@@ -32,6 +39,8 @@ export class CommentController {
     }
   }
 
+  @ApiNotFoundResponse({ description: 'Not Found' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
   @Patch('user/:id')
   update(
     @Param('id', ParseIntPipe) id: number,
@@ -41,11 +50,15 @@ export class CommentController {
     return this.commentService.update(userId, id, updateCommentDto);
   }
 
+  @ApiNotFoundResponse({ description: 'Not Found' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
   @Delete('user/:id')
   remove(@Param('id', ParseIntPipe) id: number, @UserId() userId: number) {
     return this.commentService.remove(id, userId);
   }
 
+  @ApiNotFoundResponse({ description: 'Not Found' })
+  @ApiBadRequestResponse({ description: 'Bad Request' })
   @Post('guest')
   @Public()
   createByGuest(
@@ -67,6 +80,8 @@ export class CommentController {
     }
   }
 
+  @ApiNotFoundResponse({ description: 'Not Found' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
   @Patch('guest/:id')
   @Public()
   updateByGuest(
@@ -81,6 +96,8 @@ export class CommentController {
     );
   }
 
+  @ApiNotFoundResponse({ description: 'Not Found' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
   @Delete('guest/:id')
   @Public()
   removeByGuest(

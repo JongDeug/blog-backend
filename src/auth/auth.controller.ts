@@ -39,17 +39,17 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @ApiCreatedResponse({ description: '유저 정보' })
-  @ApiConflictResponse()
+  @ApiConflictResponse({ description: 'Conflict' })
   @Public()
   @Post('register')
   registerUser(@Body() registerDto: RegisterDto) {
     return this.authService.register(registerDto);
   }
 
-  @ApiBadRequestResponse()
-  @ApiNotFoundResponse()
-  @ApiUnauthorizedResponse()
-  @ApiForbiddenResponse()
+  @ApiBadRequestResponse({ description: 'Bad Request' })
+  @ApiNotFoundResponse({ description: 'Not Found' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @ApiForbiddenResponse({ description: 'Forbidden' })
   @ApiBasicAuth()
   @Public()
   @Post('login')
@@ -69,8 +69,7 @@ export class AuthController {
     };
   }
 
-  @ApiInternalServerErrorResponse()
-  @ApiUnauthorizedResponse()
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
   @Public()
   @Get('token/refresh')
   async refresh(
@@ -94,7 +93,7 @@ export class AuthController {
     return this.authService.logout(userId);
   }
 
-  @ApiNotFoundResponse()
+  @ApiNotFoundResponse({ description: 'Not Found' })
   @RBAC(Role.ADMIN)
   @Get('token/revoke/:id')
   revokeRefreshToken(@Param('id', ParseIntPipe) userId: number) {

@@ -29,6 +29,12 @@ model Post {
   /// 내용 요약
   summary   String   @db.VarChar(400)
 
+  /// 조회수
+  views     Int      @default(0)
+
+  /// 좋아요수
+  likeCount Int      @default(0)
+
   /// ---
   /// RELATIONS
   /// ---

@@ -18,23 +18,34 @@ import { Role } from '@prisma/client';
 import { GetPostsDto } from './dto/get-posts.dto';
 import { Public } from 'src/auth/decorator/public.decorator';
 import { Cookies } from 'src/common/decorator/cookies.decorator';
+import {
+  ApiBadRequestResponse,
+  ApiForbiddenResponse,
+  ApiNotFoundResponse,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
 
 @Controller('post')
 export class PostController {
   constructor(private readonly postService: PostService) {}
 
+  @ApiForbiddenResponse({ description: 'Forbidden' })
+  @ApiNotFoundResponse({ description: 'Not Found' })
   @Post()
   @RBAC(Role.ADMIN)
   create(@UserId() userId: number, @Body() createPostDto: CreatePostDto) {
     return this.postService.create(userId, createPostDto);
   }
 
+  @ApiBadRequestResponse({ description: 'Bad Request' })
   @Get()
   @Public()
   findAll(@Query() getPostsDto: GetPostsDto) {
     return this.postService.findAll(getPostsDto);
   }
 
+  @ApiBadRequestResponse({ description: 'Bad Request' })
+  @ApiNotFoundResponse({ description: 'Not Found' })
   @Get(':id')
   @Public()
   findOne(
@@ -44,6 +55,8 @@ export class PostController {
     return this.postService.findOne(id, guestId);
   }
 
+  @ApiNotFoundResponse({ description: 'Not Found' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
   @Patch(':id')
   @RBAC(Role.ADMIN)
   update(
@@ -54,6 +67,8 @@ export class PostController {
     return this.postService.update(postId, userId, updatePostDto);
   }
 
+  @ApiNotFoundResponse({ description: 'Not Found' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
   @Delete(':id')
   @RBAC(Role.ADMIN)
   remove(@Param('id', ParseIntPipe) id: number, @UserId() userId: number) {

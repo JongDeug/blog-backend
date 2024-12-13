@@ -26,7 +26,7 @@ export class CategoryController {
   constructor(private readonly categoryService: CategoryService) {}
 
   @ApiCreatedResponse({ description: '카테고리 정보' })
-  @ApiConflictResponse()
+  @ApiConflictResponse({ description: 'Conflict' })
   @Post()
   @RBAC(Role.ADMIN)
   create(@Body() createCategoryDto: CreateCategoryDto) {
@@ -39,14 +39,14 @@ export class CategoryController {
     return this.categoryService.findAll();
   }
 
-  @ApiNotFoundResponse()
+  @ApiNotFoundResponse({ description: 'Not Found' })
   @Get(':id')
   @Public()
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.categoryService.findCategoryById(id);
   }
 
-  @ApiNotFoundResponse()
+  @ApiNotFoundResponse({ description: 'Not Found' })
   @Patch(':id')
   @RBAC(Role.ADMIN)
   update(
@@ -56,8 +56,8 @@ export class CategoryController {
     return this.categoryService.update(id, updateCategoryDto);
   }
 
-  @ApiNotFoundResponse()
-  @ApiBadRequestResponse()
+  @ApiNotFoundResponse({ description: 'Not Found' })
+  @ApiBadRequestResponse({ description: 'Bad Request' })
   @Delete(':id')
   @RBAC(Role.ADMIN)
   remove(@Param('id', ParseIntPipe) id: number) {
