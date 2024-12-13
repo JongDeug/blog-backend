@@ -53,6 +53,8 @@ erDiagram
   Int nextId "nullable"
   Boolean draft
   String summary
+  Int views
+  Int likes
   Int authorId FK
   Int categoryId FK
 }
@@ -178,6 +180,8 @@ erDiagram
   - `nextId`: 다음 게시글 Id
   - `draft`: 초안
   - `summary`: 내용 요약
+  - `views`: 조회수
+  - `likes`: 좋아요수
   - `authorId`
     > Foreign Key
     > 

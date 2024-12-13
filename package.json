@@ -128,7 +128,8 @@
       "filter.ts",
       "interceptor.ts",
       "multer-config.service.ts",
-      "prisma"
+      "prisma",
+      "spec.ts"
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"

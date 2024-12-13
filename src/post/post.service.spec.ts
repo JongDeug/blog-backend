@@ -161,23 +161,24 @@ describe('PostService', () => {
     it('should return a post with isLiked field', async () => {
       const id = 1;
       const guestId = 'uuid';
-      const foundPost = {
+      const updatedPost = {
         id: 1,
         postLikes: [{ guestId }],
       } as PostType;
-      const post = {
-        id: foundPost.id,
-        isLiked: foundPost.postLikes.length > 0,
-      };
 
-      jest
-        .spyOn(postService, 'findPostWithDetails')
-        .mockResolvedValue(foundPost);
+      jest.spyOn(prismaMock, '$transaction').mockResolvedValue([updatedPost]);
+      jest.spyOn(prismaMock.post, 'update');
 
       const result = await postService.findOne(id, guestId);
 
-      expect(result).toEqual(post);
-      expect(postService.findPostWithDetails).toHaveBeenCalledWith(id, guestId);
+      expect(result).toEqual({
+        id: updatedPost.id,
+        isLiked: true,
+      });
+      expect(prismaMock.$transaction).toHaveBeenCalledWith([]);
+      expect(prismaMock.post.update).toHaveBeenCalledWith(
+        expect.objectContaining({ data: { views: { increment: 1 } } }),
+      );
     });
   });
 
@@ -385,6 +386,7 @@ describe('PostService', () => {
       jest
         .spyOn(prismaMock.postLike, 'findUnique')
         .mockResolvedValueOnce(foundPostLike);
+      jest.spyOn(prismaMock.post, 'update');
 
       const result = await postService.togglePostLike(postId, guestId);
 
@@ -396,6 +398,12 @@ describe('PostService', () => {
             postId: foundPost.id,
             guestId,
           },
+        },
+      });
+      expect(prismaMock.post.update).toHaveBeenCalledWith({
+        where: { id: foundPost.id },
+        data: {
+          likes: { increment: 1 },
         },
       });
       expect(prismaMock.postLike.delete).not.toHaveBeenCalled();
@@ -432,6 +440,12 @@ describe('PostService', () => {
       expect(result).toEqual({ isLiked: !!foundPostLike });
       expect(postService.findPostById).toHaveBeenCalled();
       expect(prismaMock.postLike.findUnique).toHaveBeenCalled();
+      expect(prismaMock.post.update).toHaveBeenCalledWith({
+        where: { id: foundPost.id },
+        data: {
+          likes: { increment: -1 },
+        },
+      });
       expect(prismaMock.postLike.delete).toHaveBeenCalledWith({
         where: { postId_guestId: { postId: foundPost.id, guestId } },
       });

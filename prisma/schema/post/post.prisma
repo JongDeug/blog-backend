@@ -33,7 +33,7 @@ model Post {
   views     Int      @default(0)
 
   /// 좋아요수
-  likeCount Int      @default(0)
+  likes Int      @default(0)
 
   /// ---
   /// RELATIONS

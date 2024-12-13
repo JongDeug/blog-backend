@@ -68,10 +68,51 @@ export class PostService {
   }
 
   async findOne(id: number, guestId: string) {
-    const foundPost = await this.findPostWithDetails(id, guestId);
+    const [updatedPost] = await this.prismaService.$transaction([
+      this.prismaService.post.update({
+        where: { id },
+        include: {
+          comments: {
+            where: { parentCommentId: null },
+            orderBy: { createdAt: 'desc' },
+            include: {
+              childComments: {
+                include: {
+                  author: { omit: { password: true, role: true } },
+                  guest: { omit: { password: true } },
+                },
+              },
+              author: { omit: { password: true, role: true } },
+              guest: { omit: { password: true } },
+            },
+          },
+          category: true,
+          tags: true,
+          images: {
+            omit: { postId: true },
+          },
+          author: {
+            omit: {
+              password: true,
+              role: true,
+              createdAt: true,
+            },
+          },
+          postLikes: {
+            where: {
+              guestId, // unique
+            },
+          },
+          _count: { select: { postLikes: true } },
+        },
+        data: {
+          views: { increment: 1 },
+        },
+      }),
+    ]);
 
-    // guestId의 게시글 좋아요 유무
-    const { postLikes, ...restFields } = foundPost;
+    // guestId 게시글 좋아요 확인
+    const { postLikes, ...restFields } = updatedPost;
     const post = { ...restFields, isLiked: postLikes.length > 0 };
 
     return post;
@@ -145,12 +186,15 @@ export class PostService {
       },
     });
 
+    let likeIncrement = 0;
+
     // 좋아요 O -> 삭제
     // 좋아요 X -> 생성
     if (isLiked) {
       await this.prismaService.postLike.delete({
         where: { postId_guestId: { postId: foundPost.id, guestId } },
       });
+      likeIncrement = -1;
     } else {
       await this.prismaService.postLike.create({
         data: {
@@ -160,10 +204,18 @@ export class PostService {
           },
         },
       });
+      likeIncrement = 1;
     }
 
     const foundPostLike = await this.prismaService.postLike.findUnique({
       where: { postId_guestId: { postId: foundPost.id, guestId } },
+    });
+
+    await this.prismaService.post.update({
+      where: { id: foundPost.id },
+      data: {
+        likes: { increment: likeIncrement },
+      },
     });
 
     return {
