@@ -307,7 +307,7 @@ describe('PostService', () => {
         title: '제목',
         images: [
           {
-            url: `${serverOrigin}/api/uploads/aslfdkjsflksjfd-lkdfjsdlvmlsdf-21sdlkfjas.png`,
+            url: `${serverOrigin}/uploads/aslfdkjsflksjfd-lkdfjsdlvmlsdf-21sdlkfjas.png`,
           },
         ],
         authorId: userId,
@@ -684,13 +684,13 @@ describe('PostService', () => {
     it('should move new incoming images and delete unused images', async () => {
       const currentImages = [
         {
-          url: 'http://test.org/api/uploads/test-A.png',
+          url: 'http://test.org/uploads/test-A.png',
         },
         {
-          url: 'http://test.org/api/uploads/test-B.png',
+          url: 'http://test.org/uploads/test-B.png',
         },
         {
-          url: 'http://test.org/api/uploads/test-C.png',
+          url: 'http://test.org/uploads/test-C.png',
         },
       ] as Image[];
       const incomingImages = [
