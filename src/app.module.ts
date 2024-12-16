@@ -108,10 +108,16 @@ import { ServeStaticModule } from '@nestjs/serve-static';
       }),
       inject: [ConfigService],
     }),
-    ServeStaticModule.forRoot({
-      rootPath: join(process.cwd(), 'public', 'temp'),
-      serveRoot: '/uploads/',
-    }),
+    ServeStaticModule.forRoot(
+      {
+        rootPath: join(process.cwd(), 'public', 'temp'),
+        serveRoot: '/uploads/',
+      },
+      {
+        rootPath: join(process.cwd(), 'public', 'images'),
+        serveRoot: '/uploads/',
+      },
+    ),
     PrismaModule,
     AuthModule,
     UserModule,
