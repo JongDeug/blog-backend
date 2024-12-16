@@ -295,44 +295,43 @@ export class PostService {
   }
 
   parseOrderWithValidation(order: string[]) {
-    return Object.fromEntries(
-      order.map((item) => {
-        const splitItem = item.split('_');
+    return order.map((item) => {
+      const splitItem = item.split('_');
 
-        if (splitItem.length !== 2) {
-          throw new BadRequestException(
-            `유효하지 않는 order: ${item} 입니다 ex) id_desc`,
-          );
-        }
+      if (splitItem.length !== 2) {
+        throw new BadRequestException(
+          `유효하지 않는 order: ${item} 입니다 ex) id_desc`,
+        );
+      }
 
-        let [key, value] = splitItem;
-        value = value.toLowerCase();
+      let [key, value] = splitItem;
+      value = value.toLowerCase();
 
-        if (!(key in Prisma.PostScalarFieldEnum)) {
-          throw new BadRequestException(
-            `유효하지 않는 order "${key}" key 입니다. 올바른 key를 입력해주세요`,
-          );
-        }
+      if (!(key in Prisma.PostScalarFieldEnum)) {
+        throw new BadRequestException(
+          `유효하지 않는 order "${key}" key 입니다. 올바른 key를 입력해주세요`,
+        );
+      }
 
-        if (!['desc', 'asc'].includes(value)) {
-          throw new BadRequestException(
-            `유효하지 않는 order "${value}" value 입니다. ex) desc, asc`,
-          );
-        }
+      if (!['desc', 'asc'].includes(value)) {
+        throw new BadRequestException(
+          `유효하지 않는 order "${value}" value 입니다. ex) desc, asc`,
+        );
+      }
 
-        return [key, value];
-      }),
-    );
+      return { [key]: value };
+    });
   }
 
   generateNextCursor<T>(results: T[], order: string[]): string | null {
     if (!results.length) return null;
+
     /**
      * {
      *  values : {
      *   id: 27
      *  },
-     *  order: ["id_DESC"]
+     *  order: ["id_desc"]
      * }
      */
 
@@ -346,6 +345,7 @@ export class PostService {
     });
 
     const nextCursor = { values, order };
+    console.log(nextCursor);
     const base64 = Buffer.from(JSON.stringify(nextCursor)).toString('base64');
 
     return base64;

@@ -473,7 +473,7 @@ describe('PostService', () => {
       });
       jest
         .spyOn(postService, 'parseOrderWithValidation')
-        .mockReturnValue({ id: 'desc' });
+        .mockReturnValue([{ id: 'desc' }]);
       jest.spyOn(prismaMock.post, 'findMany').mockResolvedValue(results);
       jest.spyOn(postService, 'generateNextCursor').mockReturnValue(nextCursor);
 
@@ -499,7 +499,7 @@ describe('PostService', () => {
         'eyJ2YWx1ZXMiOnsiaWQiOjI3fSwib3JkZXIiOlsiaWRfZGVzYyJdfQ==';
       // 디코딩 결과: {"values":{"id":27},"order":["id_desc"]}
       const cursorConditions = { id: 27 };
-      const orderByConditions = { id: 'desc' };
+      const orderByConditions = [{ id: 'desc' }];
       const results = [];
       const nextCursor =
         'eyJ2YsdflsdkfjWQiOjI5N30sIm9yZGVyIjpbImlkX2Rlc2MiXX0=';
@@ -510,7 +510,7 @@ describe('PostService', () => {
       });
       jest
         .spyOn(postService, 'parseOrderWithValidation')
-        .mockReturnValue({ id: 'desc' });
+        .mockReturnValue([{ id: 'desc' }]);
       jest.spyOn(prismaMock.post, 'findMany').mockResolvedValue(results);
       jest.spyOn(postService, 'generateNextCursor').mockReturnValue(nextCursor);
 
@@ -537,14 +537,14 @@ describe('PostService', () => {
       getPostsDto.search = 'search';
       getPostsDto.draft = false;
 
-      const orderByCondition = { id: 'desc' };
+      const orderByCondition = [{ id: 'desc' }];
       const results = [];
       const nextCursor =
         'eyJ2YsdflsdkfjWQiOjI5N30sIm9yZGVyIjpbImlkX2Rlc2MiXX0=';
 
       jest
         .spyOn(postService, 'parseOrderWithValidation')
-        .mockReturnValue({ id: 'desc' });
+        .mockReturnValue([{ id: 'desc' }]);
       jest.spyOn(prismaMock.post, 'findMany').mockResolvedValue(results);
       jest.spyOn(postService, 'generateNextCursor').mockReturnValue(nextCursor);
 
@@ -593,15 +593,19 @@ describe('PostService', () => {
   });
 
   describe('parseOrderWithValidation', () => {
-    it('should parse order to object', () => {
+    it('should parse order to array of objects', () => {
       const order = ['id_desc', 'createdAt_asc'];
 
       const result = postService.parseOrderWithValidation(order);
 
-      expect(result).toEqual({
-        id: 'desc',
-        createdAt: 'asc',
-      });
+      expect(result).toEqual([
+        {
+          id: 'desc',
+        },
+        {
+          createdAt: 'asc',
+        },
+      ]);
     });
 
     it('should throw a BadRequestException if an order array item cannot be split into 2 parts', () => {
