@@ -354,7 +354,7 @@ export class PostService {
 
   /* istanbul ignore next */
   getImageURL() {
-    return `${this.configService.get(envVariableKeys.serverOrigin)}/uploads/`;
+    return `${this.configService.get(envVariableKeys.serverOrigin)}/api/uploads/`;
   }
 
   /* istanbul ignore next */
