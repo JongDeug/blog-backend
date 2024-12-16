@@ -25,7 +25,7 @@ import { CommentModule } from './post/comment/comment.module';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { envVariableKeys } from './common/const/env.const';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
-import { ServeStaticModule } from '@nestjs/serve-static';
+// import { ServeStaticModule } from '@nestjs/serve-static';
 
 @Module({
   imports: [
@@ -108,16 +108,16 @@ import { ServeStaticModule } from '@nestjs/serve-static';
       }),
       inject: [ConfigService],
     }),
-    ServeStaticModule.forRoot(
-      {
-        rootPath: join(process.cwd(), 'public', 'temp'),
-        serveRoot: '/uploads/',
-      },
-      {
-        rootPath: join(process.cwd(), 'public', 'images'),
-        serveRoot: '/uploads/',
-      },
-    ),
+    // ServeStaticModule.forRoot(
+    //   {
+    //     rootPath: join(process.cwd(), 'public', 'temp'),
+    //     serveRoot: '/uploads/',
+    //   },
+    //   {
+    //     rootPath: join(process.cwd(), 'public', 'images'),
+    //     serveRoot: '/uploads/',
+    //   },
+    // ),
     PrismaModule,
     AuthModule,
     UserModule,
