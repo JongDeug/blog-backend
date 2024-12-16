@@ -67,7 +67,7 @@ export class PostService {
     }
   }
 
-  async findOne(id: number, guestId: string) {
+  async findOne(id: number, guestId: string, isEdit: boolean) {
     const [updatedPost] = await this.prismaService.$transaction([
       this.prismaService.post.update({
         where: { id },
@@ -105,9 +105,11 @@ export class PostService {
           },
           _count: { select: { postLikes: true } },
         },
-        data: {
-          views: { increment: 1 },
-        },
+        data: isEdit
+          ? {}
+          : {
+              views: { increment: 1 },
+            },
       }),
     ]);
 

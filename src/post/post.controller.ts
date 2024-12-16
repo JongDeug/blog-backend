@@ -8,6 +8,8 @@ import {
   Delete,
   ParseIntPipe,
   Query,
+  ParseBoolPipe,
+  DefaultValuePipe,
 } from '@nestjs/common';
 import { PostService } from './post.service';
 import { CreatePostDto } from './dto/create-post.dto';
@@ -51,8 +53,10 @@ export class PostController {
   findOne(
     @Param('id', ParseIntPipe) id: number,
     @Cookies('guestId') guestId: string,
+    @Query('isEdit', new DefaultValuePipe(false), ParseBoolPipe)
+    isEdit: boolean,
   ) {
-    return this.postService.findOne(id, guestId);
+    return this.postService.findOne(id, guestId, isEdit);
   }
 
   @ApiNotFoundResponse({ description: 'Not Found' })

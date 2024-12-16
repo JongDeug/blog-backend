@@ -158,18 +158,19 @@ describe('PostService', () => {
       typeof postService.findPostWithDetails
     >;
 
-    it('should return a post with isLiked field', async () => {
+    it('should return a post with isLiked field and increment view count only when isEdit is false', async () => {
       const id = 1;
       const guestId = 'uuid';
       const updatedPost = {
         id: 1,
         postLikes: [{ guestId }],
       } as PostType;
+      const isEdit = false;
 
       jest.spyOn(prismaMock, '$transaction').mockResolvedValue([updatedPost]);
       jest.spyOn(prismaMock.post, 'update');
 
-      const result = await postService.findOne(id, guestId);
+      const result = await postService.findOne(id, guestId, isEdit);
 
       expect(result).toEqual({
         id: updatedPost.id,
@@ -178,6 +179,30 @@ describe('PostService', () => {
       expect(prismaMock.$transaction).toHaveBeenCalledWith([]);
       expect(prismaMock.post.update).toHaveBeenCalledWith(
         expect.objectContaining({ data: { views: { increment: 1 } } }),
+      );
+    });
+
+    it('should return a post with isLiked field if isEdit is true', async () => {
+      const id = 1;
+      const guestId = 'uuid';
+      const updatedPost = {
+        id: 1,
+        postLikes: [{ guestId }],
+      } as PostType;
+      const isEdit = true;
+
+      jest.spyOn(prismaMock, '$transaction').mockResolvedValue([updatedPost]);
+      jest.spyOn(prismaMock.post, 'update');
+
+      const result = await postService.findOne(id, guestId, isEdit);
+
+      expect(result).toEqual({
+        id: updatedPost.id,
+        isLiked: true,
+      });
+      expect(prismaMock.$transaction).toHaveBeenCalledWith([]);
+      expect(prismaMock.post.update).toHaveBeenCalledWith(
+        expect.objectContaining({ data: {} }),
       );
     });
   });

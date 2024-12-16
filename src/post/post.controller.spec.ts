@@ -73,13 +73,14 @@ describe('PostController', () => {
       const guestId = 'uuid';
       type PostType = Prisma.PromiseReturnType<typeof postService.findOne>;
       const post = { id: 10, isLiked: null };
+      const isEdit = false;
 
       jest.spyOn(postService, 'findOne').mockResolvedValue(post as PostType);
 
-      const result = await postController.findOne(id, guestId);
+      const result = await postController.findOne(id, guestId, isEdit);
 
       expect(result).toEqual(post);
-      expect(postService.findOne).toHaveBeenCalledWith(id, guestId);
+      expect(postService.findOne).toHaveBeenCalledWith(id, guestId, isEdit);
     });
   });
 
