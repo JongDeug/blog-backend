@@ -345,7 +345,6 @@ export class PostService {
     });
 
     const nextCursor = { values, order };
-    console.log(nextCursor);
     const base64 = Buffer.from(JSON.stringify(nextCursor)).toString('base64');
 
     return base64;
@@ -442,10 +441,7 @@ export class PostService {
 
   async handleImageFiles(currentImages: Image[], incomingImages: string[]) {
     const oldImageArray: string[] = currentImages.map(
-      (image: Image) =>
-        image.url.split(
-          `${this.configService.get(envVariableKeys.serverOrigin)}/uploads/`,
-        )[1],
+      (image: Image) => image.url.split(this.getImageURL())[1],
     );
     const oldImageSet: Set<string> = new Set(oldImageArray);
     const newImageArray: string[] = incomingImages;
