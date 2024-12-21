@@ -12,7 +12,7 @@ export class MulterConfigService implements MulterOptionsFactory {
   createMulterOptions(): MulterModuleOptions {
     return {
       limits: {
-        fileSize: 1000000, // 약 1MB
+        fileSize: 10000000, // 약 10MB
       },
       fileFilter(_, file, cb) {
         const mimeType = ['image/jpeg', 'image/png'];
