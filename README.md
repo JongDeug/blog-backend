@@ -81,11 +81,7 @@ https://github.com/JongDeug/blog-frontend
 | **MySQL**      | 관계형 데이터베이스 설계 경험 목적                                                                                     |
 | **Swagger**    | 학부 팀 프로젝트에서 경험한 명확한 소통의 필요성에 따라 API 문서화 도구 적용                                           |
 
-## 📌 5. 시스템 최적화
-
-좀 더 시각적으로 표현하자
-
-## 📌 6. API 명세서
+## 📌 5. API 명세서
 
 | 구분             | 기능명                 | HTTP Method | REST API                                   | JWT | ROLE(하위 범주) |
 | ---------------- | ---------------------- | ----------- | ------------------------------------------ | --- | --------------- |
@@ -121,7 +117,7 @@ https://github.com/JongDeug/blog-frontend
 |                  | 5.4 카테고리 수정      | PATCH       | /category/:id                              | O   | ADMIN           |
 |                  | 5.5 카테고리 삭제      | DELETE      | /category/:id                              | O   | ADMIN           |
 
-## 📌 7. ERD 설계
+## 📌 6. ERD 설계
 
 ```mermaid
 erDiagram
