@@ -46,7 +46,8 @@ https://github.com/JongDeug/blog-frontend
 
 #### 전체적인 서비스 구조
 
-![image](https://github.com/user-attachments/assets/310ff036-2fc6-4af0-9ae2-34d85788a736)
+![image](https://github.com/user-attachments/assets/56295740-f86f-40ca-aaaa-1e2f598476b0)
+
 
 ## 📌 4. 기술 스택
 
