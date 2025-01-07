@@ -48,7 +48,6 @@ https://github.com/JongDeug/blog-frontend
 
 ![image](https://github.com/user-attachments/assets/56295740-f86f-40ca-aaaa-1e2f598476b0)
 
-
 ## 📌 4. 기술 스택
 
 ### v2
@@ -82,7 +81,11 @@ https://github.com/JongDeug/blog-frontend
 | **MySQL**      | 관계형 데이터베이스 설계 경험 목적                                                                                     |
 | **Swagger**    | 학부 팀 프로젝트에서 경험한 명확한 소통의 필요성에 따라 API 문서화 도구 적용                                           |
 
-## 📌 5. API 명세서
+## 📌 5. 시스템 최적화
+
+좀 더 시각적으로 표현하자
+
+## 📌 6. API 명세서
 
 | 구분             | 기능명                 | HTTP Method | REST API                                   | JWT | ROLE(하위 범주) |
 | ---------------- | ---------------------- | ----------- | ------------------------------------------ | --- | --------------- |
