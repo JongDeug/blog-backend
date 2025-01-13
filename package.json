@@ -31,7 +31,8 @@
     "prisma:generate": "npx prisma generate",
     "docker:up": "dotenv -e .env.development.local -- docker compose -f docker-compose.dev.yaml up -d",
     "docker:config": "dotenv -e .env.development.local -- docker compose -f docker-compose.dev.yaml config",
-    "docker:stop": "dotenv -e .env.development.local -- docker compose -f docker-compose.dev.yaml stop"
+    "docker:stop": "dotenv -e .env.development.local -- docker compose -f docker-compose.dev.yaml stop",
+    "studio": "dotenv -e .env.development.local -- pnpx prisma studio"
   },
   "dependencies": {
     "@keyv/redis": "^3.0.1",

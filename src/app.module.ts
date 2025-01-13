@@ -46,6 +46,8 @@ import { ServeStaticModule } from '@nestjs/serve-static';
         EMAIL_PWD: Joi.string().required(),
       }),
       isGlobal: true,
+      expandVariables: true,
+      cache: true,
       envFilePath:
         process.env.NODE_ENV === 'test'
           ? '.env.test.local'
