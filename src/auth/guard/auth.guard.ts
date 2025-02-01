@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   CanActivate,
   ExecutionContext,
   Inject,
@@ -33,7 +34,22 @@ export class AuthGuard implements CanActivate {
     if (isPublic) return true;
 
     const req = context.switchToHttp().getRequest();
-    const { accessToken } = req.cookies;
+
+    if (!req.headers['authorization']) {
+      throw new BadRequestException('토큰 포맷이 잘못됐습니다');
+    }
+
+    const rawToken = req.headers['authorization'];
+    const splitBearerToken = rawToken.split(' ');
+
+    if (splitBearerToken.length !== 2) {
+      throw new BadRequestException('토큰 포맷이 잘못됐습니다');
+    }
+
+    const [bearer, accessToken] = splitBearerToken;
+    if (bearer.toLowerCase() !== 'bearer') {
+      throw new BadRequestException('토큰 포맷이 잘못됐습니다');
+    }
 
     if (!accessToken) {
       throw new UnauthorizedException('잘못된 토큰입니다');

@@ -22,7 +22,6 @@ import {
   ApiConflictResponse,
   ApiCreatedResponse,
   ApiForbiddenResponse,
-  ApiInternalServerErrorResponse,
   ApiNotFoundResponse,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
@@ -55,17 +54,22 @@ export class AuthController {
   @Post('login')
   async loginUser(
     @Authorization() token: string,
-    @Res({ passthrough: true }) res: Response,
+    // @Res({ passthrough: true }) res: Response,
   ) {
     const { accessToken, refreshToken, authenticatedUser } =
       await this.authService.login(token);
 
-    res.cookie('accessToken', accessToken, cookieOptions);
-    res.cookie('refreshToken', refreshToken, cookieOptions);
+    // res.cookie('accessToken', accessToken, cookieOptions);
+    // res.cookie('refreshToken', refreshToken, cookieOptions);
 
     return {
-      name: authenticatedUser.name,
-      role: authenticatedUser.role,
+      accessToken,
+      refreshToken,
+      user: {
+        name: authenticatedUser.name,
+        email: authenticatedUser.email,
+        role: authenticatedUser.role,
+      },
     };
   }
 
@@ -85,10 +89,10 @@ export class AuthController {
   @Get('logout')
   logoutUser(
     @UserId() userId: number,
-    @Res({ passthrough: true }) res: Response,
+    // @Res({ passthrough: true }) res: Response,
   ) {
-    res.cookie('accessToken', '');
-    res.cookie('refreshToken', '');
+    // res.cookie('accessToken', '');
+    // res.cookie('refreshToken', '');
 
     return this.authService.logout(userId);
   }

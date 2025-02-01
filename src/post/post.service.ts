@@ -306,6 +306,7 @@ export class PostService {
         );
       }
 
+      // eslint-disable-next-line prefer-const
       let [key, value] = splitItem;
       value = value.toLowerCase();
 
