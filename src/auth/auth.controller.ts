@@ -5,16 +5,13 @@ import {
   Param,
   ParseIntPipe,
   Post,
-  Res,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
-import { Response } from 'express';
 import { Public } from './decorator/public.decorator';
 import { UserId } from 'src/user/decorator/user-id.decorator';
 import { RBAC } from './decorator/rbac.decorator';
 import { Role } from '@prisma/client';
-import { Cookies } from 'src/common/decorator/cookies.decorator';
 import { Authorization } from './decorator/authorization.decorator';
 import {
   ApiBadRequestResponse,
@@ -26,12 +23,12 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 
-const cookieOptions = {
-  path: '/',
-  httpOnly: true,
-  sameSite: 'strict' as const,
-  secure: true,
-};
+// const cookieOptions = {
+//   path: '/',
+//   httpOnly: true,
+//   sameSite: 'strict' as const,
+//   secure: true,
+// };
 
 @Controller('auth')
 export class AuthController {
@@ -52,20 +49,14 @@ export class AuthController {
   @ApiBasicAuth()
   @Public()
   @Post('login')
-  async loginUser(
-    @Authorization() token: string,
-    // @Res({ passthrough: true }) res: Response,
-  ) {
+  async loginUser(@Authorization() token: string) {
     const { accessToken, refreshToken, authenticatedUser } =
       await this.authService.login(token);
-
-    // res.cookie('accessToken', accessToken, cookieOptions);
-    // res.cookie('refreshToken', refreshToken, cookieOptions);
 
     return {
       accessToken,
       refreshToken,
-      user: {
+      info: {
         name: authenticatedUser.name,
         email: authenticatedUser.email,
         role: authenticatedUser.role,
@@ -76,24 +67,14 @@ export class AuthController {
   @ApiUnauthorizedResponse({ description: 'Unauthorized' })
   @Public()
   @Get('token/refresh')
-  async refresh(
-    @Cookies('refreshToken') refreshToken: string,
-    @Res({ passthrough: true }) res: Response,
-  ) {
-    const newTokens = await this.authService.rotateTokens(refreshToken);
-
-    res.cookie('accessToken', newTokens.accessToken, cookieOptions);
-    res.cookie('refreshToken', newTokens.refreshToken, cookieOptions);
+  async refresh(@Authorization() token: string) {
+    const { accessToken, refreshToken } =
+      await this.authService.rotateTokens(token);
+    return { accessToken, refreshToken };
   }
 
   @Get('logout')
-  logoutUser(
-    @UserId() userId: number,
-    // @Res({ passthrough: true }) res: Response,
-  ) {
-    // res.cookie('accessToken', '');
-    // res.cookie('refreshToken', '');
-
+  logoutUser(@UserId() userId: number) {
     return this.authService.logout(userId);
   }
 

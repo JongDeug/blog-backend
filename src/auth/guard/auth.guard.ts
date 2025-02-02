@@ -14,6 +14,7 @@ import { Public } from '../decorator/public.decorator';
 import { Cache } from 'cache-manager';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { AuthService } from '../auth.service';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -21,6 +22,7 @@ export class AuthGuard implements CanActivate {
     private readonly reflector: Reflector,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly authService: AuthService,
     private readonly prismaService: PrismaService,
     @Inject(CACHE_MANAGER)
     private readonly cacheManager: Cache,
@@ -33,6 +35,7 @@ export class AuthGuard implements CanActivate {
     // Public 데코레이터가 달려있으면 통과
     if (isPublic) return true;
 
+    // 토큰 추출
     const req = context.switchToHttp().getRequest();
 
     if (!req.headers['authorization']) {
@@ -40,20 +43,7 @@ export class AuthGuard implements CanActivate {
     }
 
     const rawToken = req.headers['authorization'];
-    const splitBearerToken = rawToken.split(' ');
-
-    if (splitBearerToken.length !== 2) {
-      throw new BadRequestException('토큰 포맷이 잘못됐습니다');
-    }
-
-    const [bearer, accessToken] = splitBearerToken;
-    if (bearer.toLowerCase() !== 'bearer') {
-      throw new BadRequestException('토큰 포맷이 잘못됐습니다');
-    }
-
-    if (!accessToken) {
-      throw new UnauthorizedException('잘못된 토큰입니다');
-    }
+    const accessToken = this.authService.parseBearerToken(rawToken);
 
     // 캐시 검색
     const cachedPayload = await this.cacheManager.get(

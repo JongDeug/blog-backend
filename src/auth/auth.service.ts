@@ -48,6 +48,25 @@ export class AuthService {
     return newUser;
   }
 
+  parseBearerToken(rawToken: string) {
+    const splitBearerToken = rawToken.split(' ');
+
+    if (splitBearerToken.length !== 2) {
+      throw new BadRequestException('토큰 포맷이 잘못됐습니다');
+    }
+
+    const [bearer, token] = splitBearerToken;
+    if (bearer.toLowerCase() !== 'bearer') {
+      throw new BadRequestException('토큰 포맷이 잘못됐습니다');
+    }
+
+    if (!token) {
+      throw new UnauthorizedException('잘못된 토큰입니다');
+    }
+
+    return token;
+  }
+
   parseBasicToken(rawToken: string) {
     const splitBasicToken = rawToken.split(' ');
 
@@ -131,7 +150,9 @@ export class AuthService {
     );
   }
 
-  async rotateTokens(token: string) {
+  async rotateTokens(rawToken: string) {
+    const token = this.parseBearerToken(rawToken);
+
     try {
       // 토큰 인증
       const payload = await this.jwtService.verifyAsync(token, {
