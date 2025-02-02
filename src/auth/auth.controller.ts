@@ -68,9 +68,7 @@ export class AuthController {
   @Public()
   @Get('token/refresh')
   async refresh(@Authorization() token: string) {
-    const { accessToken, refreshToken } =
-      await this.authService.rotateTokens(token);
-    return { accessToken, refreshToken };
+    return this.authService.rotateTokens(token);
   }
 
   @Get('logout')
