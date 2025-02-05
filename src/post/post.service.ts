@@ -228,7 +228,7 @@ export class PostService {
   // ====================================== Utils ======================================
 
   async applyCursorPaginationToPost(getPostsDto: GetPostsDto) {
-    const { cursor, take, search, draft } = getPostsDto;
+    const { cursor, take, search, draft, category } = getPostsDto;
 
     const whereConditions = {
       ...(search
@@ -239,8 +239,11 @@ export class PostService {
             ],
           }
         : {}),
+      ...(category ? { category: { name: category } } : {}),
       draft,
     };
+
+    console.log(whereConditions);
 
     let { order } = getPostsDto;
     let cursorCondition;

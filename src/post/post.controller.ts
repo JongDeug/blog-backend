@@ -81,7 +81,7 @@ export class PostController {
 
   @Get('like/:id')
   @Public()
-  async like(
+  like(
     @Param('id', ParseIntPipe) id: number,
     @Cookies('guestId') guestId: string,
   ) {
