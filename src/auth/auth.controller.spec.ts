@@ -2,15 +2,12 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { mock, MockProxy } from 'jest-mock-extended';
-import { getMockRes } from '@jest-mock/express';
 import { RegisterDto } from './dto/register.dto';
 import { User } from '@prisma/client';
-import { Response } from 'express';
 
 describe('AuthController', () => {
   let authController: AuthController;
   let authService: MockProxy<AuthService>;
-  let res: Response;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -20,7 +17,6 @@ describe('AuthController', () => {
 
     authController = module.get<AuthController>(AuthController);
     authService = module.get(AuthService);
-    res = getMockRes().res;
   });
 
   it('should be defined', () => {
