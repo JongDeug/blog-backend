@@ -359,7 +359,7 @@ export class PostService {
   /* istanbul ignore next */
   getImageURL() {
     return process.env.NODE_ENV === 'production'
-      ? `${this.configService.get(envVariableKeys.serverOrigin)}/api/uploads/`
+      ? `${this.configService.get(envVariableKeys.serverOrigin)}/api/nest/uploads/`
       : `${this.configService.get(envVariableKeys.serverOrigin)}/uploads/`;
   }
 
