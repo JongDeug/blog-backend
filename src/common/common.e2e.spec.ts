@@ -64,7 +64,7 @@ describe('CommentController (e2e)', () => {
     it('should upload a image', async () => {
       const { body, statusCode } = await request(app.getHttpServer())
         .post('/common/image')
-        .set('Cookie', [`accessToken=${token}`])
+        .set('Authorization', `Bearer ${token}`)
         .attach('image', Buffer.from('test'), 'jpg');
 
       expect(statusCode).toBe(201);

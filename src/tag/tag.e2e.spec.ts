@@ -1,7 +1,6 @@
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { Category, Post, Role, Tag, User } from '@prisma/client';
-import * as cookieParser from 'cookie-parser';
+import { Category, Role, Tag, User } from '@prisma/client';
 import * as request from 'supertest';
 import { AuthService } from 'src/auth/auth.service';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -14,7 +13,6 @@ describe('TagController (e2e)', () => {
   let user: User;
   let tags: Tag[];
   let category: Category;
-  let post: Post;
   let token: string;
 
   beforeAll(async () => {
@@ -32,7 +30,6 @@ describe('TagController (e2e)', () => {
         },
       }),
     );
-    app.use(cookieParser());
     await app.init();
 
     prismaService = moduleFixture.get<PrismaService>(PrismaService);
@@ -58,11 +55,13 @@ describe('TagController (e2e)', () => {
       data: { name: 'category ' },
     });
 
-    post = await prismaService.post.create({
+    // post
+    await prismaService.post.create({
       data: {
         title: 'title1',
         content: 'content1',
         summary: 'summary1',
+        draft: false,
         author: {
           connect: { id: user.id },
         },
@@ -108,7 +107,7 @@ describe('TagController (e2e)', () => {
       };
       const { body, statusCode } = await request(app.getHttpServer())
         .post('/tag')
-        .set('Cookie', [`accessToken=${token}`])
+        .set('Authorization', `Bearer ${token}`)
         .send(dto);
 
       expect(statusCode).toBe(201);
@@ -121,7 +120,7 @@ describe('TagController (e2e)', () => {
       };
       const { statusCode } = await request(app.getHttpServer())
         .post('/tag')
-        .set('Cookie', [`accessToken=${token}`])
+        .set('Authorization', `Bearer ${token}`)
         .send(dto);
 
       expect(statusCode).toBe(409);
@@ -132,7 +131,7 @@ describe('TagController (e2e)', () => {
     it('should get all tags', async () => {
       const { body, statusCode } = await request(app.getHttpServer())
         .get('/tag')
-        .set('Cookie', [`accessToken=${token}`]);
+        .set('Authorization', `Bearer ${token}`);
 
       expect(statusCode).toBe(200);
       expect(body).toHaveLength(tags.length + 1);
@@ -165,7 +164,7 @@ describe('TagController (e2e)', () => {
       };
       const { body, statusCode } = await request(app.getHttpServer())
         .patch(`/tag/${tags[0].id}`)
-        .set('Cookie', [`accessToken=${token}`])
+        .set('Authorization', `Bearer ${token}`)
         .send(dto);
 
       expect(statusCode).toBe(200);
@@ -178,7 +177,7 @@ describe('TagController (e2e)', () => {
       };
       const { statusCode } = await request(app.getHttpServer())
         .patch(`/tag/${9999}`)
-        .set('Cookie', [`accessToken=${token}`])
+        .set('Authorization', `Bearer ${token}`)
         .send(dto);
 
       expect(statusCode).toBe(404);
@@ -190,7 +189,7 @@ describe('TagController (e2e)', () => {
       };
       const { statusCode } = await request(app.getHttpServer())
         .patch(`/tag/${tags[0].id}`)
-        .set('Cookie', [`accessToken=${token}`])
+        .set('Authorization', `Bearer ${token}`)
         .send(dto);
 
       expect(statusCode).toBe(409);
@@ -201,7 +200,7 @@ describe('TagController (e2e)', () => {
     it('should delete a tag', async () => {
       const { body, statusCode } = await request(app.getHttpServer())
         .del(`/tag/${tags[0].id}`)
-        .set('Cookie', [`accessToken=${token}`]);
+        .set('Authorization', `Bearer ${token}`);
 
       expect(statusCode).toBe(200);
       expect(body).toStrictEqual({});
@@ -210,7 +209,7 @@ describe('TagController (e2e)', () => {
     it('should return 404', async () => {
       const { statusCode } = await request(app.getHttpServer())
         .del(`/tag/${9999}`)
-        .set('Cookie', [`accessToken=${token}`]);
+        .set('Authorization', `Bearer ${token}`);
 
       expect(statusCode).toBe(404);
     });
@@ -218,7 +217,7 @@ describe('TagController (e2e)', () => {
     it('should return 400', async () => {
       const { statusCode } = await request(app.getHttpServer())
         .del(`/tag/${tags[1].id}`)
-        .set('Cookie', [`accessToken=${token}`]);
+        .set('Authorization', `Bearer ${token}`);
 
       expect(statusCode).toBe(400);
     });

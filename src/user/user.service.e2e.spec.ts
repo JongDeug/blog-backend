@@ -1,7 +1,6 @@
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { User } from '@prisma/client';
-import * as cookieParser from 'cookie-parser';
 import * as request from 'supertest';
 import { AuthService } from 'src/auth/auth.service';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -29,7 +28,6 @@ describe('UserController (e2e)', () => {
         },
       }),
     );
-    app.use(cookieParser());
     await app.init();
 
     prismaService = moduleFixture.get<PrismaService>(PrismaService);
@@ -68,7 +66,7 @@ describe('UserController (e2e)', () => {
     it('should get all users without password', async () => {
       const { body, statusCode } = await request(app.getHttpServer())
         .get('/user')
-        .set('Cookie', [`accessToken=${token}`]);
+        .set('Authorization', `Bearer ${token}`);
 
       expect(statusCode).toBe(200);
       expect(body).toHaveLength(2);
@@ -80,7 +78,7 @@ describe('UserController (e2e)', () => {
     it('should get a user without password', async () => {
       const { body, statusCode } = await request(app.getHttpServer())
         .get(`/user/${users[0].id}`)
-        .set('Cookie', [`accessToken=${token}`]);
+        .set('Authorization', `Bearer ${token}`);
 
       expect(statusCode).toBe(200);
       expect(body.name).toBe(users[0].name);
@@ -91,7 +89,7 @@ describe('UserController (e2e)', () => {
     it('should return 404', async () => {
       const { statusCode } = await request(app.getHttpServer())
         .get(`/user/${9999}`)
-        .set('Cookie', [`accessToken=${token}`]);
+        .set('Authorization', `Bearer ${token}`);
 
       expect(statusCode).toBe(404);
     });
@@ -101,7 +99,7 @@ describe('UserController (e2e)', () => {
     it('should delete a user', async () => {
       const { body, statusCode } = await request(app.getHttpServer())
         .del(`/user/${users[1].id}`)
-        .set('Cookie', [`accessToken=${token}`]);
+        .set('Authorization', `Bearer ${token}`);
 
       expect(statusCode).toBe(200);
       expect(body).toStrictEqual({});
@@ -110,7 +108,7 @@ describe('UserController (e2e)', () => {
     it('should return 404', async () => {
       const { statusCode } = await request(app.getHttpServer())
         .del(`/user/${9999}`)
-        .set('Cookie', [`accessToken=${token}`]);
+        .set('Authorization', `Bearer ${token}`);
 
       expect(statusCode).toBe(404);
     });
@@ -118,7 +116,7 @@ describe('UserController (e2e)', () => {
     it('should return 400 when the user to remove is an admin', async () => {
       const { statusCode } = await request(app.getHttpServer())
         .del(`/user/${users[0].id}`)
-        .set('Cookie', [`accessToken=${token}`]);
+        .set('Authorization', `Bearer ${token}`);
 
       expect(statusCode).toBe(400);
     });

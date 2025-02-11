@@ -9,6 +9,8 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  // Cors
   app.enableCors({
     origin: [
       'https://jongdeug.port0.org',
@@ -17,8 +19,6 @@ async function bootstrap() {
     ],
     credentials: true,
   });
-
-  const configService = new ConfigService();
 
   // Swagger
   const config = new DocumentBuilder()
@@ -50,6 +50,7 @@ async function bootstrap() {
   // 쿠키
   app.use(cookieParser());
 
+  const configService = new ConfigService();
   await app.listen(configService.get<string>(envVariableKeys.serverPort));
 }
 bootstrap();

@@ -4,7 +4,7 @@ import * as request from 'supertest';
 import { AppModule } from '../app.module';
 import * as cookieParser from 'cookie-parser';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { Category, Post, Role, User } from '@prisma/client';
+import { Category, Role, User } from '@prisma/client';
 import { AuthService } from 'src/auth/auth.service';
 
 describe('CategoryController (e2e)', () => {
@@ -13,7 +13,6 @@ describe('CategoryController (e2e)', () => {
 
   let categories: Category[];
   let user: User;
-  let post: Post;
   let token: string;
 
   beforeAll(async () => {
@@ -53,11 +52,13 @@ describe('CategoryController (e2e)', () => {
       },
     });
 
-    post = await prismaService.post.create({
+    // post
+    await prismaService.post.create({
       data: {
         title: 'title1',
         content: 'content1',
         summary: 'summary1',
+        draft: false,
         author: {
           connect: { id: user.id },
         },
@@ -98,7 +99,7 @@ describe('CategoryController (e2e)', () => {
 
       const { body, statusCode } = await request(app.getHttpServer())
         .post('/category')
-        .set('Cookie', [`accessToken=${token}`])
+        .set('Authorization', `Bearer ${token}`)
         .send(dto);
 
       expect(statusCode).toBe(201);
@@ -112,7 +113,7 @@ describe('CategoryController (e2e)', () => {
 
       const { statusCode } = await request(app.getHttpServer())
         .post('/category')
-        .set('Cookie', [`accessToken=${token}`])
+        .set('Authorization', `Bearer ${token}`)
         .send(dto);
 
       expect(statusCode).toBe(409);
@@ -160,7 +161,7 @@ describe('CategoryController (e2e)', () => {
       };
       const { body, statusCode } = await request(app.getHttpServer())
         .patch(`/category/${categories[0].id}`)
-        .set('Cookie', [`accessToken=${token}`])
+        .set('Authorization', `Bearer ${token}`)
         .send(dto);
 
       expect(statusCode).toBe(200);
@@ -173,7 +174,7 @@ describe('CategoryController (e2e)', () => {
       };
       const { statusCode } = await request(app.getHttpServer())
         .patch(`/category/${9999}`)
-        .set('Cookie', [`accessToken=${token}`])
+        .set('Authorization', `Bearer ${token}`)
         .send(dto);
 
       expect(statusCode).toBe(404);
@@ -185,7 +186,7 @@ describe('CategoryController (e2e)', () => {
       };
       const { statusCode } = await request(app.getHttpServer())
         .patch(`/category/${categories[0].id}`)
-        .set('Cookie', [`accessToken=${token}`])
+        .set('Authorization', `Bearer ${token}`)
         .send(dto);
 
       expect(statusCode).toBe(409);
@@ -196,7 +197,7 @@ describe('CategoryController (e2e)', () => {
     it('should delete a category', async () => {
       const { body, statusCode } = await request(app.getHttpServer())
         .delete(`/category/${categories[1].id}`)
-        .set('Cookie', [`accessToken=${token}`]);
+        .set('Authorization', `Bearer ${token}`);
 
       expect(statusCode).toBe(200);
       expect(body).toEqual({});
@@ -205,7 +206,7 @@ describe('CategoryController (e2e)', () => {
     it('should return 404', async () => {
       const { statusCode } = await request(app.getHttpServer())
         .delete(`/category/${9999}`)
-        .set('Cookie', [`accessToken=${token}`]);
+        .set('Authorization', `Bearer ${token}`);
 
       expect(statusCode).toBe(404);
     });
@@ -213,7 +214,7 @@ describe('CategoryController (e2e)', () => {
     it('should return 400', async () => {
       const { statusCode } = await request(app.getHttpServer())
         .delete(`/category/${categories[0].id}`)
-        .set('Cookie', [`accessToken=${token}`]);
+        .set('Authorization', `Bearer ${token}`);
 
       expect(statusCode).toBe(400);
     });

@@ -1,7 +1,6 @@
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Role, User } from '@prisma/client';
-import * as cookieParser from 'cookie-parser';
 import * as request from 'supertest';
 import { AuthService } from 'src/auth/auth.service';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -33,7 +32,6 @@ describe('AuthController (e2e)', () => {
         },
       }),
     );
-    app.use(cookieParser());
     await app.init();
 
     prismaService = moduleFixture.get<PrismaService>(PrismaService);
@@ -113,91 +111,82 @@ describe('AuthController (e2e)', () => {
   });
 
   describe('[POST] /auth/login', () => {
-    it('should return access and refresh tokens in cookies', async () => {
-      const { body, statusCode, headers } = await request(app.getHttpServer())
+    it('should return JWT tokens and user info', async () => {
+      const { body, statusCode } = await request(app.getHttpServer())
         .post('/auth/login')
         .set('Authorization', `Basic dGVzdDEwMEBnbWFpbC5jb206MTIzNA==`);
 
       expect(statusCode).toBe(201);
-      expect(body).toStrictEqual({});
-
-      const cookies = headers['set-cookie'];
-      expect(cookies).toBeDefined();
-      expect(cookies[0]).toContain('accessToken=');
-      expect(cookies[1]).toContain('refreshToken=');
+      expect(body).toStrictEqual(
+        expect.objectContaining({
+          accessToken: expect.any(String),
+          refreshToken: expect.any(String),
+          info: expect.objectContaining({
+            name: expect.any(String),
+            email: expect.any(String),
+            role: expect.any(String),
+          }),
+        }),
+      );
     });
 
     it('should return 400 when the token format is invalid', async () => {
-      const { statusCode, headers } = await request(app.getHttpServer())
+      const { statusCode } = await request(app.getHttpServer())
         .post('/auth/login')
         .set('Authorization', `Bearer dGVzdDEwMEBnbWFpbC5jb206MTIzNA==`);
 
       expect(statusCode).toBe(400);
-
-      const cookies = headers['set-cookie'];
-      expect(cookies).toBeUndefined();
     });
 
     it('should return 404 when the user does not exist ', async () => {
-      const { statusCode, headers } = await request(app.getHttpServer())
+      const { statusCode } = await request(app.getHttpServer())
         .post('/auth/login')
         .set('Authorization', `Basic dGVzdDVAZ21haWwuY29tOjEyMzQ=`);
 
       expect(statusCode).toBe(404);
-
-      const cookies = headers['set-cookie'];
-      expect(cookies).toBeUndefined();
     });
 
-    it('should return 403 when the password does not match', async () => {
-      const { statusCode, headers } = await request(app.getHttpServer())
+    it('should return 401 when the password does not match', async () => {
+      const { statusCode } = await request(app.getHttpServer())
         .post('/auth/login')
         .set('Authorization', `Basic dGVzdDEwMEBnbWFpbC5jb206MTExMTE=`);
 
       expect(statusCode).toBe(401);
-
-      const cookies = headers['set-cookie'];
-      expect(cookies).toBeUndefined();
     });
   });
 
   describe('[GET] /auth/token/refresh', () => {
     it('should refresh access and refresh tokens', async () => {
-      const { body, statusCode, headers } = await request(app.getHttpServer())
+      const { body, statusCode } = await request(app.getHttpServer())
         .get('/auth/token/refresh')
-        .set('Cookie', [`refreshToken=${refreshToken}`]);
+        .set('Authorization', `Bearer ${refreshToken}`);
 
       expect(statusCode).toBe(200);
-      expect(body).toStrictEqual({});
-
-      const cookies = headers['set-cookie'];
-      expect(cookies).toBeDefined();
-      expect(cookies[0]).toContain('accessToken=');
-      expect(cookies[1]).toContain('refreshToken=');
+      expect(body).toStrictEqual(
+        expect.objectContaining({
+          accessToken: expect.any(String),
+          refreshToken: expect.any(String),
+        }),
+      );
     });
 
-    it('should return 500 when the refresh token is invalid', async () => {
-      const { statusCode, headers } = await request(app.getHttpServer())
+    it('should return 400 when the token format is invalid', async () => {
+      const { statusCode } = await request(app.getHttpServer())
         .get('/auth/token/refresh')
-        .set('Cookie', [`refreshToken=123456`]);
+        .set('Authorization', `Basic ${refreshToken}`);
 
-      expect(statusCode).toBe(500);
-
-      const cookies = headers['set-cookie'];
-      expect(cookies).toBeUndefined();
+      expect(statusCode).toBe(400);
     });
 
     it('should return 401 when the refresh token is expired', async () => {
-      const { statusCode, headers } = await request(app.getHttpServer())
+      const { statusCode } = await request(app.getHttpServer())
         .get('/auth/token/refresh')
-        .set('Cookie', [
-          `refreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjY4MCwicm9sZSI6IkFETUlOIiwidHlwZSI6InJlZnJlc2giLCJpYXQiOjE3MzI1MzExMTAsImV4cCI6MTYzMjYxNzUxMH0.EmCBCWS979m1NwLISEfNavlspcQBJh6vys169frpmSA`,
-        ]);
+        .set(
+          'Authorization',
+          'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjY4MCwicm9sZSI6IkFETUlOIiwidHlwZSI6InJlZnJlc2giLCJpYXQiOjE3MzI1MzExMTAsImV4cCI6MTYzMjYxNzUxMH0.EmCBCWS979m1NwLISEfNavlspcQBJh6vys169frpmSA',
+        );
 
       expect(statusCode).toBe(401);
-
-      const cookies = headers['set-cookie'];
-      expect(cookies).toBeUndefined();
     });
   });
 
@@ -207,21 +196,15 @@ describe('AuthController (e2e)', () => {
       const loginResponse = await request(app.getHttpServer())
         .post('/auth/login')
         .set('Authorization', `Basic dGVzdDEwMEBnbWFpbC5jb206MTIzNA==`);
-      const loginResponseCookies = loginResponse.headers['set-cookie'];
-      const accessToken = loginResponseCookies[0].split('accessToken=')[1];
+      const { accessToken } = await loginResponse.body;
 
       // logout
-      const { body, statusCode, headers } = await request(app.getHttpServer())
+      const { body, statusCode } = await request(app.getHttpServer())
         .get('/auth/logout')
-        .set('Cookie', [`accessToken=${accessToken}`]);
+        .set('Authorization', `Bearer ${accessToken}`);
 
       expect(statusCode).toBe(200);
       expect(body).toStrictEqual({});
-
-      const cookies = headers['set-cookie'];
-      expect(cookies).toBeDefined();
-      expect(cookies[0]).toContain('accessToken=;');
-      expect(cookies[1]).toContain('refreshToken=;');
     });
   });
 
@@ -229,7 +212,7 @@ describe('AuthController (e2e)', () => {
     it('should delete the cache for the refresh token by userId', async () => {
       const { body, statusCode } = await request(app.getHttpServer())
         .get(`/auth/token/revoke/${users[1].id}`)
-        .set('Cookie', [`accessToken=${accessToken}`]);
+        .set('Authorization', `Bearer ${accessToken}`);
 
       expect(statusCode).toBe(200);
       expect(body).toStrictEqual({});
@@ -238,7 +221,7 @@ describe('AuthController (e2e)', () => {
     it('should return 404', async () => {
       const { statusCode } = await request(app.getHttpServer())
         .get(`/auth/token/revoke/${9999}`)
-        .set('Cookie', [`accessToken=${accessToken}`]);
+        .set('Authorization', `Bearer ${accessToken}`);
 
       expect(statusCode).toBe(404);
     });

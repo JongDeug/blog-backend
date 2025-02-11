@@ -9,11 +9,11 @@ import {
   Role,
   User,
 } from '@prisma/client';
-import * as cookieParser from 'cookie-parser';
 import * as request from 'supertest';
 import { AuthService } from 'src/auth/auth.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AppModule } from 'src/app.module';
+import * as cookieParser from 'cookie-parser';
 
 describe('CommentController (e2e)', () => {
   let app: INestApplication;
@@ -175,7 +175,7 @@ describe('CommentController (e2e)', () => {
 
         const { body, statusCode } = await request(app.getHttpServer())
           .post('/post/comment/user')
-          .set('Cookie', [`accessToken=${tokens[0]}`])
+          .set('Authorization', `Bearer ${tokens[0]}`)
           .send(dto);
 
         expect(statusCode).toBe(201);
@@ -190,7 +190,7 @@ describe('CommentController (e2e)', () => {
 
         const { statusCode } = await request(app.getHttpServer())
           .post('/post/comment/user')
-          .set('Cookie', [`accessToken=${tokens[0]}`])
+          .set('Authorization', `Bearer ${tokens[0]}`)
           .send(dto);
 
         expect(statusCode).toBe(404);
@@ -207,7 +207,7 @@ describe('CommentController (e2e)', () => {
 
         const { body, statusCode } = await request(app.getHttpServer())
           .post('/post/comment/user')
-          .set('Cookie', [`accessToken=${tokens[0]}`])
+          .set('Authorization', `Bearer ${tokens[0]}`)
           .send(dto);
 
         expect(statusCode).toBe(201);
@@ -223,7 +223,7 @@ describe('CommentController (e2e)', () => {
 
         const { statusCode } = await request(app.getHttpServer())
           .post('/post/comment/user')
-          .set('Cookie', [`accessToken=${tokens[0]}`])
+          .set('Authorization', `Bearer ${tokens[0]}`)
           .send(dto);
 
         expect(statusCode).toBe(404);
@@ -238,7 +238,7 @@ describe('CommentController (e2e)', () => {
 
         const { statusCode } = await request(app.getHttpServer())
           .post('/post/comment/user')
-          .set('Cookie', [`accessToken=${tokens[0]}`])
+          .set('Authorization', `Bearer ${tokens[0]}`)
           .send(dto);
 
         expect(statusCode).toBe(400);
@@ -254,7 +254,7 @@ describe('CommentController (e2e)', () => {
 
       const { body, statusCode } = await request(app.getHttpServer())
         .patch(`/post/comment/user/${commentsByUser[0].id}`)
-        .set('Cookie', [`accessToken=${tokens[0]}`])
+        .set('Authorization', `Bearer ${tokens[0]}`)
         .send(dto);
 
       expect(statusCode).toBe(200);
@@ -268,7 +268,7 @@ describe('CommentController (e2e)', () => {
 
       const { body, statusCode } = await request(app.getHttpServer())
         .patch(`/post/comment/user/${commentsByUser[0].id}`)
-        .set('Cookie', [`accessToken=${tokens[1]}`])
+        .set('Authorization', `Bearer ${tokens[1]}`)
         .send(dto);
 
       expect(statusCode).toBe(200);
@@ -282,23 +282,23 @@ describe('CommentController (e2e)', () => {
 
       const { statusCode } = await request(app.getHttpServer())
         .patch(`/post/comment/user/${9999}`)
-        .set('Cookie', [`accessToken=${tokens[0]}`])
+        .set('Authorization', `Bearer ${tokens[0]}`)
         .send(dto);
 
       expect(statusCode).toBe(404);
     });
 
-    it('should return 401 when the user does not have the permission to update the comment', async () => {
+    it('should return 403 when the user does not have the permission to update the comment', async () => {
       const dto = {
         content: 'updated content',
       };
 
       const { statusCode } = await request(app.getHttpServer())
         .patch(`/post/comment/user/${commentsByUser[1].id}`)
-        .set('Cookie', [`accessToken=${tokens[0]}`])
+        .set('Authorization', `Bearer ${tokens[0]}`)
         .send(dto);
 
-      expect(statusCode).toBe(401);
+      expect(statusCode).toBe(403);
     });
   });
 
@@ -306,7 +306,7 @@ describe('CommentController (e2e)', () => {
     it('should allow a user to delete a comment', async () => {
       const { body, statusCode } = await request(app.getHttpServer())
         .del(`/post/comment/user/${commentsByUser[0].id}`)
-        .set('Cookie', [`accessToken=${tokens[0]}`]);
+        .set('Authorization', `Bearer ${tokens[0]}`);
 
       expect(statusCode).toBe(200);
       expect(body).toStrictEqual({});
@@ -315,7 +315,7 @@ describe('CommentController (e2e)', () => {
     it('should allow an admin to delete a comment', async () => {
       const { body, statusCode } = await request(app.getHttpServer())
         .del(`/post/comment/user/${commentsByUser[2].id}`)
-        .set('Cookie', [`accessToken=${tokens[1]}`]);
+        .set('Authorization', `Bearer ${tokens[1]}`);
 
       expect(statusCode).toBe(200);
       expect(body).toStrictEqual({});
@@ -324,17 +324,17 @@ describe('CommentController (e2e)', () => {
     it('should return 404', async () => {
       const { statusCode } = await request(app.getHttpServer())
         .del(`/post/comment/user/${9999}`)
-        .set('Cookie', [`accessToken=${tokens[0]}`]);
+        .set('Authorization', `Bearer ${tokens[0]}`);
 
       expect(statusCode).toBe(404);
     });
 
-    it('should return 401 when the user does not have the permission to delete the comment', async () => {
+    it('should return 403 when the user does not have the permission to delete the comment', async () => {
       const { statusCode } = await request(app.getHttpServer())
         .del(`/post/comment/user/${commentsByUser[1].id}`)
-        .set('Cookie', [`accessToken=${tokens[0]}`]);
+        .set('Authorization', `Bearer ${tokens[0]}`);
 
-      expect(statusCode).toBe(401);
+      expect(statusCode).toBe(403);
     });
   });
 

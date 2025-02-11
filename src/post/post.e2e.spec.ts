@@ -1,8 +1,8 @@
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Category, Post, Role, User } from '@prisma/client';
-import * as cookieParser from 'cookie-parser';
 import * as request from 'supertest';
+import * as cookieParser from 'cookie-parser';
 import { AuthService } from 'src/auth/auth.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AppModule } from 'src/app.module';
@@ -127,7 +127,7 @@ describe('PostController (e2e)', () => {
 
       const { body, statusCode } = await request(app.getHttpServer())
         .post('/post')
-        .set('Cookie', [`accessToken=${token}`])
+        .set('Authorization', `Bearer ${token}`)
         .send(dto);
 
       expect(statusCode).toBe(201);
@@ -145,7 +145,7 @@ describe('PostController (e2e)', () => {
 
       const { statusCode } = await request(app.getHttpServer())
         .post('/post')
-        .set('Cookie', [`accessToken=adslfkjsdflksdjfsldkfjlkf`])
+        .set('Authorization', 'Bearer adslfkjsdflksdjfsldkfjlkf')
         .send(dto);
 
       expect(statusCode).toBe(403);
@@ -163,7 +163,7 @@ describe('PostController (e2e)', () => {
 
       const { statusCode } = await request(app.getHttpServer())
         .post('/post')
-        .set('Cookie', [`accessToken=${token}`])
+        .set('Authorization', `Bearer ${token}`)
         .send(dto);
 
       expect(statusCode).toBe(404);
@@ -225,7 +225,7 @@ describe('PostController (e2e)', () => {
       expect(body.message).toBe('쿠키에 guestId 정보가 없습니다');
     });
 
-    it('should return 404', async () => {
+    it('should return 404 if the post does not exist', async () => {
       const { statusCode } = await request(app.getHttpServer())
         .get(`/post/${9999}`)
         .set('Cookie', [`guestId=uuid`]);
@@ -245,7 +245,7 @@ describe('PostController (e2e)', () => {
 
       const { body, statusCode } = await request(app.getHttpServer())
         .patch(`/post/${posts[0].id}`)
-        .set('Cookie', [`accessToken=${token}`])
+        .set('Authorization', `Bearer ${token}`)
         .send(dto);
 
       expect(statusCode).toBe(200);
@@ -262,7 +262,7 @@ describe('PostController (e2e)', () => {
 
       const { statusCode } = await request(app.getHttpServer())
         .patch(`/post/${9999}`)
-        .set('Cookie', [`accessToken=${token}`])
+        .set('Authorization', `Bearer ${token}`)
         .send(dto);
 
       expect(statusCode).toBe(404);
@@ -279,7 +279,7 @@ describe('PostController (e2e)', () => {
 
       const { statusCode } = await request(app.getHttpServer())
         .patch(`/post/${posts[0].id}`)
-        .set('Cookie', [`accessToken=${token}`])
+        .set('Authorization', `Bearer ${token}`)
         .send(dto);
 
       expect(statusCode).toBe(404);
@@ -295,7 +295,7 @@ describe('PostController (e2e)', () => {
 
       const { statusCode } = await request(app.getHttpServer())
         .patch(`/post/${posts[1].id}`) // 다른 유저가 작성함
-        .set('Cookie', [`accessToken=${token}`])
+        .set('Authorization', `Bearer ${token}`)
         .send(dto);
 
       expect(statusCode).toBe(403);
@@ -306,7 +306,7 @@ describe('PostController (e2e)', () => {
     it('should delete a post', async () => {
       const { body, statusCode } = await request(app.getHttpServer())
         .delete(`/post/${posts[3].id}`)
-        .set('Cookie', [`accessToken=${token}`]);
+        .set('Authorization', `Bearer ${token}`);
 
       expect(statusCode).toBe(200);
       expect(body).toStrictEqual({});
@@ -315,7 +315,7 @@ describe('PostController (e2e)', () => {
     it('should return 404 when the post does not exist', async () => {
       const { statusCode } = await request(app.getHttpServer())
         .delete(`/post/${9999}`)
-        .set('Cookie', [`accessToken=${token}`]);
+        .set('Authorization', `Bearer ${token}`);
 
       expect(statusCode).toBe(404);
     });
@@ -323,7 +323,7 @@ describe('PostController (e2e)', () => {
     it('should return 403 when the user does not have the permission to delete the post', async () => {
       const { statusCode } = await request(app.getHttpServer())
         .delete(`/post/${posts[1].id}`) // 다른 유저가 작성함
-        .set('Cookie', [`accessToken=${token}`]);
+        .set('Authorization', `Bearer ${token}`);
 
       expect(statusCode).toBe(403);
     });
@@ -331,7 +331,7 @@ describe('PostController (e2e)', () => {
     it('should return 404 when the image does not exist', async () => {
       const { statusCode } = await request(app.getHttpServer())
         .delete(`/post/${posts[2].id}`)
-        .set('Cookie', [`accessToken=${token}`]);
+        .set('Authorization', `Bearer ${token}`);
 
       expect(statusCode).toBe(404);
     });
