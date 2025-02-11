@@ -35,15 +35,6 @@ export class PrismaClientExceptionFilter extends BaseExceptionFilter {
         });
         break;
       }
-      case 'P2025': {
-        const status = HttpStatus.NOT_FOUND;
-        res.status(status).json({
-          statusCode: status,
-          error: 'Not Found',
-          message: '요청한 데이터를 찾을 수 없습니다.',
-        });
-        break;
-      }
       default:
         // default 500 error code
         super.catch(exception, host);
