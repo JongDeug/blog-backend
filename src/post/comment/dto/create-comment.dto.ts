@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class CreateCommentDto {
@@ -7,7 +7,7 @@ export class CreateCommentDto {
   @IsNotEmpty()
   postId: number; // 댓글, 대댓글
 
-  @ApiProperty({ example: 49, description: '부모 댓글 ID' })
+  @ApiPropertyOptional({ example: 49, description: '부모 댓글 ID' })
   @IsNumber()
   @IsNotEmpty()
   @IsOptional()

@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsArray,
   IsBoolean,
@@ -19,13 +19,13 @@ export class CreatePostDto {
   @IsNotEmpty()
   content: string;
 
-  @ApiProperty({ example: 19, description: '이전 게시글 ID' })
+  @ApiPropertyOptional({ example: 19, description: '이전 게시글 ID' })
   @IsNumber()
   @IsNotEmpty()
   @IsOptional()
   prevId?: number;
 
-  @ApiProperty({ example: 22, description: '다음 게시글 ID' })
+  @ApiPropertyOptional({ example: 22, description: '다음 게시글 ID' })
   @IsNumber()
   @IsNotEmpty()
   @IsOptional()
@@ -41,14 +41,17 @@ export class CreatePostDto {
   @IsNotEmpty()
   summary: string;
 
-  @ApiProperty({ example: [], description: '이미지 파일 이름을 담는 배열' })
+  @ApiPropertyOptional({
+    example: [],
+    description: '이미지 파일 이름을 담는 배열',
+  })
   @IsArray()
   @IsNotEmpty()
   @IsString({ each: true })
   @IsOptional()
   images?: string[] = [];
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     example: ['테스트 태그 1', '테스트 태그 2'],
     description: '태그 이름을 담는 배열',
   })

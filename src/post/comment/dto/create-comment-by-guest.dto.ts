@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsEmail,
   IsNotEmpty,
@@ -14,7 +14,7 @@ export class CreateCommentByGuestDto {
   @IsNotEmpty()
   postId: number; // 댓글, 대댓글
 
-  @ApiProperty({ example: 49, description: '부모 댓글 ID' })
+  @ApiPropertyOptional({ example: 49, description: '부모 댓글 ID' })
   @IsNumber()
   @IsNotEmpty()
   @IsOptional()
