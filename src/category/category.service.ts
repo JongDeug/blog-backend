@@ -60,7 +60,12 @@ export class CategoryService {
   }
 
   async remove(id: number) {
-    const foundCategory = await this.findCategoryById(id);
+    const foundCategory = await this.prismaService.category.findUnique({
+      where: { id },
+      include: { posts: true },
+    });
+    if (!foundCategory)
+      throw new NotFoundException('존재하지 않는 카테고리입니다');
 
     // DB 설정 해놓긴 함. Post.category: (onDelete: Restrict)
     if (foundCategory.posts.length > 0) {

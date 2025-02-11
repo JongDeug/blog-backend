@@ -1,7 +1,8 @@
 export const tokenAge = {
   REFRESH_TOKEN_STRING: '24h',
   REFRESH_TOKEN_INT: 1000 * 60 * 60 * 24,
-  // ACCESS_TOKEN_INT: 180, // 3분
+  ACCESS_TOKEN_INT: 180, // 3분
   // ACCESS_TOKEN_INT: 3, // 3초
-  ACCESS_TOKEN_INT: 1800, // 30분
+  // ACCESS_TOKEN_INT: 1800, // 30분
+  // ACCESS_TOKEN_INT: 20, // 10초
 };

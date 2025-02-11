@@ -74,7 +74,7 @@ export class PostService {
         include: {
           comments: {
             where: { parentCommentId: null },
-            orderBy: { createdAt: 'desc' },
+            orderBy: { createdAt: 'asc' },
             include: {
               childComments: {
                 include: {
@@ -142,6 +142,8 @@ export class PostService {
       }
       throw e;
     }
+
+    return foundPost.id;
   }
 
   async remove(id: number, userId: number) {
@@ -243,8 +245,6 @@ export class PostService {
       draft,
     };
 
-    console.log(whereConditions);
-
     let { order } = getPostsDto;
     let cursorCondition;
 
@@ -260,7 +260,7 @@ export class PostService {
     const results = await this.prismaService.post.findMany({
       where: whereConditions,
       orderBy: orderByCondition,
-      include: { tags: true },
+      include: { tags: true, images: true },
       skip: cursorCondition ? 1 : 0,
       take,
       cursor: cursorCondition ?? Prisma.skip,
@@ -358,7 +358,9 @@ export class PostService {
 
   /* istanbul ignore next */
   getImageURL() {
-    return `${this.configService.get(envVariableKeys.serverOrigin)}/api/uploads/`;
+    return process.env.NODE_ENV === 'production'
+      ? `${this.configService.get(envVariableKeys.serverOrigin)}/api/uploads/`
+      : `${this.configService.get(envVariableKeys.serverOrigin)}/uploads/`;
   }
 
   /* istanbul ignore next */

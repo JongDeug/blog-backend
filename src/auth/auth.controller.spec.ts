@@ -53,29 +53,32 @@ describe('AuthController', () => {
   });
 
   describe('loginUser', () => {
-    it('should set cookies after successful login', async () => {
+    it('should return JWT tokens and user info after a successful login', async () => {
       const token = 'Basic dGVzdEBnbWFpbC5jb206MTIzNA==';
       const accessToken = 'access token';
       const refreshToken = 'refresh token';
-      const authenticatedUser = { id: 10, name: 'test' } as User;
+      const authenticatedUser = {
+        id: 10,
+        name: 'test',
+        email: 'test@gmail.com',
+        role: 'ADMIN',
+      } as User;
 
       jest
         .spyOn(authService, 'login')
         .mockResolvedValue({ accessToken, refreshToken, authenticatedUser });
 
-      await authController.loginUser(token, res);
+      const result = await authController.loginUser(token);
 
-      expect(res.cookie).toHaveBeenCalledTimes(2);
-      expect(res.cookie).toHaveBeenCalledWith(
-        'accessToken',
+      expect(result).toStrictEqual({
         accessToken,
-        expect.any(Object),
-      );
-      expect(res.cookie).toHaveBeenCalledWith(
-        'refreshToken',
         refreshToken,
-        expect.any(Object),
-      );
+        info: {
+          name: authenticatedUser.name,
+          email: authenticatedUser.email,
+          role: authenticatedUser.role,
+        },
+      });
       expect(authService.login).toHaveBeenCalledWith(token);
     });
   });
@@ -90,19 +93,9 @@ describe('AuthController', () => {
 
       jest.spyOn(authService, 'rotateTokens').mockResolvedValue(newTokens);
 
-      await authController.refresh(refreshToken, res);
+      const result = await authController.refresh(refreshToken);
 
-      expect(res.cookie).toHaveBeenCalledTimes(2);
-      expect(res.cookie).toHaveBeenCalledWith(
-        'accessToken',
-        newTokens.accessToken,
-        expect.any(Object),
-      );
-      expect(res.cookie).toHaveBeenCalledWith(
-        'refreshToken',
-        newTokens.refreshToken,
-        expect.any(Object),
-      );
+      expect(result).toStrictEqual({ ...newTokens });
       expect(authService.rotateTokens).toHaveBeenCalledWith(refreshToken);
     });
   });
@@ -111,11 +104,8 @@ describe('AuthController', () => {
     it('should clear cookies after successful logout', async () => {
       const userId = 1;
 
-      await authController.logoutUser(userId, res);
+      await authController.logoutUser(userId);
 
-      expect(res.cookie).toHaveBeenCalledTimes(2);
-      expect(res.cookie).toHaveBeenCalledWith('accessToken', '');
-      expect(res.cookie).toHaveBeenCalledWith('refreshToken', '');
       expect(authService.logout).toHaveBeenCalledWith(userId);
     });
   });

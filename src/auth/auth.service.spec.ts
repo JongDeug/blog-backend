@@ -111,6 +111,40 @@ describe('AuthService', () => {
     });
   });
 
+  describe('parseBearerToken', () => {
+    it('should parse a valid Bearer token', () => {
+      const rawToken = 'Bearer validToken123';
+
+      const result = authService.parseBearerToken(rawToken);
+
+      expect(result).toBe('validToken123');
+    });
+
+    it('should throw a BadRequestException for invalid token format', () => {
+      const rawToken = 'Bearer validToken123 extraPart';
+
+      expect(() => authService.parseBearerToken(rawToken)).toThrow(
+        BadRequestException,
+      );
+    });
+
+    it('should throw a BadRequestException if the scheme is not Bearer', () => {
+      const rawToken = 'Basic dGVzdEBnbWFpbC5jb206MTIzNA==';
+
+      expect(() => authService.parseBearerToken(rawToken)).toThrow(
+        BadRequestException,
+      );
+    });
+
+    it('should throw an BadRequestException if token is missing', () => {
+      const rawToken = 'Bearer ';
+
+      expect(() => authService.parseBearerToken(rawToken)).toThrow(
+        BadRequestException,
+      );
+    });
+  });
+
   describe('parseBasicToken', () => {
     it('should parse a valid Basic Token', () => {
       const rawToken = 'Basic dGVzdEBnbWFpbC5jb206MTIzNA==';
@@ -128,7 +162,7 @@ describe('AuthService', () => {
       );
     });
 
-    it('should throw a BadRequestException for invalid token format', () => {
+    it('should throw a BadRequestException if the scheme is not Basic', () => {
       const rawToken = 'Bearer dGVzdEBnbWFpbC5jb206MTIzNA==';
 
       expect(() => authService.parseBasicToken(rawToken)).toThrow(
@@ -278,7 +312,8 @@ describe('AuthService', () => {
 
   describe('rotateTokens', () => {
     it('should rotate both access and refresh tokens using refresh token', async () => {
-      const token = 'refresh token';
+      const rawToken = 'Bearer mock-refresh-token';
+      const token = 'mock-refresh-token';
       const payload = {
         sub: 1,
         role: 'ADMIN',
@@ -287,14 +322,16 @@ describe('AuthService', () => {
       const accessToken = 'access token';
       const refreshToken = 'refresh token';
 
+      jest.spyOn(authService, 'parseBearerToken').mockReturnValue(token);
       jest.spyOn(jwtService, 'verifyAsync').mockResolvedValue(payload);
       jest.spyOn(cacheManager, 'get').mockResolvedValue(token);
       jest.spyOn(authService, 'issueToken').mockResolvedValueOnce(accessToken);
       jest.spyOn(authService, 'issueToken').mockResolvedValueOnce(refreshToken);
 
-      const result = await authService.rotateTokens(token);
+      const result = await authService.rotateTokens(rawToken);
 
       expect(result).toEqual({ accessToken, refreshToken });
+      expect(authService.parseBearerToken).toHaveBeenCalledWith(rawToken);
       expect(jwtService.verifyAsync).toHaveBeenCalledWith(
         token,
         expect.any(Object),
@@ -320,51 +357,60 @@ describe('AuthService', () => {
     });
 
     it('should throw an error if token type is not refresh', async () => {
-      const token = 'invalid token';
+      const rawToken = 'Bearer mock-invalid-refresh-token';
+      const token = 'mock-invalid-refresh-token';
       const payload = {
         sub: 1,
         role: 'ADMIN',
         type: 'access',
       };
 
+      jest.spyOn(authService, 'parseBearerToken').mockReturnValue(token);
       jest.spyOn(jwtService, 'verifyAsync').mockResolvedValue(payload);
 
-      await expect(authService.rotateTokens(token)).rejects.toThrow(
+      await expect(authService.rotateTokens(rawToken)).rejects.toThrow(
         UnauthorizedException,
       );
+      expect(authService.parseBearerToken).toHaveBeenCalled();
       expect(jwtService.verifyAsync).toHaveBeenCalled();
       expect(cacheManager.get).not.toHaveBeenCalled();
     });
 
     it('should throw an error for revoked refresh token', async () => {
-      const token = 'revoked token';
+      const rawToken = 'Bearer mock-revoked-refresh-token';
+      const token = 'mock-revoked-refresh-token';
       const payload = {
         sub: 1,
         role: 'ADMIN',
         type: 'refresh',
       };
 
+      jest.spyOn(authService, 'parseBearerToken').mockReturnValue(token);
       jest.spyOn(jwtService, 'verifyAsync').mockResolvedValue(payload);
       jest.spyOn(cacheManager, 'get').mockResolvedValue(null);
 
-      await expect(authService.rotateTokens(token)).rejects.toThrow(
+      await expect(authService.rotateTokens(rawToken)).rejects.toThrow(
         UnauthorizedException,
       );
+      expect(authService.parseBearerToken).toHaveBeenCalled();
       expect(jwtService.verifyAsync).toHaveBeenCalled();
       expect(cacheManager.get).toHaveBeenCalled();
       expect(jest.spyOn(authService, 'issueToken')).not.toHaveBeenCalled();
     });
 
     it('should throw an error for expired token', async () => {
-      const token = 'invalid token';
+      const rawToken = 'Bearer mock-invalid-refresh-token';
+      const token = 'mock-invalid-refresh-token';
       const error = new Error();
       error.name = 'TokenExpiredError';
 
+      jest.spyOn(authService, 'parseBearerToken').mockReturnValue(token);
       jest.spyOn(jwtService, 'verifyAsync').mockRejectedValue(error);
 
-      await expect(authService.rotateTokens(token)).rejects.toThrow(
+      await expect(authService.rotateTokens(rawToken)).rejects.toThrow(
         UnauthorizedException,
       );
+      expect(authService.parseBearerToken).toHaveBeenCalled();
       expect(jwtService.verifyAsync).toHaveBeenCalled();
       expect(cacheManager.get).not.toHaveBeenCalled();
     });

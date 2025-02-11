@@ -109,6 +109,8 @@ export class CommentService {
         content: updateCommentDto.content,
       },
     });
+
+    return foundComment.id;
   }
 
   async remove(id: number, userId: number) {

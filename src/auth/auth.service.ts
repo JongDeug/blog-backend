@@ -61,7 +61,7 @@ export class AuthService {
     }
 
     if (!token) {
-      throw new UnauthorizedException('잘못된 토큰입니다');
+      throw new BadRequestException('잘못된 토큰입니다');
     }
 
     return token;
