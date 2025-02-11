@@ -121,15 +121,33 @@ describe('CategoryService', () => {
       } as CategoryType;
 
       jest
-        .spyOn(categoryService, 'findCategoryById')
+        .spyOn(prismaMock.category, 'findUnique')
         .mockResolvedValue(foundCategory);
 
       await categoryService.remove(1);
 
-      expect(categoryService.findCategoryById).toHaveBeenCalledWith(1);
+      expect(prismaMock.category.findUnique).toHaveBeenCalledWith({
+        where: { id: 1 },
+        include: { posts: true },
+      });
       expect(prismaMock.category.delete).toHaveBeenCalledWith({
         where: { id: 1 },
       });
+    });
+
+    it('should throw a NotFoundException if the category does not exist', async () => {
+      const foundCategory = null;
+
+      jest
+        .spyOn(prismaMock.category, 'findUnique')
+        .mockResolvedValue(foundCategory);
+
+      await expect(categoryService.remove(1)).rejects.toThrow(
+        NotFoundException,
+      );
+
+      expect(prismaMock.category.findUnique).toHaveBeenCalled();
+      expect(prismaMock.category.delete).not.toHaveBeenCalled();
     });
 
     it('should throw a BadRequestException when trying to remove a category that is referenced by posts', async () => {
@@ -140,13 +158,13 @@ describe('CategoryService', () => {
       } as CategoryType;
 
       jest
-        .spyOn(categoryService, 'findCategoryById')
+        .spyOn(prismaMock.category, 'findUnique')
         .mockResolvedValue(foundCategory);
 
       await expect(categoryService.remove(1)).rejects.toThrow(
         BadRequestException,
       );
-      expect(categoryService.findCategoryById).toHaveBeenCalled();
+      expect(prismaMock.category.findUnique).toHaveBeenCalled();
       expect(prismaMock.category.delete).not.toHaveBeenCalled();
     });
   });

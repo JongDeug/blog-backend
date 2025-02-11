@@ -10,9 +10,9 @@ import {
 import { TagService } from './tag.service';
 import { CreateTagDto } from './dto/create-tag.dto';
 import { UpdateTagDto } from './dto/update-tag.dto';
-import { Category, Post, Role, Tag, User } from '@prisma/client';
+import { Category, Role, Tag, User } from '@prisma/client';
 
-describe('UserService - Integration Test', () => {
+describe('TagService - Integration Test', () => {
   let app: INestApplication;
   let tagService: TagService;
   let prismaService: PrismaService;
@@ -20,7 +20,6 @@ describe('UserService - Integration Test', () => {
   let user: User;
   let tags: Tag[];
   let category: Category;
-  let post: Post;
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -50,14 +49,16 @@ describe('UserService - Integration Test', () => {
     );
 
     category = await prismaService.category.create({
-      data: { name: 'category ' },
+      data: { name: 'category' },
     });
 
-    post = await prismaService.post.create({
+    // post
+    await prismaService.post.create({
       data: {
         title: 'title1',
         content: 'content1',
         summary: 'summary1',
+        draft: false, // 설정 필요
         author: {
           connect: { id: user.id },
         },

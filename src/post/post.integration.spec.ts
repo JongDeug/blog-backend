@@ -150,8 +150,9 @@ describe('PostService - Integration Test', () => {
     it('should return a post with isLiked field', async () => {
       const id = posts[0].id;
       const guestId = 'uuid';
+      const isEdit = false;
 
-      const result = await postService.findOne(id, guestId);
+      const result = await postService.findOne(id, guestId, isEdit);
 
       expect(result.title).toEqual(posts[0].title);
       expect(result.isLiked).toEqual(false);
@@ -167,7 +168,7 @@ describe('PostService - Integration Test', () => {
 
       await expect(
         postService.update(postId, userId, updatePostDto),
-      ).resolves.toBeUndefined();
+      ).resolves.toBe(postId);
       await expect(postService.findPostById(postId)).resolves.toHaveProperty(
         'title',
         updatePostDto.title,

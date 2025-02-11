@@ -51,6 +51,7 @@ describe('CategoryService - Integration Test', () => {
         title: 'title1',
         content: 'content1',
         summary: 'summary1',
+        draft: false,
         author: {
           connect: { id: user.id },
         },

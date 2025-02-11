@@ -14,6 +14,7 @@ import {
 import { CreateCommentDto } from './dto/create-comment.dto';
 import {
   BadRequestException,
+  ForbiddenException,
   INestApplication,
   NotFoundException,
   UnauthorizedException,
@@ -222,7 +223,7 @@ describe('CommentService - Integration Test', () => {
 
       await expect(
         commentService.update(userId, id, updateCommentDto),
-      ).resolves.toBeUndefined();
+      ).resolves.toBe(id);
       await expect(commentService.findCommentById(id)).resolves.toHaveProperty(
         'content',
         updateCommentDto.content,
@@ -238,14 +239,14 @@ describe('CommentService - Integration Test', () => {
 
       await expect(
         commentService.update(userId, id, updateCommentDto),
-      ).resolves.toBeUndefined();
+      ).resolves.toBe(id);
       await expect(commentService.findCommentById(id)).resolves.toHaveProperty(
         'content',
         updateCommentDto.content,
       );
     });
 
-    it('should throw a UnauthorizedException if the user does not have the permission to update it', async () => {
+    it('should throw a ForbiddenException if the user does not have the permission to update it', async () => {
       const userId = users[1].id;
       const id = commentsByUser[0].id;
       const updateCommentDto: UpdateCommentDto = {
@@ -254,7 +255,7 @@ describe('CommentService - Integration Test', () => {
 
       await expect(
         commentService.update(userId, id, updateCommentDto),
-      ).rejects.toThrow(UnauthorizedException);
+      ).rejects.toThrow(ForbiddenException);
     });
   });
 
@@ -284,12 +285,12 @@ describe('CommentService - Integration Test', () => {
       ).resolves.toBeNull();
     });
 
-    it('should throw a UnauthorizedException if the user does not have the permission to remove it', async () => {
+    it('should throw a ForbiddenException if the user does not have the permission to remove it', async () => {
       const userId = users[1].id;
       const id = commentsByUser[1].id;
 
       await expect(commentService.remove(id, userId)).rejects.toThrow(
-        UnauthorizedException,
+        ForbiddenException,
       );
     });
   });

@@ -31,7 +31,6 @@ describe('PostService', () => {
   let configService: MockProxy<ConfigService>;
   let taskService: MockProxy<TaskService>;
   let userService: MockProxy<UserService>;
-  let logger: MockProxy<LoggerService>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -53,7 +52,6 @@ describe('PostService', () => {
     configService = module.get(ConfigService);
     taskService = module.get(TaskService);
     userService = module.get(UserService);
-    logger = module.get(WINSTON_MODULE_NEST_PROVIDER);
   });
 
   it('should be defined', () => {
@@ -307,7 +305,7 @@ describe('PostService', () => {
         title: '제목',
         images: [
           {
-            url: `${serverOrigin}/api/uploads/aslfdkjsflksjfd-lkdfjsdlvmlsdf-21sdlkfjas.png`,
+            url: `${serverOrigin}/uploads/aslfdkjsflksjfd-lkdfjsdlvmlsdf-21sdlkfjas.png`,
           },
         ],
         authorId: userId,
@@ -485,6 +483,7 @@ describe('PostService', () => {
       getPostsDto.cursor =
         'eyJ2YWx1ZXMiOnsiaWQiOjI3fSwib3JkZXIiOlsiaWRfZGVzYyJdfQ==';
       getPostsDto.search = 'search';
+      getPostsDto.category = 'category';
       // 디코딩 결과: {"values":{"id":27},"order":["id_desc"]}
       // const cursorConditions = { id: 27 };
       // const orderByConditions = { id: 'desc' };
@@ -549,7 +548,7 @@ describe('PostService', () => {
           draft: false,
         },
         orderBy: orderByConditions,
-        include: { tags: true },
+        include: { tags: true, images: true },
         skip: 1,
         take: getPostsDto.take,
         cursor: cursorConditions,
@@ -586,7 +585,7 @@ describe('PostService', () => {
           draft: false,
         },
         orderBy: orderByCondition,
-        include: { tags: true },
+        include: { tags: true, images: true },
         skip: 0,
         take: getPostsDto.take,
         cursor: Prisma.skip,
@@ -684,13 +683,13 @@ describe('PostService', () => {
     it('should move new incoming images and delete unused images', async () => {
       const currentImages = [
         {
-          url: 'http://test.org/api/uploads/test-A.png',
+          url: 'http://test.org/uploads/test-A.png',
         },
         {
-          url: 'http://test.org/api/uploads/test-B.png',
+          url: 'http://test.org/uploads/test-B.png',
         },
         {
-          url: 'http://test.org/api/uploads/test-C.png',
+          url: 'http://test.org/uploads/test-C.png',
         },
       ] as Image[];
       const incomingImages = [

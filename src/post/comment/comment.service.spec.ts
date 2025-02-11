@@ -217,7 +217,7 @@ describe('CommentService', () => {
 
       await expect(
         commentService.update(userId, id, updateCommentDto),
-      ).resolves.toBeUndefined();
+      ).resolves.toBe(foundComment.id);
       expect(userService.findUserById).toHaveBeenCalledWith(userId);
       expect(commentService.findCommentById).toHaveBeenCalledWith(id);
       expect(prismaMock.comment.update).toHaveBeenCalledWith({
@@ -244,7 +244,7 @@ describe('CommentService', () => {
 
       await expect(
         commentService.update(userId, id, updateCommentDto),
-      ).resolves.toBeUndefined();
+      ).resolves.toBe(foundComment.id);
       expect(userService.findUserById).toHaveBeenCalled();
       expect(commentService.findCommentById).toHaveBeenCalled();
       expect(prismaMock.comment.update).toHaveBeenCalled();

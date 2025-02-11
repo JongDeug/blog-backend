@@ -131,7 +131,7 @@ describe('AuthService - Integration Test', () => {
       ).refreshToken;
       const id = (await userService.findUserByEmail('register@gmail.com')).id;
 
-      const result = await authService.rotateTokens(token);
+      const result = await authService.rotateTokens(`Bearer ${token}`);
       const cache = await cacheManager.get(`REFRESH_TOKEN_${id}`);
 
       expect(result.accessToken).toBeDefined();
@@ -143,9 +143,9 @@ describe('AuthService - Integration Test', () => {
       const expiredToken =
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjU1LCJyb2xlIjoiVVNFUiIsInR5cGUiOiJyZWZyZXNoIiwiaWF0IjoxNzMyMjU5MzEzLCJleHAiOjE2MzIzNDU3MTN9.6UxWvpHf7vd_RlmKw6YhkCNZxkpZ5NYT__lPMm8BNWc';
 
-      await expect(authService.rotateTokens(expiredToken)).rejects.toThrow(
-        UnauthorizedException,
-      );
+      await expect(
+        authService.rotateTokens(`Bearer ${expiredToken}`),
+      ).rejects.toThrow(UnauthorizedException);
     });
   });
 
