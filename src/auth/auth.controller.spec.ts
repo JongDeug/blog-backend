@@ -53,27 +53,22 @@ describe('AuthController', () => {
       const token = 'Basic dGVzdEBnbWFpbC5jb206MTIzNA==';
       const accessToken = 'access token';
       const refreshToken = 'refresh token';
-      const authenticatedUser = {
-        id: 10,
-        name: 'test',
-        email: 'test@gmail.com',
-        role: 'ADMIN',
-      } as User;
+      // const authenticatedUser = {
+      //   id: 10,
+      //   name: 'test',
+      //   email: 'test@gmail.com',
+      //   role: 'ADMIN',
+      // } as User;
 
       jest
         .spyOn(authService, 'login')
-        .mockResolvedValue({ accessToken, refreshToken, authenticatedUser });
+        .mockResolvedValue({ accessToken, refreshToken });
 
       const result = await authController.loginUser(token);
 
       expect(result).toStrictEqual({
         accessToken,
         refreshToken,
-        info: {
-          name: authenticatedUser.name,
-          email: authenticatedUser.email,
-          role: authenticatedUser.role,
-        },
       });
       expect(authService.login).toHaveBeenCalledWith(token);
     });

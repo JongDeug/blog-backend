@@ -219,7 +219,7 @@ describe('AuthService', () => {
 
   describe('issueToken', () => {
     it('should issue an access token', async () => {
-      const user = { id: 1, role: Role.ADMIN };
+      const user = { id: 1, role: Role.ADMIN, email: 'mock@gmail.com' };
       const isRefresh = false;
       const token = 'access token';
 
@@ -234,6 +234,7 @@ describe('AuthService', () => {
         {
           sub: user.id,
           role: user.role,
+          email: user.email,
           type: 'access',
         },
         {
@@ -244,7 +245,7 @@ describe('AuthService', () => {
     });
 
     it('should issue a refresh token', async () => {
-      const user = { id: 1, role: Role.ADMIN };
+      const user = { id: 1, role: Role.ADMIN, email: 'mock@gmail.com' };
       const isRefresh = true;
       const token = 'refresh token';
 
@@ -259,6 +260,7 @@ describe('AuthService', () => {
         {
           sub: user.id,
           role: user.role,
+          email: user.email,
           type: 'refresh',
         },
         {
@@ -289,7 +291,7 @@ describe('AuthService', () => {
 
       const result = await authService.login(rawToken);
 
-      expect(result).toEqual({ accessToken, refreshToken, authenticatedUser });
+      expect(result).toEqual({ accessToken, refreshToken });
       expect(authService.parseBasicToken).toHaveBeenCalledWith(rawToken);
       expect(authService.authenticate).toHaveBeenCalledWith(email, password);
       expect(authService.issueToken).toHaveBeenNthCalledWith(

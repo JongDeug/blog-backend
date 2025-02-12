@@ -50,17 +50,11 @@ export class AuthController {
   @Public()
   @Post('login')
   async loginUser(@Authorization() token: string) {
-    const { accessToken, refreshToken, authenticatedUser } =
-      await this.authService.login(token);
+    const { accessToken, refreshToken } = await this.authService.login(token);
 
     return {
       accessToken,
       refreshToken,
-      info: {
-        name: authenticatedUser.name,
-        email: authenticatedUser.email,
-        role: authenticatedUser.role,
-      },
     };
   }
 

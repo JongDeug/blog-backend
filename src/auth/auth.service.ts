@@ -114,7 +114,6 @@ export class AuthService {
     return {
       accessToken,
       refreshToken,
-      authenticatedUser,
     };
   }
 
@@ -127,7 +126,10 @@ export class AuthService {
     return foundUser;
   }
 
-  issueToken(payload: { id: number; role: Role }, isRefresh: boolean) {
+  issueToken(
+    payload: { id: number; role: Role; email: string },
+    isRefresh: boolean,
+  ) {
     const accessTokenSecret = this.configService.get(
       envVariableKeys.accessTokenSecret,
     );
@@ -139,6 +141,7 @@ export class AuthService {
       {
         sub: payload.id,
         role: payload.role,
+        email: payload.email,
         type: isRefresh ? 'refresh' : 'access',
       },
       {
@@ -172,11 +175,11 @@ export class AuthService {
 
       // 토큰 재발급
       const accessToken = await this.issueToken(
-        { id: payload.sub, role: payload.role },
+        { id: payload.sub, role: payload.role, email: payload.email },
         false,
       );
       const refreshToken = await this.issueToken(
-        { id: payload.sub, role: payload.role },
+        { id: payload.sub, role: payload.role, email: payload.email },
         true,
       );
 
