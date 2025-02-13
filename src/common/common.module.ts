@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common';
-import { CommonService } from './common.service';
 import { CommonController } from './common.controller';
 import { TaskService } from './task.service';
 import { MailService } from './mail.service';
+import { RssService } from './rss.service';
 
 @Module({
   controllers: [CommonController],
-  providers: [CommonService, TaskService, MailService],
-  exports: [TaskService, MailService, CommonService],
+  providers: [TaskService, MailService, RssService],
+  exports: [TaskService, MailService, RssService],
 })
 export class CommonModule {}

@@ -1,20 +1,20 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CommonController } from './common.controller';
 import { mock } from 'jest-mock-extended';
-import { CommonService } from './common.service';
+import { RssService } from './rss.service';
 
 describe('CommonController', () => {
   let commonController: CommonController;
-  // let commonService: MockProxy<CommonService>;
+  // let rssService: MockProxy<RssService>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [CommonController],
-      providers: [{ provide: CommonService, useValue: mock<CommonService>() }],
+      providers: [{ provide: RssService, useValue: mock<RssService>() }],
     }).compile();
 
     commonController = module.get<CommonController>(CommonController);
-    // commonService = module.get(CommonService);
+    // rssService = module.get(RssService);
   });
 
   it('should be defined', () => {
