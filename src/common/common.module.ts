@@ -7,6 +7,6 @@ import { MailService } from './mail.service';
 @Module({
   controllers: [CommonController],
   providers: [CommonService, TaskService, MailService],
-  exports: [TaskService, MailService],
+  exports: [TaskService, MailService, CommonService],
 })
 export class CommonModule {}
