@@ -44,6 +44,8 @@ import { ServeStaticModule } from '@nestjs/serve-static';
         EMAIL_HOST: Joi.string().required(),
         EMAIL_ID: Joi.string().required(),
         EMAIL_PWD: Joi.string().required(),
+        GOOGLE_CLIENT_ID: Joi.string().required(),
+        GOOGLE_CLIENT_SECRET: Joi.string().required(),
       }),
       isGlobal: true,
       expandVariables: true,

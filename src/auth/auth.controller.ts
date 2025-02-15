@@ -5,13 +5,14 @@ import {
   Param,
   ParseIntPipe,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { Public } from './decorator/public.decorator';
 import { UserId } from 'src/user/decorator/user-id.decorator';
 import { RBAC } from './decorator/rbac.decorator';
-import { Role } from '@prisma/client';
+import { Role, User } from '@prisma/client';
 import { Authorization } from './decorator/authorization.decorator';
 import {
   ApiBadRequestResponse,
@@ -22,6 +23,8 @@ import {
   ApiNotFoundResponse,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import { GoogleAuthGuard } from './guard/google-auth.guard';
+import { UserInfo } from 'src/user/decorator/user-info.decorator';
 
 // const cookieOptions = {
 //   path: '/',
@@ -75,5 +78,23 @@ export class AuthController {
   @Get('token/revoke/:id')
   revokeRefreshToken(@Param('id', ParseIntPipe) userId: number) {
     return this.authService.revokeToken(userId);
+  }
+
+  @Get('to-google')
+  @Public()
+  @UseGuards(GoogleAuthGuard)
+  googleAuth() {}
+
+  @Get('google')
+  @Public()
+  @UseGuards(GoogleAuthGuard)
+  async googleAuthRedirect(@UserInfo() user: Omit<User, 'password'>) {
+    const { accessToken, refreshToken } =
+      await this.authService.issueJWTs(user);
+
+    return {
+      accessToken,
+      refreshToken,
+    };
   }
 }

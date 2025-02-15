@@ -12,13 +12,16 @@ model User {
   email        String  @unique @db.VarChar(200)
 
   /// 비밀번호(해시값)
-  password     String  @db.VarChar(255)
+  password     String?  @db.VarChar(255)
 
   /// 역할
   role         Role    @default(USER)
 
   /// 생성일
   createdAt DateTime @default(now())
+
+  /// OAuth Id
+  providerId  String? @unique
 
   /// ---
   /// RELATIONS

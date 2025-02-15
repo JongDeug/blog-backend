@@ -66,9 +66,10 @@ erDiagram
   Int id PK
   String name
   String email UK
-  String password
+  String password "nullable"
   Role role
   DateTime createdAt
+  String providerId UK "nullable"
 }
 "_PostToTag" {
   String A FK
@@ -208,6 +209,7 @@ erDiagram
   - `password`: 비밀번호(해시값)
   - `role`: 역할
   - `createdAt`: 생성일
+  - `providerId`: OAuth Id
 
 ### `_PostToTag`
 Pair relationship table between [Post](#Post) and [Tag](#Tag)

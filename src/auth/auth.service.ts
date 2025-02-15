@@ -101,6 +101,14 @@ export class AuthService {
 
     const authenticatedUser = await this.authenticate(email, password);
 
+    return this.issueJWTs(authenticatedUser);
+  }
+
+  async issueJWTs(authenticatedUser: {
+    id: number;
+    role: Role;
+    email: string;
+  }) {
     const accessToken = await this.issueToken(authenticatedUser, false);
     const refreshToken = await this.issueToken(authenticatedUser, true);
 

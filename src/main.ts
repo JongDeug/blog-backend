@@ -13,9 +13,9 @@ async function bootstrap() {
   // Cors
   app.enableCors({
     origin: [
-      'https://jongdeug.port0.org',
-      'http://localhost:5173',
+      'https://jongdeug.ddns.net',
       'http://localhost:3000',
+      'http://localhost:8080',
     ],
     credentials: true,
   });

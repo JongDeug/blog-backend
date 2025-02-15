@@ -10,6 +10,8 @@ const refreshTokenSecret = 'REFRESH_TOKEN_SECRET';
 const emailHost = 'EMAIL_HOST';
 const emailId = 'EMAIL_ID';
 const emailPwd = 'EMAIL_PWD';
+const googleClientId = 'GOOGLE_CLIENT_ID';
+const googleClientSecret = 'GOOGLE_CLIENT_SECRET';
 
 export const envVariableKeys = {
   env,
@@ -24,4 +26,6 @@ export const envVariableKeys = {
   emailHost,
   emailId,
   emailPwd,
+  googleClientId,
+  googleClientSecret,
 };

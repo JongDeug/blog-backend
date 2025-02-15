@@ -33,7 +33,11 @@ export class MailService {
           template: this.templateFileName,
           context: {
             senderName: 'name' in sender ? sender.name : sender.nickName,
-            link: `${this.configService.get(envVariableKeys.serverOrigin)}/post/${post.id}`,
+            link:
+              process.env.NODE_ENV === 'production'
+                ? `${this.configService.get(envVariableKeys.serverOrigin)}/blog/${post.id}`
+                : `http://localhost:3000/blog/${post.id}`,
+
             title: post.title,
           },
         })
@@ -68,7 +72,10 @@ export class MailService {
           template: this.templateFileName,
           context: {
             senderName: 'name' in sender ? sender.name : sender.nickName,
-            link: `${this.configService.get(envVariableKeys.serverOrigin)}/post/${parentComment.post.id}`,
+            link:
+              process.env.NODE_ENV === 'production'
+                ? `${this.configService.get(envVariableKeys.serverOrigin)}/blog/${parentComment.post.id}`
+                : `http://localhost:3000/blog/${parentComment.post.id}`,
             title: parentComment.post.title,
           },
         })

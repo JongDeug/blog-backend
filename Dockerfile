@@ -52,9 +52,10 @@ COPY --from=builder /app/dist /app/dist
 COPY --from=builder /app/.env /app/.env
 COPY --from=builder /app/package.json /app/package.json
 COPY --from=builder /app/prisma /app/prisma
+COPY --from=builder /app/templates /app/templates
 
 # 폴더 생성, 있어도 오류 X
-RUN mkdir -p /app/uploads
+# RUN mkdir -p /app/uploads
 
 # 애플리케이션 실행
 CMD ["pnpm", "start:prod"]
