@@ -4,19 +4,25 @@ import { AuthService } from './auth.service';
 import { mock, MockProxy } from 'jest-mock-extended';
 import { RegisterDto } from './dto/register.dto';
 import { User } from '@prisma/client';
+import { ConfigService } from '@nestjs/config';
 
 describe('AuthController', () => {
   let authController: AuthController;
   let authService: MockProxy<AuthService>;
+  // let configService: MockProxy<ConfigService>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AuthController],
-      providers: [{ provide: AuthService, useValue: mock<AuthService>() }],
+      providers: [
+        { provide: AuthService, useValue: mock<AuthService>() },
+        { provide: ConfigService, useValue: mock<ConfigService>() },
+      ],
     }).compile();
 
     authController = module.get<AuthController>(AuthController);
     authService = module.get(AuthService);
+    // configService = module.get(ConfigService);
   });
 
   it('should be defined', () => {

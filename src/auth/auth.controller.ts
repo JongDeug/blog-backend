@@ -5,6 +5,7 @@ import {
   Param,
   ParseIntPipe,
   Post,
+  Res,
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
@@ -25,17 +26,23 @@ import {
 } from '@nestjs/swagger';
 import { GoogleAuthGuard } from './guard/google-auth.guard';
 import { UserInfo } from 'src/user/decorator/user-info.decorator';
+import { Response } from 'express';
+import { ConfigService } from '@nestjs/config';
+import { envVariableKeys } from 'src/common/const/env.const';
 
-// const cookieOptions = {
-//   path: '/',
-//   httpOnly: true,
-//   sameSite: 'strict' as const,
-//   secure: true,
-// };
+const cookieOptions = {
+  path: '/',
+  httpOnly: true,
+  sameSite: 'strict' as const,
+  secure: true,
+};
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly configService: ConfigService,
+  ) {}
 
   @ApiCreatedResponse({ description: '유저 정보' })
   @ApiConflictResponse({ description: 'Conflict' })
@@ -88,13 +95,18 @@ export class AuthController {
   @Get('google')
   @Public()
   @UseGuards(GoogleAuthGuard)
-  async googleAuthRedirect(@UserInfo() user: Omit<User, 'password'>) {
+  async googleAuthRedirect(
+    @UserInfo() user: Omit<User, 'password'>,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     const { accessToken, refreshToken } =
       await this.authService.issueJWTs(user);
 
-    return {
-      accessToken,
-      refreshToken,
-    };
+    res.cookie('accessToken', accessToken, cookieOptions);
+    res.cookie('refreshToken', refreshToken, cookieOptions);
+
+    return res.redirect(
+      `${this.configService.get(envVariableKeys.serverOrigin)}`,
+    );
   }
 }
