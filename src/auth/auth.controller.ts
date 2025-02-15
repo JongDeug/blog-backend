@@ -102,11 +102,16 @@ export class AuthController {
     const { accessToken, refreshToken } =
       await this.authService.issueJWTs(user);
 
-    res.cookie('accessToken', accessToken, cookieOptions);
-    res.cookie('refreshToken', refreshToken, cookieOptions);
+    res.cookie(
+      'session',
+      JSON.stringify({ accessToken, refreshToken }),
+      cookieOptions,
+    );
 
     return res.redirect(
-      `${this.configService.get(envVariableKeys.serverOrigin)}`,
+      process.env.NODE_ENV === 'production'
+        ? `${this.configService.get(envVariableKeys.serverOrigin)}`
+        : `http://localhost:3000`,
     );
   }
 }
