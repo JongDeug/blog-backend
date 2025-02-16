@@ -24,7 +24,7 @@
 
 #### 프로젝트 배포 주소
 
-https://jongdeug.port0.org/
+https://jongdeug.ddns.net
 
 #### ⭐ Trouble Shooting 기록 ⭐
 
@@ -36,7 +36,7 @@ https://github.com/users/JongDeug/projects/9/views/1
 
 #### Swagger 배포 주소
 
-https://jongdeug.port0.org/api/docs
+https://jongdeug.ddns.net/api/nest/docs
 
 #### 프론트엔드 깃허브
 
@@ -46,7 +46,7 @@ https://github.com/JongDeug/blog-frontend
 
 #### 전체적인 서비스 구조
 
-![image](https://github.com/user-attachments/assets/67fe52a4-aa7d-4d30-a4af-78df5ce72c87)
+![image](https://github.com/user-attachments/assets/231a7d3b-c3fa-434e-8679-b2a7520ef191)
 
 ## 📌 4. 기술 스택
 
