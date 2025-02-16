@@ -127,7 +127,8 @@ export class AuthService {
 
   async authenticate(email: string, password: string) {
     const foundUser = await this.userService.findUserByEmail(email);
-    if (!foundUser) throw new NotFoundException('가입된 이메일이 아닙니다');
+    if (!foundUser || !foundUser.password)
+      throw new NotFoundException('가입된 이메일이 아닙니다');
 
     await this.comparePassword(password, foundUser.password);
 
