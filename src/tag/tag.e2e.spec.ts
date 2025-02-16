@@ -1,7 +1,7 @@
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Category, Role, Tag, User } from '@prisma/client';
-import * as request from 'supertest';
+import request from 'supertest';
 import { AuthService } from 'src/auth/auth.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AppModule } from 'src/app.module';
@@ -76,7 +76,7 @@ describe('TagController (e2e)', () => {
 
     const authService = moduleFixture.get<AuthService>(AuthService);
     token = await authService.issueToken(
-      { id: user.id, role: user.role },
+      { id: user.id, role: user.role, email: user.email },
       false,
     );
   });

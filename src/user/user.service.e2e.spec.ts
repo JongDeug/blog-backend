@@ -1,7 +1,7 @@
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { User } from '@prisma/client';
-import * as request from 'supertest';
+import request from 'supertest';
 import { AuthService } from 'src/auth/auth.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AppModule } from 'src/app.module';
@@ -47,7 +47,7 @@ describe('UserController (e2e)', () => {
 
     const authService = moduleFixture.get<AuthService>(AuthService);
     token = await authService.issueToken(
-      { id: users[0].id, role: users[0].role },
+      { id: users[0].id, role: users[0].role, email: users[0].email },
       false,
     );
   });

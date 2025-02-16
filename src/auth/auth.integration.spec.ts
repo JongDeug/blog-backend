@@ -107,7 +107,7 @@ describe('AuthService - Integration Test', () => {
   describe('issueToken', () => {
     it('should issue a access token when isRefresh is false', async () => {
       const result = await authService.issueToken(
-        { id: user.id, role: user.role },
+        { id: user.id, role: user.role, email: user.email },
         false,
       );
 
@@ -116,7 +116,7 @@ describe('AuthService - Integration Test', () => {
 
     it('should issue a refresh token when isRefresh is true', async () => {
       const result = await authService.issueToken(
-        { id: user.id, role: user.role },
+        { id: user.id, role: user.role, email: user.email },
         true,
       );
 

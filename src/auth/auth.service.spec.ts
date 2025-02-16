@@ -286,14 +286,35 @@ describe('AuthService', () => {
       jest
         .spyOn(authService, 'authenticate')
         .mockResolvedValue(authenticatedUser);
-      jest.spyOn(authService, 'issueToken').mockResolvedValueOnce(accessToken);
-      jest.spyOn(authService, 'issueToken').mockResolvedValueOnce(refreshToken);
+      jest
+        .spyOn(authService, 'issueJWTs')
+        .mockResolvedValue({ accessToken, refreshToken });
 
       const result = await authService.login(rawToken);
 
       expect(result).toEqual({ accessToken, refreshToken });
       expect(authService.parseBasicToken).toHaveBeenCalledWith(rawToken);
       expect(authService.authenticate).toHaveBeenCalledWith(email, password);
+      expect(authService.issueJWTs).toHaveBeenCalledWith(authenticatedUser);
+    });
+  });
+
+  describe('issueJWTs', () => {
+    it('should issue JWT tokens successfully', async () => {
+      const authenticatedUser = {
+        id: 1,
+        email: 'test@gmail.com',
+        role: 'USER',
+      } as User;
+      const accessToken = 'access token';
+      const refreshToken = 'refresh token';
+
+      jest.spyOn(authService, 'issueToken').mockResolvedValueOnce(accessToken);
+      jest.spyOn(authService, 'issueToken').mockResolvedValueOnce(refreshToken);
+
+      const result = await authService.issueJWTs(authenticatedUser);
+
+      expect(result).toEqual({ accessToken, refreshToken });
       expect(authService.issueToken).toHaveBeenNthCalledWith(
         1,
         authenticatedUser,

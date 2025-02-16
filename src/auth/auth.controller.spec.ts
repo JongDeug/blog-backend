@@ -2,14 +2,17 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { mock, MockProxy } from 'jest-mock-extended';
+import { getMockRes } from '@jest-mock/express';
 import { RegisterDto } from './dto/register.dto';
 import { User } from '@prisma/client';
 import { ConfigService } from '@nestjs/config';
+import { Response } from 'express';
 
 describe('AuthController', () => {
   let authController: AuthController;
   let authService: MockProxy<AuthService>;
-  // let configService: MockProxy<ConfigService>;
+  let configService: MockProxy<ConfigService>;
+  let mockRes: Response;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -22,7 +25,8 @@ describe('AuthController', () => {
 
     authController = module.get<AuthController>(AuthController);
     authService = module.get(AuthService);
-    // configService = module.get(ConfigService);
+    configService = module.get(ConfigService);
+    mockRes = getMockRes().res;
   });
 
   it('should be defined', () => {
@@ -114,6 +118,71 @@ describe('AuthController', () => {
       await authController.revokeRefreshToken(userId);
 
       expect(authService.revokeToken).toHaveBeenCalledWith(userId);
+    });
+  });
+
+  describe('googleAuth', () => {
+    it('should return void', () => {
+      expect(authController.googleAuth()).toBeUndefined();
+    });
+  });
+
+  describe('googleAuthRedirect', () => {
+    it('should set cookies and redirect in development environment', async () => {
+      const mockUser = {
+        id: 1,
+        email: 'test@example.com',
+        name: 'Test User',
+      } as Omit<User, 'password'>;
+      const mockTokens = {
+        accessToken: 'mock-access-token',
+        refreshToken: 'mock-refresh-token',
+      };
+
+      process.env.NODE_ENV = 'development';
+
+      jest.spyOn(authService, 'issueJWTs').mockResolvedValue(mockTokens);
+
+      await authController.googleAuthRedirect(mockUser, mockRes);
+
+      expect(authService.issueJWTs).toHaveBeenCalledWith(mockUser);
+      expect(mockRes.cookie).toHaveBeenCalledWith(
+        'session',
+        JSON.stringify(mockTokens),
+        expect.any(Object),
+      );
+      expect(mockRes.redirect).toHaveBeenCalledWith(
+        'http://localhost:3000/api/next/auth/google',
+      );
+    });
+
+    it('should set cookies and redirect in production environment', async () => {
+      const mockUser = {
+        id: 1,
+        email: 'test@example.com',
+        name: 'Test User',
+      } as Omit<User, 'password'>;
+      const mockTokens = {
+        accessToken: 'mock-access-token',
+        refreshToken: 'mock-refresh-token',
+      };
+      const mockServerOrigin = 'https://api.example.com';
+
+      process.env.NODE_ENV = 'production';
+      jest.spyOn(authService, 'issueJWTs').mockResolvedValue(mockTokens);
+      jest.spyOn(configService, 'get').mockReturnValue(mockServerOrigin);
+
+      await authController.googleAuthRedirect(mockUser, mockRes);
+
+      expect(authService.issueJWTs).toHaveBeenCalledWith(mockUser);
+      expect(mockRes.cookie).toHaveBeenCalledWith(
+        'session',
+        JSON.stringify(mockTokens),
+        expect.any(Object),
+      );
+      expect(mockRes.redirect).toHaveBeenCalledWith(
+        `${mockServerOrigin}/api/next/auth/google`,
+      );
     });
   });
 });

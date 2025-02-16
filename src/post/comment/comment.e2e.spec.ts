@@ -9,11 +9,11 @@ import {
   Role,
   User,
 } from '@prisma/client';
-import * as request from 'supertest';
+import request from 'supertest';
 import { AuthService } from 'src/auth/auth.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AppModule } from 'src/app.module';
-import * as cookieParser from 'cookie-parser';
+import cookieParser from 'cookie-parser';
 
 describe('CommentController (e2e)', () => {
   let app: INestApplication;
@@ -137,7 +137,10 @@ describe('CommentController (e2e)', () => {
 
     tokens = await Promise.all(
       [0, 1].map(() =>
-        authService.issueToken({ id: users[0].id, role: users[0].role }, false),
+        authService.issueToken(
+          { id: users[0].id, role: users[0].role, email: users[0].email },
+          false,
+        ),
       ),
     );
   });
