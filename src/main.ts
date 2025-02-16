@@ -26,7 +26,7 @@ async function bootstrap() {
     .setDescription('Blog API Documentation')
     .setVersion('0.1')
     .addBasicAuth()
-    .addServer('/api/nest') // 기본 경로 설정
+    .addServer(process.env.NODE_ENV === 'production' ? '/api/nest' : '/') // 기본 경로 설정
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('doc', app, document, {
