@@ -110,8 +110,8 @@ export class AuthController {
 
     return res.redirect(
       process.env.NODE_ENV === 'production'
-        ? `${this.configService.get(envVariableKeys.serverOrigin)}`
-        : `http://localhost:3000`,
+        ? `${this.configService.get(envVariableKeys.serverOrigin)}/api/next/auth/google`
+        : `http://localhost:3000/api/next/auth/google`,
     );
   }
 }
