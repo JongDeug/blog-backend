@@ -33,8 +33,8 @@ import { envVariableKeys } from 'src/common/const/env.const';
 const cookieOptions = {
   path: '/',
   httpOnly: true,
-  sameSite: 'strict' as const,
-  secure: true,
+  sameSite: 'lax' as const,
+  secure: process.env.NODE_ENV === 'production',
 };
 
 @Controller('auth')
