@@ -46,10 +46,10 @@ describe('TagService', () => {
     };
 
     it('should create a tag', async () => {
-      const newTag: Tag = {
+      const newTag = {
         id: 1,
         name: createTagDto.name,
-      };
+      } as Tag;
 
       jest.spyOn(tagService, 'checkTagExists');
       jest.spyOn(prismaMock.tag, 'create').mockResolvedValue(newTag);
@@ -105,7 +105,7 @@ describe('TagService', () => {
     const foundTag = { id: 1, name: '리눅스' } as TagType;
 
     it('should update a tag', async () => {
-      const newTag = { id: 1, name: updateTagDto.name };
+      const newTag = { id: 1, name: updateTagDto.name } as Tag;
 
       jest.spyOn(tagService, 'findTagById').mockResolvedValue(foundTag);
       jest.spyOn(tagService, 'checkTagExists');

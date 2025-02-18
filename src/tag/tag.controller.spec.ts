@@ -4,6 +4,7 @@ import { TagService } from './tag.service';
 import { mock, MockProxy } from 'jest-mock-extended';
 import { CreateTagDto } from './dto/create-tag.dto';
 import { UpdateTagDto } from './dto/update-tag.dto';
+import { Tag } from '@prisma/client';
 
 describe('TagController', () => {
   let tagController: TagController;
@@ -30,7 +31,7 @@ describe('TagController', () => {
   describe('create', () => {
     it('should create a tag', async () => {
       const createTagDto: CreateTagDto = { name: '리눅스' };
-      const newTag = { id: 1, name: createTagDto.name };
+      const newTag = { id: 1, name: createTagDto.name } as Tag;
 
       jest.spyOn(tagService, 'create').mockResolvedValue(newTag);
 
@@ -54,7 +55,12 @@ describe('TagController', () => {
 
   describe('findOne', () => {
     it('should return a tag', async () => {
-      const foundTag = { id: 1, name: '리눅스', posts: [] };
+      const foundTag = {
+        id: 1,
+        name: '리눅스',
+        createdAt: new Date(),
+        posts: [],
+      };
 
       jest.spyOn(tagService, 'findTagById').mockResolvedValue(foundTag);
 
