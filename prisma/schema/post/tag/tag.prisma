@@ -8,6 +8,9 @@ model Tag {
   /// 태그 이름
   name String @unique
 
+  /// 생성일
+  createdAt DateTime @default(now())
+
   /// ---
   /// RELATIONS
   /// ---

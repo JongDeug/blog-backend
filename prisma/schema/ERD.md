@@ -11,11 +11,13 @@ erDiagram
   String nickName
   String email
   String password
+  DateTime createdAt
   String guestId FK
 }
 "Guest" {
   Int id PK
   String guestId UK
+  DateTime createdAt
 }
 "Category" {
   Int id PK
@@ -36,6 +38,7 @@ erDiagram
 "Image" {
   Int id PK
   String url
+  DateTime createdAt
   Int postId FK
 }
 "PostLike" {
@@ -61,6 +64,7 @@ erDiagram
 "Tag" {
   Int id PK
   String name UK
+  DateTime createdAt
 }
 "User" {
   Int id PK
@@ -97,6 +101,7 @@ erDiagram
   - `nickName`: 닉네임
   - `email`: 이메일
   - `password`: 비밀번호(해시값)
+  - `createdAt`: 생성일
   - `guestId`
     > Foreign Key
     > 
@@ -108,6 +113,7 @@ erDiagram
 **Properties**
   - `id`: Primary Key
   - `guestId`: 비회원 id, 프론트에서 생성
+  - `createdAt`: 생성일
 
 ### `Category`
 카테고리 테이블
@@ -149,6 +155,7 @@ erDiagram
 **Properties**
   - `id`: Primary Key
   - `url`: 이미지 url
+  - `createdAt`: 생성일
   - `postId`
     > Foreign Key
     > 
@@ -166,7 +173,7 @@ erDiagram
     > Foreign Key
     > 
     > 비회원 ID [Guest.guestId](#Guest)
-  - `createdAt`: 좋아요가 눌린 날짜
+  - `createdAt`: 생성일
 
 ### `Post`
 게시글 테이블
@@ -198,6 +205,7 @@ erDiagram
 **Properties**
   - `id`: Primary Key
   - `name`: 태그 이름
+  - `createdAt`: 생성일
 
 ### `User`
 회원 테이블

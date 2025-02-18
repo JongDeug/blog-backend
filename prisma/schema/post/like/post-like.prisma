@@ -14,8 +14,9 @@ model PostLike {
   guestId String
   guest   Guest @relation(fields: [guestId], references: [guestId])
 
-  /// 좋아요가 눌린 날짜
+  /// 생성일
   createdAt DateTime @default(now())
+  
 
   @@id([postId, guestId])
 }

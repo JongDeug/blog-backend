@@ -8,6 +8,9 @@ model Image {
   /// 이미지 url
   url String @db.VarChar(500)
 
+  /// 생성일
+  createdAt DateTime @default(now())
+
   /// Foreign Key
   ///
   /// 게시글 ID {@link Post.id}

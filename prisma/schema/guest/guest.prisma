@@ -8,6 +8,9 @@ model Guest {
   /// 비회원 id, 프론트에서 생성
   guestId  String   @unique
 
+  /// 생성일
+  createdAt DateTime @default(now())
+
   /// ---
   /// RELATIONS
   /// ---
