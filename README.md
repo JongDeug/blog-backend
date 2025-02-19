@@ -48,12 +48,14 @@
 | ---------------- | ---------------------- | ----------- | ------------------------------------------ | --- | --------------- |
 | 1. 회원 관리     | 1.1 이메일 가입        | POST        | /auth/register                             | X   | ALL             |
 |                  | 1.2 로그인             | POST        | /auth/login                                | X   | ALL             |
-|                  | 1.3 로그아웃           | GET         | /auth/logout                               | O   | USER            |
-|                  | 1.4 로그인 갱신        | GET         | /auth/token/refresh                        | O   | USER            |
-|                  | 1.5 토큰 무효화        | GET         | /auth/token/revoke/:id                     | O   | ADMIN           |
-|                  | 1.6 유저 목록 조회     | GET         | /user                                      | O   | ADMIN           |
-|                  | 1.7 유저 상세 조회     | GET         | /user/:id                                  | O   | ADMIN           |
-|                  | 1.8 유저 삭제          | DELETE      | /user/:id                                  | O   | ADMIN           |
+|                  | 1.3 구글 OAuth 2.0 로그인         | GET      | /auth/to-google                                  | X   | ALL           |
+|                  | 1.4 구글 OAuth 2.0 리다이렉트     | GET      | /auth/google                                  | X   | ALL           |
+|                  | 1.5 로그아웃           | GET         | /auth/logout                               | O   | USER            |
+|                  | 1.6 로그인 갱신        | GET         | /auth/token/refresh                        | O   | USER            |
+|                  | 1.7 토큰 무효화        | GET         | /auth/token/revoke/:id                     | O   | ADMIN           |
+|                  | 1.8 유저 목록 조회     | GET         | /user                                      | O   | ADMIN           |
+|                  | 1.9 유저 상세 조회     | GET         | /user/:id                                  | O   | ADMIN           |
+|                  | 1.10 유저 삭제          | DELETE      | /user/:id                                  | O   | ADMIN           |
 | 2. 게시글 관리   | 2.1 게시글 목록 조회   | GET         | /post?search=&take=&draft=&cursor=&order[] | X   | ALL             |
 |                  | 2.2 게시글 상세 조회   | GET         | /post/:id                                  | X   | ALL             |
 |                  | 2.3 게시글 등록        | POST        | /post                                      | O   | ADMIN           |
