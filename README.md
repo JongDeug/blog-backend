@@ -4,7 +4,6 @@
 
 ![image](https://github.com/user-attachments/assets/f0fbd81f-3fd8-4959-9d28-46372a7a727d)
 
-
 #### 프로젝트 주제 선정 배경
 
 학부 시절 여러 팀 프로젝트를 진행했지만, 실질적으로 운영 및 유지 보수한 경험은 없었습니다.  
@@ -44,41 +43,41 @@
 
 ## 📌 4. API 명세서
 
-| 구분             | 기능명                 | HTTP Method | REST API                                   | JWT | ROLE(하위 범주) |
-| ---------------- | ---------------------- | ----------- | ------------------------------------------ | --- | --------------- |
-| 1. 회원 관리     | 1.1 이메일 가입        | POST        | /auth/register                             | X   | ALL             |
-|                  | 1.2 로그인             | POST        | /auth/login                                | X   | ALL             |
-|                  | 1.3 구글 OAuth 2.0 로그인         | GET      | /auth/to-google                                  | X   | ALL           |
-|                  | 1.4 구글 OAuth 2.0 리다이렉트     | GET      | /auth/google                                  | X   | ALL           |
-|                  | 1.5 로그아웃           | GET         | /auth/logout                               | O   | USER            |
-|                  | 1.6 로그인 갱신        | GET         | /auth/token/refresh                        | O   | USER            |
-|                  | 1.7 토큰 무효화        | GET         | /auth/token/revoke/:id                     | O   | ADMIN           |
-|                  | 1.8 유저 목록 조회     | GET         | /user                                      | O   | ADMIN           |
-|                  | 1.9 유저 상세 조회     | GET         | /user/:id                                  | O   | ADMIN           |
-|                  | 1.10 유저 삭제          | DELETE      | /user/:id                                  | O   | ADMIN           |
-| 2. 게시글 관리   | 2.1 게시글 목록 조회   | GET         | /post?search=&take=&draft=&cursor=&order[] | X   | ALL             |
-|                  | 2.2 게시글 상세 조회   | GET         | /post/:id                                  | X   | ALL             |
-|                  | 2.3 게시글 등록        | POST        | /post                                      | O   | ADMIN           |
-|                  | 2.4 게시글 수정        | PATCH       | /post/:id                                  | O   | ADMIN           |
-|                  | 2.5 게시글 삭제        | DELETE      | /post/:id                                  | O   | ADMIN           |
-|                  | 2.6 게시글 좋아요      | POST        | /post/like/:id                             | X   | ALL             |
-|                  | 2.7 이미지 업로드      | POST        | /common/image                              | O   | ADMIN           |
-| 3. 댓글 관리     | 3.1 댓글 작성(회원)    | POST        | /post/comment/user                         | O   | USER            |
-|                  | 3.2 댓글 수정(회원)    | PATCH       | /post/comment/user/:id                     | O   | USER            |
-|                  | 3.3 댓글 삭제(회원)    | DELETE      | /post/comment/user/:id                     | O   | USER            |
-|                  | 3.4 댓글 작성(비회원)  | POST        | /post/comment/guest                        | X   | ALL             |
-|                  | 3.5 댓글 수정(비회원)  | PATCH       | /post/comment/guest/:id                    | X   | ALL             |
-|                  | 3.6 댓글 삭제(비회원)  | DELETE      | /post/comment/guest/:id                    | X   | ALL             |
-| 4. 태그 관리     | 4.1 태그 목록 조회     | GET         | /tag                                       | X   | ALL             |
-|                  | 4.2 태그 상세 조회     | GET         | /tag/:id                                   | X   | ALL             |
-|                  | 4.3 태그 생성          | POST        | /tag                                       | O   | ADMIN           |
-|                  | 4.4 태그 수정          | PATCH       | /tag/:id                                   | O   | ADMIN           |
-|                  | 4.5 태그 삭제          | DELETE      | /tag/:id                                   | O   | ADMIN           |
-| 5. 카테고리 관리 | 5.1 카테고리 목록 조회 | GET         | /category                                  | X   | ALL             |
-|                  | 5.2 카테고리 상세 조회 | GET         | /category/:id                              | X   | ALL             |
-|                  | 5.3 카테고리 생성      | POST        | /category                                  | O   | ADMIN           |
-|                  | 5.4 카테고리 수정      | PATCH       | /category/:id                              | O   | ADMIN           |
-|                  | 5.5 카테고리 삭제      | DELETE      | /category/:id                              | O   | ADMIN           |
+| 구분             | 기능명                        | HTTP Method | REST API                                   | JWT | ROLE(하위 범주) |
+| ---------------- | ----------------------------- | ----------- | ------------------------------------------ | --- | --------------- |
+| 1. 회원 관리     | 1.1 이메일 가입               | POST        | /auth/register                             | X   | ALL             |
+|                  | 1.2 로그인                    | POST        | /auth/login                                | X   | ALL             |
+|                  | 1.3 구글 OAuth 2.0 로그인     | GET         | /auth/to-google                            | X   | ALL             |
+|                  | 1.4 구글 OAuth 2.0 리다이렉트 | GET         | /auth/google                               | X   | ALL             |
+|                  | 1.5 로그아웃                  | GET         | /auth/logout                               | O   | USER            |
+|                  | 1.6 로그인 갱신               | GET         | /auth/token/refresh                        | O   | USER            |
+|                  | 1.7 토큰 무효화               | GET         | /auth/token/revoke/:id                     | O   | ADMIN           |
+|                  | 1.8 유저 목록 조회            | GET         | /user                                      | O   | ADMIN           |
+|                  | 1.9 유저 상세 조회            | GET         | /user/:id                                  | O   | ADMIN           |
+|                  | 1.10 유저 삭제                | DELETE      | /user/:id                                  | O   | ADMIN           |
+| 2. 게시글 관리   | 2.1 게시글 목록 조회          | GET         | /post?search=&take=&draft=&cursor=&order[] | X   | ALL             |
+|                  | 2.2 게시글 상세 조회          | GET         | /post/:id                                  | X   | ALL             |
+|                  | 2.3 게시글 등록               | POST        | /post                                      | O   | ADMIN           |
+|                  | 2.4 게시글 수정               | PATCH       | /post/:id                                  | O   | ADMIN           |
+|                  | 2.5 게시글 삭제               | DELETE      | /post/:id                                  | O   | ADMIN           |
+|                  | 2.6 게시글 좋아요             | POST        | /post/like/:id                             | X   | ALL             |
+|                  | 2.7 이미지 업로드             | POST        | /common/image                              | O   | ADMIN           |
+| 3. 댓글 관리     | 3.1 댓글 작성(회원)           | POST        | /post/comment/user                         | O   | USER            |
+|                  | 3.2 댓글 수정(회원)           | PATCH       | /post/comment/user/:id                     | O   | USER            |
+|                  | 3.3 댓글 삭제(회원)           | DELETE      | /post/comment/user/:id                     | O   | USER            |
+|                  | 3.4 댓글 작성(비회원)         | POST        | /post/comment/guest                        | X   | ALL             |
+|                  | 3.5 댓글 수정(비회원)         | PATCH       | /post/comment/guest/:id                    | X   | ALL             |
+|                  | 3.6 댓글 삭제(비회원)         | DELETE      | /post/comment/guest/:id                    | X   | ALL             |
+| 4. 태그 관리     | 4.1 태그 목록 조회            | GET         | /tag                                       | X   | ALL             |
+|                  | 4.2 태그 상세 조회            | GET         | /tag/:id                                   | X   | ALL             |
+|                  | 4.3 태그 생성                 | POST        | /tag                                       | O   | ADMIN           |
+|                  | 4.4 태그 수정                 | PATCH       | /tag/:id                                   | O   | ADMIN           |
+|                  | 4.5 태그 삭제                 | DELETE      | /tag/:id                                   | O   | ADMIN           |
+| 5. 카테고리 관리 | 5.1 카테고리 목록 조회        | GET         | /category                                  | X   | ALL             |
+|                  | 5.2 카테고리 상세 조회        | GET         | /category/:id                              | X   | ALL             |
+|                  | 5.3 카테고리 생성             | POST        | /category                                  | O   | ADMIN           |
+|                  | 5.4 카테고리 수정             | PATCH       | /category/:id                              | O   | ADMIN           |
+|                  | 5.5 카테고리 삭제             | DELETE      | /category/:id                              | O   | ADMIN           |
 
 ## 📌 6. ERD 설계
 
