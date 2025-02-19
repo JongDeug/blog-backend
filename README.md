@@ -4,21 +4,40 @@
 
 **기간: (2024.06 ~ .)**
 
-#### 소개
+#### 프로젝트 주제 선정 배경
 
-개인 블로그 서비스입니다.
+학부 시절 여러 팀 프로젝트를 진행했지만, 실질적으로 운영 및 유지 보수한 경험은 없었습니다.
 
-#### 계기
+다양한 아이디어를 고민한 끝에, 기능을 자유롭게 확장하고 수정하며 지속적으로 개선할 수 있는 블로그 서비스를 개발하는 것이 적절하다고 판단했습니다.
 
-학부에서 여러 주제로 팀 프로젝트를 진행해봤지만 실질적으로 유지 보수 및 운영하고 있는 프로젝트가 없었습니다.
-단순히 설계와 구현에만 집중하고 있었다는 사실을 깨닫고, 지속적으로 **운영 및 유지 보수할 수 있는 프로젝트의 필요성**을 느꼈습니다.
+#### 과거 경험을 바탕으로 개선한 점
 
-#### 목표
+- **운영 및 유지 보수**
+  - 사용자가 적더라도 실제 서비스 운영에서 겪을 수 있는 문제들을 직접 경험하고 개선할 수 있는 프로젝트 개발을 목표로 했습니다.
+- **효율적인 커뮤니케이션**
+  - 문제: 팀프로젝트에서 주로 구두로 협업을 진행했습니다.
+  - 개선: GitHub Issue, PR 기능을 적극 활용했으며, API 문서화 도구를 도입했습니다.
+- **테스트 코드**
+  - 문제: 시연 중 갑작스러운 기능 오류로 인해 문제가 발생한 적이 있습니다.
+  - 개선: 모든 주요 기능에 대해 테스트 코드를 작성했습니다.
 
-- 실제 서비스 운영에서 겪을 수 있는 문제들을 직접 경험하고 개선할 수 있도록 합니다.
-- 지속적으로 코드 품질 개선합니다.
-- 위와 같은 활동들을 통해 자연스럽게 포트폴리오를 강화합니다.
-- 개인 브랜딩을 통해 가치를 높일 수 있도록 합니다.
+#### 개발 주요사항
+
+- **사용자 인증:** JWT, Google OAuth 2.0, RBAC(Role-Based Access Control)
+- **CRUD 기능 구현:** 블로그 서비스 관련 API 개발 및 이미지 업로드 기능 추가
+- **테스트 코드 작성:** Unit, Integration, E2E 테스트 코드 작성
+- **프론트엔드 개발:** 서버 연동 및 SEO 최적화 적용
+- **라즈베리파이 웹 서버 설정**
+
+## 📌 2. 기술 스택
+
+| **기술**       | **설명**                                                                                                                                 |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| **TypeScript** | 하나의 언어로 백엔드와 프론트엔드를 개발 가능, 컴파일 타임에 의도치 않은 오류를 확인할 수 있어 유지 보수 용이                            |
+| **NestJS**     | 자유도가 높은 Express 대신, 좀 더 구조적이고 계층화된 프레임워크로 마이그레이션, 코드 가독성과 유지 보수성 향상                          |
+| **Next.js**    | 블로그 서비스 특성상 검색 엔진에 잘 노출되어야 하므로, SEO 최적화를 쉽게 할 수 있는 프레임워크 선택, 취업 시장에 맞춰 공부 목적으로 선택 |
+| **MySQL**      | 관계형 데이터베이스 설계와 학습 목적                                                                                                     |
+| **Prisma**     | TypeORM보다 직관적인 스키마 작성 가능, 좀 더 편리하게 데이터베이스 쿼리 수행 및 관리 가능                                                |
 
 ## 📌 2. 아키텍처
 
@@ -47,39 +66,6 @@ https://jongdeug.ddns.net/api/nest/docs
 #### 프론트엔드 깃허브
 
 https://github.com/JongDeug/blog-frontend
-
-## 📌 4. 기술 스택
-
-### v2
-
-[![Nest.js](https://img.shields.io/badge/Nest.js-E0234E?style=for-the-badge&logo=nestjs&logoColor=white)](https://nestjs.com/)
-[![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://nodejs.org/)
-[![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white)](https://www.mysql.com/)
-[![Prisma](https://img.shields.io/badge/Prisma-2D3748?style=for-the-badge&logo=prisma&logoColor=white)](https://www.prisma.io/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
-[![Docker Compose](https://img.shields.io/badge/Docker_Compose-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://docs.docker.com/compose/)
-
-### v1
-
-[![Express](https://img.shields.io/badge/Express-000000?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com/)
-[![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://nodejs.org/)
-[![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white)](https://www.mysql.com/)
-[![Prisma](https://img.shields.io/badge/Prisma-2D3748?style=for-the-badge&logo=prisma&logoColor=white)](https://www.prisma.io/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Redis](https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white)](https://redis.io/)
-[![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
-[![Docker Compose](https://img.shields.io/badge/Docker_Compose-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://docs.docker.com/compose/)
-
-| **기술**       | **설명**                                                                                                               |
-| -------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| **Express**    | 학부 때 사용 경험 있음. 빠른 API 개발 가능                                                                             |
-| **NestJS**     | 자유도가 높은 Express 대신 계층화 및 모듈화 방식을 사용하는 NestJS로 마이그레이션. 코드 가독성과 유지 보수성 향상 기대 |
-| **JavaScript** | 프론트엔드와 백엔드 모두 하나의 언어로 개발 가능                                                                       |
-| **TypeScript** | 코드의 안전성과 유지 보수 향상                                                                                         |
-| **Prisma**     | TypeORM보다 직관적인 스키마 작성 가능. 좀 더 편리하게 데이터베이스 관리 및 쿼리 수행                                   |
-| **MySQL**      | 관계형 데이터베이스 설계 경험 목적                                                                                     |
-| **Swagger**    | 학부 팀 프로젝트에서 경험한 명확한 소통의 필요성에 따라 API 문서화 도구 적용                                           |
 
 ## 📌 5. API 명세서
 
@@ -205,130 +191,150 @@ erDiagram
 ```
 
 ### `GuestComment`
+
 비회원 댓글 테이블
 
 **Properties**
-  - `id`: Primary Key
-  - `nickName`: 닉네임
-  - `email`: 이메일
-  - `password`: 비밀번호(해시값)
-  - `guestId`
-    > Foreign Key
-    > 
-    > 작성자(비회원) ID [Guest.guestId](#Guest)
+
+- `id`: Primary Key
+- `nickName`: 닉네임
+- `email`: 이메일
+- `password`: 비밀번호(해시값)
+- `guestId`
+  > Foreign Key
+  >
+  > 작성자(비회원) ID [Guest.guestId](#Guest)
 
 ### `Guest`
+
 비회원 테이블
 
 **Properties**
-  - `id`: Primary Key
-  - `guestId`: 비회원 id, 프론트에서 생성
+
+- `id`: Primary Key
+- `guestId`: 비회원 id, 프론트에서 생성
 
 ### `Category`
+
 카테고리 테이블
 
 **Properties**
-  - `id`: Primary Key
-  - `name`: 카테고리 이름
-  - `createdAt`: 생성일
-  - `updatedAt`: 수정일
+
+- `id`: Primary Key
+- `name`: 카테고리 이름
+- `createdAt`: 생성일
+- `updatedAt`: 수정일
 
 ### `Comment`
+
 댓글 테이블
 
 **Properties**
-  - `id`: Primary Key
-  - `content`: 내용
-  - `createdAt`: 생성일
-  - `updatedAt`: 수정일
-  - `parentCommentId`
-    > Foreign Key
-    > 
-    > 부모 댓글 ID [Comment.id](#Comment)
-  - `postId`
-    > Foreign Key
-    > 
-    > 게시글 ID [Post.id](#Post)
-  - `authorId`
-    > Foreign Key
-    > 
-    > 작성자(회원) ID [User.id](#User)
-  - `guestId`
-    > Foreign Key
-    > 
-    > 작성자(비회원) ID [GuestComment.id](#GuestComment)
+
+- `id`: Primary Key
+- `content`: 내용
+- `createdAt`: 생성일
+- `updatedAt`: 수정일
+- `parentCommentId`
+  > Foreign Key
+  >
+  > 부모 댓글 ID [Comment.id](#Comment)
+- `postId`
+  > Foreign Key
+  >
+  > 게시글 ID [Post.id](#Post)
+- `authorId`
+  > Foreign Key
+  >
+  > 작성자(회원) ID [User.id](#User)
+- `guestId`
+  > Foreign Key
+  >
+  > 작성자(비회원) ID [GuestComment.id](#GuestComment)
 
 ### `Image`
+
 이미지 테이블
 
 **Properties**
-  - `id`: Primary Key
-  - `url`: 이미지 url
-  - `postId`
-    > Foreign Key
-    > 
-    > 게시글 ID [Post.id](#Post)
+
+- `id`: Primary Key
+- `url`: 이미지 url
+- `postId`
+  > Foreign Key
+  >
+  > 게시글 ID [Post.id](#Post)
 
 ### `PostLike`
+
 비회원 <=> 게시글 : 다대다, 게시글 좋아요 테이블
 
 **Properties**
-  - `postId`
-    > Foreign Key
-    > 
-    > 게시글 ID [Post.id](#Post)
-  - `guestId`
-    > Foreign Key
-    > 
-    > 비회원 ID [Guest.guestId](#Guest)
-  - `createdAt`: 좋아요가 눌린 날짜
+
+- `postId`
+  > Foreign Key
+  >
+  > 게시글 ID [Post.id](#Post)
+- `guestId`
+  > Foreign Key
+  >
+  > 비회원 ID [Guest.guestId](#Guest)
+- `createdAt`: 좋아요가 눌린 날짜
 
 ### `Post`
+
 게시글 테이블
 
 **Properties**
-  - `id`: Primary Key
-  - `title`: 제목
-  - `content`: 내용
-  - `createdAt`: 생성일
-  - `updatedAt`: 수정일
-  - `prevId`: 이전 게시글 Id
-  - `nextId`: 다음 게시글 Id
-  - `draft`: 초안
-  - `summary`: 내용 요약
-  - `views`: 조회수
-  - `likes`: 좋아요수
-  - `authorId`
-    > Foreign Key
-    > 
-    > 작성자 ID [User.id](#User)
-  - `categoryId`
-    > Foreign Key
-    > 
-    > 작성자 ID [Category.id](#Category)
+
+- `id`: Primary Key
+- `title`: 제목
+- `content`: 내용
+- `createdAt`: 생성일
+- `updatedAt`: 수정일
+- `prevId`: 이전 게시글 Id
+- `nextId`: 다음 게시글 Id
+- `draft`: 초안
+- `summary`: 내용 요약
+- `views`: 조회수
+- `likes`: 좋아요수
+- `authorId`
+  > Foreign Key
+  >
+  > 작성자 ID [User.id](#User)
+- `categoryId`
+  > Foreign Key
+  >
+  > 작성자 ID [Category.id](#Category)
 
 ### `Tag`
+
 태그 테이블
 
 **Properties**
-  - `id`: Primary Key
-  - `name`: 태그 이름
+
+- `id`: Primary Key
+- `name`: 태그 이름
 
 ### `User`
+
 회원 테이블
 
 **Properties**
-  - `id`: Primary Key
-  - `name`: 이름
-  - `email`: 이메일
-  - `password`: 비밀번호(해시값)
-  - `role`: 역할
-  - `createdAt`: 생성일
-  - `providerId`: OAuth Id
+
+- `id`: Primary Key
+- `name`: 이름
+- `email`: 이메일
+- `password`: 비밀번호(해시값)
+- `role`: 역할
+- `createdAt`: 생성일
+- `providerId`: OAuth Id
 
 ### `_PostToTag`
+
 Pair relationship table between [Post](#Post) and [Tag](#Tag)
 
 **Properties**
-  - `A`: 
-  - `B`: 
+
+- `A`:
+- `B`:
