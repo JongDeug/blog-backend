@@ -64,7 +64,7 @@ export class MailService {
     // 작성자 이메일 빼기
     set.delete(sender.email);
 
-    if (!set.size) {
+    if (set.size) {
       this.mailerService
         .sendMail({
           to: [...set],
