@@ -30,7 +30,7 @@
 
 ![image](https://github.com/user-attachments/assets/e588c142-8ded-483d-a395-e04dcddf56a6)
 
-![image](https://github.com/user-attachments/assets/f9d3e7f1-8fdd-4043-9bf1-29b185e18537)
+![image](https://github.com/user-attachments/assets/5599965c-46e6-4c47-a369-9db4fb53830b)
 
 ## 📌 3. 아키텍처
 
