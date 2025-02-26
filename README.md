@@ -2,9 +2,7 @@
 
 ## 📌 1. 프로젝트 소개
 
-<img width="784" alt="image" src="https://github.com/user-attachments/assets/90096d57-f545-4f68-bc6e-60af2180089b" />
-
-![image](https://github.com/user-attachments/assets/f0fbd81f-3fd8-4959-9d28-46372a7a727d)
+![image](https://github.com/user-attachments/assets/2d278c6c-a1de-458d-8720-3268146c5c02)
 
 #### 프로젝트 주제 선정 배경
 
