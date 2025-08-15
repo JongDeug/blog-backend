@@ -27,7 +27,7 @@
     "test:comment": "NODE_ENV=test jest --testPathPattern=src/post/comment --coverage --collectCoverageFrom=src/post/comment/** --runInBand",
     "prisma:migrate:dev": "dotenv -e .env.development.local -- npx prisma migrate dev",
     "prisma:migrate:test": "dotenv -e .env.test.local -- npx prisma migrate dev",
-    "prisma:migrate:prod": "npx prisma migrate deploy",
+    "prisma:migrate:prod": "npx prisma migrate deploy --schema=./prisma/schema/schema.prisma",
     "prisma:generate": "npx prisma generate",
     "prisma:studio": "dotenv -e .env.development.local -- npx prisma studio",
     "docker:up": "dotenv -e .env.development.local -- docker compose -f docker-compose.dev.yaml up -d",
