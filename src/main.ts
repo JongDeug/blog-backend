@@ -13,7 +13,7 @@ async function bootstrap() {
   // Cors
   app.enableCors({
     origin: [
-      'https://jongdeug.ddns.net',
+      'https://jongdeug.duckdns.org',
       'http://localhost:3000',
       'http://localhost:8080',
     ],
